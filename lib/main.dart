@@ -171,6 +171,10 @@ class _SplashScreenState extends State<SplashScreen> {
                                 fontSize: 24,
                                 fontWeight: FontWeight.w800)),
                       ),
+                      const SizedBox(height: 2),
+                      const Fit('tecsattv@gmail.com',
+                          style: TextStyle(
+                              color: Colors.white, fontSize: 14)),
                       if (_version.isNotEmpty) ...[
                         const SizedBox(height: 4),
                         Text('Versão $_version',
@@ -798,15 +802,13 @@ class _TodayPageState extends State<TodayPage> {
             ),
           ),
           const SizedBox(height: 12),
-          Text('Condução contínua: ${fmtDur(b.driven)} de 4h30',
-              textAlign: TextAlign.center,
+          Fit('Condução contínua: ${fmtDur(b.driven)} de 4h30',
               style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700)),
           const SizedBox(height: 2),
-          Text(
+          Fit(
               b.firstPartDone
-                  ? '1ª parte (15 min) feita • falta a pausa de 30 min'
+                  ? '1ª parte (15 min) feita • falta a de 30 min'
                   : 'Próxima pausa: 45 min (ou 15 + 30)',
-              textAlign: TextAlign.center,
               style: const TextStyle(color: TG.muted, fontSize: 13)),
         ]),
       ),

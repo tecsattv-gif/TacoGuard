@@ -1018,6 +1018,8 @@ class _SettingsPageState extends State<SettingsPage> {
                               fontSize: 17, fontWeight: FontWeight.w800)),
                       const Text('Desenvolvido por Luiz Alberto Cardoso',
                           style: TextStyle(color: TG.muted, fontSize: 13)),
+                      const Text('tecsattv@gmail.com',
+                          style: TextStyle(color: TG.muted, fontSize: 13)),
                     ],
                   ),
                 ),

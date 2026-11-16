@@ -59,6 +59,7 @@ Segredos do repositório (Settings > Secrets and variables > Actions):
 
 ## Versões
 
+- **1.6.2**: email de contato (tecsattv@gmail.com) nos créditos da abertura, em Ajustes > Sobre e no README. Textos da tela Hoje (condução contínua e próxima pausa) já não quebram.
 - **1.6.1**: **Multas e gravidade das infrações**: novo assunto na Consulta e novo tema na Lei, com os escalões da UE (leve, grave, muito grave, gravíssima). Ex.: em duas semanas, até menos de 100 h é leve e a partir de 100 h já é grave; na semana, de 60 h em diante é grave. 99 perguntas offline.
 - **1.6.0**: **92 perguntas e respostas offline**, por assunto (condução, pausas, descansos, artigo 12.º, tacógrafo e cartão, tempo de trabalho, dois motoristas e ferry, uso do app), com busca enquanto escreve e sugestão de perguntas parecidas. **Passar do tempo (art. 12.º)** explicado passo a passo: procurar park depois de o horário acabar, hora ou 2 horas a mais para chegar a casa, como imprimir o talão e o que escrever atrás. Textos de botões e abas já não ficam partidos com letra grande no telefone.
 - **1.5.0**: **Matrícula do veículo** em Ajustes > Relatórios: sai no cabeçalho dos relatórios PDF, junto com o nome do motorista, e vai no backup. Créditos em destaque na tela de abertura (splash), com a versão do app.
@@ -69,4 +70,4 @@ Segredos do repositório (Settings > Secrets and variables > Actions):
 - **1.0.1**: a parada não era detectada quando o GPS "pulava" com o caminhão parado (o pop-up não aparecia); agora só conta como arranque se o caminhão sair do lugar. Novo cartão "Parado há…" na tela Hoje, para responder antes do pop-up. Aviso de GPS sem sinal. Cartões da tela Hoje alinhados.
 - **1.0.0**: primeira versão.
 
-Desenvolvido por Luiz Alberto Cardoso.
+Desenvolvido por Luiz Alberto Cardoso (tecsattv@gmail.com).
