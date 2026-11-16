@@ -173,6 +173,52 @@ const List<LawTopic> kLaw = [
     'As multas mudam de país para país. O TacoGuard é um auxiliar: o que '
         'vale na estrada é o registo do tacógrafo.',
   ]),
+  LawTopic('Função OUT (fora do âmbito)',
+      'Reg. 561/2006, art. 3.º e art. 13.º; Reg. (UE) n.º 165/2014',
+      Icons.do_not_disturb_on_rounded, [
+    'OUT quer dizer "out of scope": condução fora do âmbito da lei do '
+        'tacógrafo. Serve só para transportes que a lei não obriga a '
+        'registar (isenções do art. 3.º e isenções nacionais do art. 13.º).',
+    'Não serve para viagens normais: ir vazio carregar, ir à oficina ou '
+        'voltar à base também é condução e conta para os limites.',
+    'Ligar (VDO): caminhão parado, carregue em OK, vá com as setas até '
+        '"Entrada veículo", OK, escolha "OUT início" e confirme com OK.',
+    'Desligar: "Entrada veículo" > "OUT fim" > OK. O OUT também acaba '
+        'sozinho quando o cartão é metido ou tirado.',
+    'Noutras marcas (Stoneridge, Intellic) o caminho é parecido, no menu '
+        'de entradas do veículo; veja o manual do aparelho.',
+    'Com OUT ligado, o visor mostra o símbolo OUT. O tacógrafo continua a '
+        'gravar; a condução fica marcada como fora do âmbito.',
+    'Condução em OUT para a empresa conta como outros trabalhos (martelo) '
+        'no tempo de trabalho. No TacoGuard, corrija esse trecho para '
+        'martelo no Histórico.',
+    'Usar OUT sem ter direito é infração e pode ser tratado como registo '
+        'falso. Na dúvida, não use e pergunte à empresa.',
+  ]),
+  LawTopic('Mudar a hora no tacógrafo (hora local e UTC)',
+      'Reg. (UE) n.º 165/2014; manual do tacógrafo',
+      Icons.schedule_rounded, [
+    'O tacógrafo grava sempre em hora UTC. O que o motorista muda é só a '
+        'hora local que aparece no visor; registos e talões continuam em '
+        'UTC.',
+    'Portugal e Reino Unido: inverno = UTC, verão = UTC + 1. Espanha, '
+        'França, Alemanha e quase toda a Europa central: inverno = UTC + 1, '
+        'verão = UTC + 2.',
+    'A hora muda no último domingo de março (adianta 1 h) e no último '
+        'domingo de outubro (atrasa 1 h).',
+    'Passos (VDO): 1. Caminhão parado. 2. Carregue em OK. 3. Com as setas '
+        'vá até "Entrada veículo" e carregue em OK. 4. Escolha "Hora local" '
+        'e OK. 5. Com as setas mude a hora em passos de 30 minutos. '
+        '6. Confirme com OK e saia com a tecla de voltar.',
+    'Ao passar para um país com outro fuso pode fazer o mesmo: muda só o '
+        'visor, a gravação não muda.',
+    'Com o caminhão a andar o menu não abre. Faça sempre parado.',
+    'Se a hora UTC estiver errada, quem acerta é a oficina autorizada. '
+        'Alguns modelos antigos deixam o motorista corrigir até 1 minuto '
+        'por semana ("Correção UTC").',
+    'No TacoGuard não precisa mudar nada: usa a hora do telefone e conta '
+        'a semana em UTC, como o tacógrafo.',
+  ]),
 ];
 
 /// Tela "Lei do tacógrafo": temas com busca.

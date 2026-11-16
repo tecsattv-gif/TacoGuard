@@ -560,6 +560,68 @@ const List<FaqGroup> kFaqGroups = [
           'carrinha', 'furgao', 'toneladas']),
   ]),
 
+  // ------------------------------------------- Função OUT e hora do tacógrafo
+  FaqGroup('Função OUT e hora do tacógrafo', Icons.schedule_rounded, [
+    Faq('O que é a função OUT do tacógrafo?',
+        'OUT ("out of scope") marca a condução fora do âmbito da lei do '
+            'tacógrafo. Só pode ser usada em transportes que a lei não obriga '
+            'a registar (isenções do art. 3.º ou isenções nacionais do '
+            'art. 13.º). Viagens normais, ir vazio carregar ou ir à oficina '
+            'não são OUT.',
+        '$_r561, art. 3.º e art. 13.º',
+        ['o out', 'fora do ambito', 'out of scope', 'funcao out', 'modo out']),
+    Faq('Como ligo e desligo o OUT?',
+        'Caminhão parado. VDO: OK > setas até "Entrada veículo" > OK > '
+            '"OUT início" > OK. Para desligar: "Entrada veículo" > "OUT fim" '
+            '> OK. O OUT também acaba sozinho quando mete ou tira o cartão. '
+            'Noutras marcas o caminho é parecido, no menu de entradas do '
+            'veículo.',
+        '$_r165; manual do tacógrafo',
+        ['ligar o out', 'desligar o out', 'ativar out', 'out inicio',
+          'out fim', 'meter out', 'por out']),
+    Faq('A condução em OUT conta para alguma coisa?',
+        'Não conta como condução para os limites do tacógrafo, mas, feita '
+            'para a empresa, conta como outros trabalhos (martelo) no tempo '
+            'de trabalho. No TacoGuard corrija esse trecho para martelo no '
+            'Histórico. Usar OUT sem ter direito é infração e pode ser '
+            'tratado como registo falso.',
+        '$_r561, art. 4.º, al. e)',
+        ['out conta', 'conducao em out', 'out martelo', 'usar out']),
+    Faq('Como mudo a hora no tacógrafo (verão / inverno)?',
+        'Caminhão parado. VDO: OK > setas até "Entrada veículo" > OK > '
+            '"Hora local" > OK > mude com as setas em passos de 30 minutos > '
+            'OK. A hora muda no último domingo de março (adianta 1 h) e no '
+            'último domingo de outubro (atrasa 1 h). Só muda o visor: o '
+            'tacógrafo continua a gravar em UTC.',
+        '$_r165; manual do tacógrafo',
+        ['mudar a hora', 'mudar hora', 'acertar a hora', 'hora local',
+          'hora de verao', 'hora de inverno', 'mudanca de hora',
+          'atrasar', 'adiantar', 'relogio']),
+    Faq('O que é a hora UTC do tacógrafo?',
+        'É a hora universal (a de Portugal no inverno). O tacógrafo grava e '
+            'imprime tudo em UTC; a semana também conta em UTC. Portugal: '
+            'inverno = UTC, verão = UTC + 1. Espanha, França, Alemanha: '
+            'inverno = UTC + 1, verão = UTC + 2.',
+        '$_r165',
+        ['utc', 'hora universal', 'fuso', 'fuso horario', 'diferenca de hora',
+          'hora do talao']),
+    Faq('A hora UTC do tacógrafo está errada. Posso acertar?',
+        'A hora local do visor pode sempre. A hora UTC quem acerta é a '
+            'oficina autorizada. Alguns modelos antigos deixam o motorista '
+            'corrigir até 1 minuto por semana ("Correção UTC" no menu '
+            '"Entrada veículo").',
+        '$_r165; manual do tacógrafo',
+        ['hora errada', 'utc errada', 'correcao utc', 'acertar utc',
+          'hora adiantada', 'hora atrasada']),
+    Faq('Passei para outro país. Tenho de mudar a hora?',
+        'Não é obrigatório: a gravação é sempre em UTC. Se quiser ver a hora '
+            'certa no visor, mude a hora local (Entrada veículo > Hora local). '
+            'No TacoGuard não precisa mudar nada.',
+        '$_r165',
+        ['outro pais', 'mudar de pais', 'fuso de espanha', 'hora de espanha',
+          'hora de franca']),
+  ]),
+
   // ------------------------------------------------- Multas e gravidade
   FaqGroup('Multas e gravidade das infrações', Icons.gavel_rounded, [
     Faq('Como são classificadas as infrações?',
