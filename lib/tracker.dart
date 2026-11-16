@@ -30,6 +30,7 @@ class Tracker extends ChangeNotifier {
   bool voice = true;
   bool popup = true;
   String driver = '';
+  String plate = ''; // matrícula do veículo (sai no PDF)
 
   // ---------- GPS ----------
   StreamSubscription<Position>? _sub;
@@ -128,6 +129,7 @@ class Tracker extends ChangeNotifier {
       voice = p.getBool('voice') ?? true;
       popup = p.getBool('popup') ?? true;
       driver = p.getString('driver') ?? '';
+      plate = p.getString('plate') ?? '';
       carMode = p.getBool('carMode') ?? false;
       _truckLat = p.getDouble('truckLat');
       _truckLon = p.getDouble('truckLon');
@@ -159,6 +161,8 @@ class Tracker extends ChangeNotifier {
   String exportJson() => jsonEncode({
         'app': 'TacoGuard',
         'v': 1,
+        'driver': driver,
+        'plate': plate,
         'shifts': shifts.map((s) => s.toJson()).toList(),
       });
 
@@ -170,6 +174,11 @@ class Tracker extends ChangeNotifier {
       if (m is! Map || m['app'] != 'TacoGuard') return false;
       await stopGps();
       _fromJson(text);
+      // Backups a partir da 1.5.0 trazem o motorista e a matrícula.
+      final d = m['driver'], pl = m['plate'];
+      if (d is String && d.isNotEmpty) driver = d;
+      if (pl is String && pl.isNotEmpty) plate = pl;
+      await saveSettings();
       await save();
       notifyListeners();
       return true;
@@ -195,6 +204,7 @@ class Tracker extends ChangeNotifier {
       await p.setBool('voice', voice);
       await p.setBool('popup', popup);
       await p.setString('driver', driver);
+      await p.setString('plate', plate);
     } catch (_) {}
     notifyListeners();
   }

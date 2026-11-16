@@ -58,6 +58,7 @@ Segredos do repositório (Settings > Secrets and variables > Actions):
 
 ## Versões
 
+- **1.5.0**: **Matrícula do veículo** em Ajustes > Relatórios: sai no cabeçalho dos relatórios PDF, junto com o nome do motorista, e vai no backup. Créditos em destaque na tela de abertura (splash), com a versão do app.
 - **1.4.0**: **Reabrir a jornada**. Encerrou e surgiu uma viagem de última hora? Enquanto o descanso não chega a 9 h, a jornada pode ser reaberta: a amplitude e os tempos continuam contando desde o início original, e o intervalo fechado entra como pausa ou martelo.
 - **1.3.0**: local de cada pausa e de cada descanso. As pausas aparecem com o tipo (15, 30 ou 45 min) e as coordenadas; os descansos (9 h, 11 h, 24 h, 45 h) aparecem com as coordenadas do local onde a jornada foi encerrada, na tela Hoje, no Histórico e numa tabela própria do PDF.
 - **1.2.0**: quilômetros rodados pelo GPS: total do dia na tela Hoje, por jornada e por trecho no Histórico e nos relatórios PDF (com o total do período). O trajeto no modo "de carro" não entra na conta.

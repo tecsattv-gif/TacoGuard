@@ -108,7 +108,7 @@ String _coord(double? lat, double? lon) => (lat == null || lon == null)
 
 /// Monta o PDF e devolve o arquivo (um por tipo: o novo substitui o antigo).
 Future<File> buildReport(ReportKind kind, DateTime ref, List<Shift> all,
-    {String driver = ''}) async {
+    {String driver = '', String plate = ''}) async {
   final now = DateTime.now();
   final (from, to) = reportRange(kind, ref);
   final list = shiftsIn(all, from, to);
@@ -393,9 +393,18 @@ Future<File> buildReport(ReportKind kind, DateTime ref, List<Shift> all,
               ],
             ),
           ),
-          if (driver.isNotEmpty)
-            pw.Text(_t('Motorista: $driver'),
-                style: const pw.TextStyle(fontSize: 10, color: _grey)),
+          if (driver.isNotEmpty || plate.isNotEmpty)
+            pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.end,
+              children: [
+                if (driver.isNotEmpty)
+                  pw.Text(_t('Motorista: $driver'),
+                      style: const pw.TextStyle(fontSize: 10, color: _grey)),
+                if (plate.isNotEmpty)
+                  pw.Text(_t('Matrícula: $plate'),
+                      style: const pw.TextStyle(fontSize: 10, color: _grey)),
+              ],
+            ),
         ],
       ),
     ),

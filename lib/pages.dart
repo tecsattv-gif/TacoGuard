@@ -549,7 +549,7 @@ class _ReportsPageState extends State<ReportsPage> {
     if (_busy) return null;
     setState(() => _busy = true);
     try {
-      return await buildReport(_kind, _ref, _t.shifts, driver: _t.driver);
+      return await buildReport(_kind, _ref, _t.shifts, driver: _t.driver, plate: _t.plate);
     } catch (e) {
       if (mounted) _snack(context, 'Não foi possível gerar o PDF: $e');
       return null;
@@ -725,6 +725,8 @@ class _SettingsPageState extends State<SettingsPage> {
   bool _overlayOk = true;
   late final TextEditingController _driver =
       TextEditingController(text: _t.driver);
+  late final TextEditingController _plate =
+      TextEditingController(text: _t.plate);
 
   @override
   void initState() {
@@ -748,6 +750,7 @@ class _SettingsPageState extends State<SettingsPage> {
   @override
   void dispose() {
     _driver.dispose();
+    _plate.dispose();
     super.dispose();
   }
 
@@ -931,15 +934,30 @@ class _SettingsPageState extends State<SettingsPage> {
         ),
         _title('Relatórios'),
         TCard(
-          child: TextField(
-            controller: _driver,
-            decoration: const InputDecoration(
-                labelText: 'Nome do motorista (sai no PDF)'),
-            onChanged: (v) {
-              _t.driver = v.trim();
-              _t.saveSettings();
-            },
-          ),
+          child: Column(children: [
+            TextField(
+              controller: _driver,
+              textCapitalization: TextCapitalization.words,
+              decoration: const InputDecoration(
+                  labelText: 'Nome do motorista (sai no PDF)'),
+              onChanged: (v) {
+                _t.driver = v.trim();
+                _t.saveSettings();
+              },
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _plate,
+              textCapitalization: TextCapitalization.characters,
+              decoration: const InputDecoration(
+                  labelText: 'Matrícula do veículo (sai no PDF)',
+                  hintText: 'Ex.: AA-00-BB'),
+              onChanged: (v) {
+                _t.plate = v.trim().toUpperCase();
+                _t.saveSettings();
+              },
+            ),
+          ]),
         ),
         _title('Backup'),
         TCard(

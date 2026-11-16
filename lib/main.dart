@@ -5,6 +5,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_overlay_window/flutter_overlay_window.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 import 'assistant.dart';
 import 'law.dart';
@@ -60,11 +61,21 @@ class SplashScreen extends StatefulWidget {
 
 class _SplashScreenState extends State<SplashScreen> {
   Timer? _timer;
+  String _version = '';
 
   @override
   void initState() {
     super.initState();
     _timer = Timer(const Duration(milliseconds: 2500), _go);
+    _loadVersion();
+  }
+
+  /// A versão vem do próprio APK instalado: muda sozinha a cada atualização.
+  Future<void> _loadVersion() async {
+    try {
+      final v = (await PackageInfo.fromPlatform()).version;
+      if (mounted) setState(() => _version = v);
+    } catch (_) {}
   }
 
   void _go() {
@@ -132,14 +143,40 @@ class _SplashScreenState extends State<SplashScreen> {
                             Shadow(color: Colors.black, blurRadius: 12)
                           ])),
                   const Spacer(),
-                  const Text('Desenvolvido por',
-                      style: TextStyle(color: Colors.white70, fontSize: 12)),
-                  const SizedBox(height: 2),
-                  const Text('Luiz Alberto Cardoso',
-                      style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700)),
+                  // Créditos, em destaque no rodapé da abertura.
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 18, vertical: 14),
+                    decoration: BoxDecoration(
+                      color: const Color(0x99000000),
+                      borderRadius: BorderRadius.circular(18),
+                      border: Border.all(color: const Color(0x55FFFFFF)),
+                    ),
+                    child: Column(children: [
+                      const Text('DESENVOLVIDO POR',
+                          style: TextStyle(
+                              color: Colors.white70,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              letterSpacing: 2)),
+                      const SizedBox(height: 4),
+                      const FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text('Luiz Alberto Cardoso',
+                            style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 24,
+                                fontWeight: FontWeight.w800)),
+                      ),
+                      if (_version.isNotEmpty) ...[
+                        const SizedBox(height: 4),
+                        Text('Versão $_version',
+                            style: const TextStyle(
+                                color: Colors.white70, fontSize: 12)),
+                      ],
+                    ]),
+                  ),
                 ],
               ),
             ),
