@@ -254,6 +254,47 @@ class Tracker extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// 1.4.0: a última jornada pode ser reaberta enquanto o descanso ainda
+  /// não chegou a 9 h (depois disso já é um descanso diário feito, e o
+  /// certo é iniciar uma jornada nova).
+  Shift? get reopenable {
+    if (current != null || shifts.isEmpty) return null;
+    final last = shifts.last;
+    final e = last.end;
+    if (e == null) return null;
+    if (DateTime.now().difference(e) >= Limits.dailyRestReduced) return null;
+    return last;
+  }
+
+  /// Reabre a última jornada (viagem de última hora). A amplitude continua
+  /// contando desde o início original; o tempo entre o encerramento e agora
+  /// entra como [gap] (pausa ou martelo).
+  Future<String?> reopenShift(Act gap) async {
+    final sh = reopenable;
+    if (sh == null) return null;
+    final closedAt = sh.end!;
+    final last = sh.segments.isEmpty ? null : sh.segments.last;
+    if (last != null &&
+        last.act == gap &&
+        last.end != null &&
+        closedAt.difference(last.end!).inSeconds.abs() <= 2) {
+      // O último trecho já era do mesmo tipo: continua o mesmo trecho.
+      last.end = null;
+    } else {
+      sh.segments.add(Segment(
+          act: gap, start: closedAt, lat: sh.endLat, lon: sh.endLon));
+    }
+    sh.end = null;
+    sh.endLat = null;
+    sh.endLon = null;
+    _stopSince = null;
+    _moveSince = null;
+    final err = await startGps();
+    await save();
+    notifyListeners();
+    return err;
+  }
+
   /// Troca a atividade atual (manual, ou resposta do pop-up).
   void setAct(Act a, {DateTime? at}) {
     final c = current;

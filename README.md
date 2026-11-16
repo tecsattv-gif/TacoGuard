@@ -31,6 +31,7 @@ O APK mais novo fica em [Releases](https://github.com/tecsattv-gif/TacoGuard/rel
 2. Em **Ajustes**, toque em *Abrir ajustes de bateria* e deixe o TacoGuard "Sem restrições", para o celular não cortar o GPS com a tela apagada.
 3. Dirija normalmente. Quando parar, responda ao pop-up.
 4. No fim do dia, toque em **Encerrar jornada**. Começa a contar o descanso.
+5. Encerrou cedo demais? Toque em **Reabrir a jornada** (disponível até o descanso chegar a 9 h).
 
 ## Regras usadas
 
@@ -57,6 +58,7 @@ Segredos do repositório (Settings > Secrets and variables > Actions):
 
 ## Versões
 
+- **1.4.0**: **Reabrir a jornada**. Encerrou e surgiu uma viagem de última hora? Enquanto o descanso não chega a 9 h, a jornada pode ser reaberta: a amplitude e os tempos continuam contando desde o início original, e o intervalo fechado entra como pausa ou martelo.
 - **1.3.0**: local de cada pausa e de cada descanso. As pausas aparecem com o tipo (15, 30 ou 45 min) e as coordenadas; os descansos (9 h, 11 h, 24 h, 45 h) aparecem com as coordenadas do local onde a jornada foi encerrada, na tela Hoje, no Histórico e numa tabela própria do PDF.
 - **1.2.0**: quilômetros rodados pelo GPS: total do dia na tela Hoje, por jornada e por trecho no Histórico e nos relatórios PDF (com o total do período). O trajeto no modo "de carro" não entra na conta.
 - **1.1.0**: botão **Vou sair de carro**. Com o caminhão parado (pausa, martelo ou carga/descarga), o motorista pode sair de carro sem o app contar condução: a parada continua e tudo volta ao normal sozinho quando ele chega de volta ao caminhão. Ao corrigir um trecho, trechos vizinhos do mesmo tipo são unidos (a pausa volta a somar inteira).

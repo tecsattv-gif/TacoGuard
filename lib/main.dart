@@ -385,6 +385,42 @@ class _TodayPageState extends State<TodayPage> {
     }
   }
 
+  Future<void> _reopen(Shift sh) async {
+    final gap = DateTime.now().difference(sh.end!);
+    final a = await showDialog<Act>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Reabrir a jornada?'),
+        content: Text(
+            'A jornada iniciada às ${fmtTime(sh.start)} continua: a '
+            'amplitude e os tempos seguem contando desde o início.\n\n'
+            'Como contar o tempo desde que encerrou '
+            '(${fmtDur(gap)})?'),
+        actionsAlignment: MainAxisAlignment.spaceBetween,
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Cancelar')),
+          Row(mainAxisSize: MainAxisSize.min, children: [
+            OutlinedButton(
+                onPressed: () => Navigator.pop(ctx, Act.work),
+                child: const Text('Martelo')),
+            const SizedBox(width: 8),
+            FilledButton(
+                onPressed: () => Navigator.pop(ctx, Act.pause),
+                child: const Text('Pausa')),
+          ]),
+        ],
+      ),
+    );
+    if (a == null) return;
+    final err = await _t.reopenShift(a);
+    if (err != null && mounted) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(err)));
+    }
+  }
+
   Future<void> _end() async {
     final ok = await showDialog<bool>(
       context: context,
@@ -464,6 +500,27 @@ class _TodayPageState extends State<TodayPage> {
                   style: TextStyle(fontSize: 19, fontWeight: FontWeight.w800)),
             ),
           ),
+          if (_t.reopenable != null) ...[
+            const SizedBox(height: 10),
+            SizedBox(
+              width: double.infinity,
+              height: 52,
+              child: OutlinedButton.icon(
+                onPressed: () => _reopen(_t.reopenable!),
+                icon: const Icon(Icons.replay_rounded),
+                label: Text(
+                    'Reabrir a jornada das ${fmtTime(_t.reopenable!.start)}',
+                    style: const TextStyle(
+                        fontSize: 15, fontWeight: FontWeight.w700)),
+              ),
+            ),
+            const SizedBox(height: 4),
+            const Text(
+                'Surgiu uma viagem de última hora? Reabra: a contagem '
+                'continua de onde parou.',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: TG.muted, fontSize: 12.5)),
+          ],
           const SizedBox(height: 8),
           const Text(
               'Depois de iniciar, o GPS faz o resto: detecta as paradas, '
