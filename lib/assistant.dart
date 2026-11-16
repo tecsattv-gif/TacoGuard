@@ -560,6 +560,246 @@ const List<FaqGroup> kFaqGroups = [
           'carrinha', 'furgao', 'toneladas']),
   ]),
 
+  // ------------------------------------- Usar o tacógrafo: passo a passo
+  FaqGroup('Usar o tacógrafo: começar, conduzir e acabar',
+      Icons.play_circle_rounded, [
+    Faq('Como começo o dia no tacógrafo (iniciar viagem)?',
+        '1. Caminhão parado, ignição ligada. 2. Meta o cartão na ranhura 1 '
+            '(chip para cima e para a frente). 3. O visor mostra o seu nome '
+            'e quando tirou o cartão. 4. Faça a entrada manual: o que fez '
+            'desde que tirou o cartão (normalmente cama). 5. Escolha o país '
+            'de início (em Espanha também a região) e confirme. 6. Com a '
+            'tecla 1 ponha martelo para a verificação do caminhão. '
+            '7. Arranque: a condução é marcada sozinha.',
+        '$_r165, art. 34.º; manual do tacógrafo',
+        ['comecar o dia', 'iniciar viagem', 'iniciar o dia', 'comecar viagem',
+          'inicio do dia', 'meter o cartao de manha', 'abrir o dia',
+          'comecar a trabalhar']),
+    Faq('Como faço a entrada manual passo a passo?',
+        'Ao meter o cartão aparece "Entrada adicional?" (ou "M"). Escolha '
+            'Sim. O tacógrafo mostra o intervalo desde que tirou o cartão: '
+            'com as setas escolha a atividade (cama para descanso, martelo, '
+            'disponibilidade) e acerte a hora em que acabou, com OK. Repita '
+            'até chegar à hora atual. No fim escolha o país de início e '
+            'responda Sim a "Confirmar entrada?". Se errar, antes de '
+            'confirmar pode voltar com a tecla de voltar.',
+        '$_r165, art. 34.º, n.º 3; manual do tacógrafo',
+        ['entrada manual passo', 'entrada adicional', 'como preencher',
+          'preencher o descanso', 'por cama de manha', 'entrada m']),
+    Faq('Que teclas tem o tacógrafo (VDO)?',
+        'Tecla 1: muda a atividade do motorista 1 e, segurada mais de 2 '
+            'segundos, tira o cartão 1. Tecla 2: o mesmo para o motorista 2. '
+            'Setas para cima e para baixo: andar no menu e mudar valores. '
+            'OK: abrir o menu e confirmar. Voltar: sair ou cancelar. Noutras '
+            'marcas os botões são parecidos.',
+        'Manual do tacógrafo',
+        ['teclas', 'botoes', 'tecla 1', 'tecla 2', 'botao ok', 'setas']),
+    Faq('Como mudo a atividade (martelo, quadrado, cama)?',
+        'Com o caminhão parado, carregue na tecla 1 (motorista 1) várias '
+            'vezes até aparecer o símbolo certo: martelos cruzados (outros '
+            'trabalhos), quadrado (disponibilidade) ou cama (pausa ou '
+            'descanso). A condução (volante) é marcada sozinha quando o '
+            'caminhão anda.',
+        '$_r165, art. 34.º, n.º 5; manual do tacógrafo',
+        ['mudar atividade', 'trocar atividade', 'selecionar atividade',
+          'por martelo', 'por cama', 'por quadrado', 'escolher atividade']),
+    Faq('Como faço a pausa no tacógrafo?',
+        'Ao parar, carregue na tecla 1 até aparecer a cama. O tempo com a '
+            'cama conta como pausa (15, 30 ou 45 minutos). Martelo ou '
+            'quadrado não contam como pausa. Muitos tacógrafos põem martelo '
+            'sozinhos ao desligar a ignição: veja sempre o visor e troque '
+            'para a cama. No TacoGuard responda "Pausa" no pop-up.',
+        '$_r561, art. 7.º; manual do tacógrafo',
+        ['pausa no tacografo', 'fazer a pausa', 'marcar pausa', 'pausa cama',
+          'pausa de 45', 'meter a cama']),
+    Faq('Que atividade o tacógrafo põe sozinho ao desligar a ignição?',
+        'Depende da configuração feita pela oficina ou pela empresa: '
+            'muitas vezes martelo para o motorista 1 e disponibilidade para o '
+            'motorista 2. Por isso, ao parar, confira sempre o símbolo no '
+            'visor e troque para o que está a fazer de verdade.',
+        'Manual do tacógrafo',
+        ['ignicao', 'desligar a ignicao', 'automatico', 'atividade automatica',
+          'muda sozinho', 'liga sozinho']),
+    Faq('Como acabo o dia e tiro o cartão?',
+        '1. Caminhão parado. 2. Segure a tecla 1 mais de 2 segundos. 3. '
+            'Escolha o país de fim (em Espanha também a região) e confirme '
+            'com OK. 4. Se quiser, imprima o talão do dia. 5. O cartão sai. '
+            'O cartão só se tira no fim do trabalho do dia, não nas pausas.',
+        '$_r165, art. 34.º; manual do tacógrafo',
+        ['tirar o cartao', 'acabar o dia', 'fim do dia', 'fechar o dia',
+          'retirar o cartao', 'ejetar', 'sair o cartao', 'fim de jornada']),
+    Faq('Posso tirar o cartão durante a pausa ou o descanso?',
+        'Na pausa, não: o cartão fica até ao fim do trabalho do dia. No '
+            'descanso diário ou semanal pode tirar (e no dia seguinte faz a '
+            'entrada manual com cama). Em duas tripulações o cartão fica '
+            'durante a viagem.',
+        '$_r165, art. 34.º, n.º 1',
+        ['tirar o cartao na pausa', 'cartao na pausa', 'cartao no descanso',
+          'deixar o cartao']),
+    Faq('Tenho de meter o cartão só para mexer o caminhão uns metros?',
+        'Sim. Qualquer movimento sem cartão fica gravado como "condução '
+            'sem cartão" e é infração. Meta o cartão antes de mexer o '
+            'caminhão, mesmo para manobrar.',
+        '$_r165, art. 34.º, n.º 1',
+        ['sem cartao manobra', 'mexer o caminhao', 'manobrar', 'poucos metros',
+          'conducao sem cartao']),
+    Faq('Como marco a fronteira ao mudar de país?',
+        'Tacógrafo inteligente da 2.ª versão (VDO DTCO 4.1, Stoneridge '
+            'SE5000 Smart 2): grava a fronteira sozinho pelo GPS. Modelos '
+            'mais antigos: na primeira paragem possível na fronteira ou logo '
+            'a seguir, menu > "Entrada condutor 1" > "País início" (ou '
+            '"Fronteira"), escolha o país onde entrou e OK.',
+        '$_r165, art. 34.º, n.º 7',
+        ['fronteira', 'marcar fronteira', 'mudar de pais', 'entrar em espanha',
+          'entrar em franca', 'cruzar fronteira', 'passar a fronteira']),
+    Faq('Como marco carga e descarga no tacógrafo?',
+        'Nos tacógrafos da 2.ª versão: caminhão parado, OK > "Entrada '
+            'veículo" > "Carga/descarga" > escolha Carga, Descarga ou Carga e '
+            'descarga > OK. O tacógrafo grava a posição GPS do local. A '
+            'atividade enquanto carrega é martelo (ou quadrado, se só '
+            'espera).',
+        '$_r165, art. 8.º; manual do tacógrafo',
+        ['carga e descarga', 'marcar carga', 'marcar descarga', 'carregar',
+          'descarregar', 'cabotagem']),
+    Faq('Como marco o ferry ou o comboio?',
+        'Antes de embarcar ou logo a bordo: OK > "Entrada veículo" > '
+            '"Ferry/comboio início" > OK, e depois ponha a cama. Nos modelos '
+            'novos marque também "Ferry/comboio fim" ao desembarcar. Assim '
+            'o descanso pode ser interrompido para embarcar e desembarcar.',
+        '$_r561, art. 9.º; manual do tacógrafo',
+        ['ferry', 'barco', 'comboio', 'trem', 'comboio inicio', 'ferry inicio']),
+    Faq('O tacógrafo grava onde eu estou?',
+        'Os tacógrafos inteligentes gravam a posição GPS no início e no fim '
+            'do dia de trabalho e a cada 3 horas de condução acumulada. Os da '
+            '2.ª versão gravam também as fronteiras e as cargas e descargas.',
+        '$_r165, art. 8.º',
+        ['gps do tacografo', 'posicao', 'localizacao', 'grava onde',
+          'tacografo inteligente', 'smart']),
+    Faq('A polícia consegue ver o tacógrafo com o caminhão a andar?',
+        'Sim. Os tacógrafos inteligentes têm leitura à distância (DSRC): a '
+            'polícia vê da estrada a velocidade, os eventos e se há '
+            'manipulação, e usa isso para escolher quem manda parar. A multa '
+            'só vem depois do controlo na paragem.',
+        '$_r165, art. 9.º',
+        ['distancia', 'dsrc', 'controlo remoto', 'policia ve', 'antena']),
+  ]),
+
+  // ------------------------------------- Menus, talões e configurações
+  FaqGroup('Tacógrafo: menus, talões e configurações', Icons.tune_rounded, [
+    Faq('Como imprimo o talão do dia?',
+        'Caminhão parado: OK > "Imprimir condutor 1" > "24h dia" > escolha a '
+            'data com as setas > OK. Se perguntar, escolha impressão em UTC '
+            '(a impressão em hora local não vale na fiscalização).',
+        'Manual do tacógrafo',
+        ['imprimir', 'talao do dia', 'impressao', 'tirar talao',
+          'imprimir o dia', 'tirar papel']),
+    Faq('Que outros talões posso imprimir?',
+        'Do motorista: dia (24 h), eventos e falhas, e atividades dos '
+            'últimos dias. Do veículo: dia do veículo, eventos e falhas, '
+            'excessos de velocidade, dados técnicos e o diagrama de '
+            'velocidade. Os nomes mudam um pouco conforme a marca.',
+        'Manual do tacógrafo',
+        ['talao de eventos', 'excesso de velocidade talao', 'dados tecnicos',
+          'tipos de talao', 'impressoes']),
+    Faq('Como vejo no visor o que fiz no dia?',
+        'Caminhão parado: OK > "Visualizar condutor 1" (ou "Indicação") > '
+            '"24h dia" > escolha a data. As atividades aparecem uma a uma; '
+            'ande com as setas.',
+        'Manual do tacógrafo',
+        ['ver no visor', 'ver atividades', 'visualizar', 'consultar o dia',
+          'ver o dia']),
+    Faq('Como vejo quanto tempo ainda posso conduzir?',
+        'Com o caminhão parado, carregue nas setas no ecrã principal: '
+            'aparece a condução desde a última pausa válida, a pausa '
+            'acumulada e, com o VDO Counter, o tempo que falta até à pausa e '
+            'até ao fim da condução do dia. O TacoGuard mostra o mesmo na '
+            'tela Hoje.',
+        'Manual do tacógrafo',
+        ['tempo restante', 'quanto falta', 'vdo counter', 'falta conduzir',
+          'tempo que falta', 'contador']),
+    Faq('Que avisos o tacógrafo dá na condução?',
+        'Aos 4h15 de condução sem pausa dá um pré-aviso e aos 4h30 o aviso '
+            'de pausa obrigatória. Carregue em OK para apagar a mensagem. '
+            'Também avisa excesso de velocidade, falta de papel e erros de '
+            'cartão.',
+        'Manual do tacógrafo',
+        ['aviso', 'avisos', 'mensagem', '4h15', 'pre aviso', 'alarme']),
+    Faq('Quando o tacógrafo grava excesso de velocidade?',
+        'Quando passa da velocidade programada (90 km/h no caminhão) '
+            'durante mais de 60 segundos seguidos. Fica gravado como evento '
+            'e aparece no talão de excessos de velocidade.',
+        '$_r165, anexo IC',
+        ['excesso de velocidade', 'velocidade', '90 km', 'passar dos 90',
+          'limitador', 'segundos']),
+    Faq('O que faço quando aparece uma mensagem de erro?',
+        'Leia o código, carregue em OK para apagar e, se for erro do '
+            'aparelho ou do cartão, imprima o talão de eventos e falhas e '
+            'guarde-o. Se o erro repetir, avise a empresa: pode ser preciso '
+            'ir à oficina autorizada.',
+        'Manual do tacógrafo',
+        ['erro', 'mensagem de erro', 'falha', 'evento', 'codigo de erro',
+          'ponto de exclamacao']),
+    Faq('Como troco o rolo de papel?',
+        'Com o caminhão parado, carregue na frente da gaveta da impressora '
+            'para abrir, ponha o rolo novo com o papel a sair por baixo (o '
+            'lado de imprimir para cima) e feche. Se acabou a meio, a '
+            'impressão continua sozinha. Use só rolos aprovados para esse '
+            'tacógrafo e leve sempre rolos de reserva.',
+        '$_r165, art. 34.º; manual do tacógrafo',
+        ['papel', 'rolo', 'trocar o papel', 'acabou o papel', 'sem papel',
+          'impressora']),
+    Faq('Como mudo o idioma do tacógrafo?',
+        'Caminhão parado: no ecrã principal carregue nas setas até '
+            '"Idioma" (ou bandeira), OK, escolha o idioma e OK. O idioma fica '
+            'gravado para o seu cartão.',
+        'Manual do tacógrafo',
+        ['idioma', 'lingua', 'portugues', 'mudar o idioma', 'linguagem']),
+    Faq('Como funciona com dois motoristas?',
+        'O motorista que conduz mete o cartão na ranhura 1 e o colega na '
+            'ranhura 2. Com o caminhão a andar, o tacógrafo marca '
+            'disponibilidade ao segundo motorista. Na troca, param, trocam '
+            'os cartões de ranhura e cada um confirma a sua atividade.',
+        '$_r165, art. 34.º; $_r561, art. 8.º, n.º 5',
+        ['dois motoristas', 'segundo motorista', 'ranhura 2', 'colega',
+          'tripulacao', 'dupla']),
+    Faq('O que é a pergunta dos dados ITS ao meter o cartão?',
+        'Os tacógrafos inteligentes perguntam se autoriza a partilha dos '
+            'seus dados pessoais com outros sistemas do caminhão (ITS). Pode '
+            'responder Sim ou Não; não muda nada no registo das horas.',
+        '$_r165, art. 7.º',
+        ['its', 'dados its', 'dados pessoais', 'consentimento', 'partilha']),
+    Faq('De quanto em quanto tempo o tacógrafo vai à oficina?',
+        'A inspeção periódica é a cada 2 anos numa oficina autorizada, e '
+            'também depois de reparações ou de mudar a matrícula ou os '
+            'pneus de tamanho. A data fica na placa de instalação, junto do '
+            'tacógrafo ou na porta.',
+        '$_r165, art. 23.º',
+        ['oficina', 'inspecao', 'calibracao', '2 anos', 'placa',
+          'aferir', 'aferição']),
+    Faq('Quantos dias o cartão guarda?',
+        'O cartão guarda pelo menos 28 dias de atividades (os cartões '
+            'novos, da 2.ª geração, 56 dias ou mais). Mesmo assim a empresa '
+            'tem de o descarregar no máximo a cada 28 dias.',
+        '$_r165; Reg. (UE) n.º 581/2010',
+        ['cartao guarda', 'memoria do cartao', 'quantos dias o cartao',
+          'cartao cheio']),
+    Faq('O que é o ponto de interrogação no talão?',
+        'É tempo desconhecido: o cartão esteve fora e não preencheu a '
+            'entrada manual. Na fiscalização pode ter de explicar. Para '
+            'evitar, ao meter o cartão preencha sempre o tempo fora (cama, '
+            'martelo ou disponibilidade).',
+        '$_r165, art. 34.º, n.º 3',
+        ['interrogacao', 'ponto de interrogacao', 'desconhecido',
+          'tempo desconhecido', 'sinal de interrogacao']),
+    Faq('Aparece "conflito de tempo" ao meter o cartão. O que é?',
+        'O cartão tem uma hora de saída mais recente do que a hora do '
+            'tacógrafo, normalmente porque a hora UTC de um dos tacógrafos '
+            'está errada. Faça o dia normalmente, imprima o talão e avise a '
+            'empresa para mandar acertar na oficina.',
+        'Manual do tacógrafo',
+        ['conflito de tempo', 'conflito', 'hora do cartao', 'erro de hora']),
+  ]),
+
   // ------------------------------------------- Função OUT e hora do tacógrafo
   FaqGroup('Função OUT e hora do tacógrafo', Icons.schedule_rounded, [
     Faq('O que é a função OUT do tacógrafo?',

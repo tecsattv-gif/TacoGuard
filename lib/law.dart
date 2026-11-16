@@ -173,6 +173,28 @@ const List<LawTopic> kLaw = [
     'As multas mudam de país para país. O TacoGuard é um auxiliar: o que '
         'vale na estrada é o registo do tacógrafo.',
   ]),
+  LawTopic('Usar o tacógrafo passo a passo (VDO)',
+      'Reg. (UE) n.º 165/2014, art. 34.º; manual do tacógrafo',
+      Icons.play_circle_rounded, [
+    'Começar o dia: caminhão parado, cartão na ranhura 1, entrada manual '
+        'do tempo fora (normalmente cama), país de início, confirmar. Depois '
+        'martelo para a verificação e arrancar: a condução é automática.',
+    'Mudar a atividade: caminhão parado, tecla 1 até aparecer o símbolo '
+        '(martelo, quadrado ou cama). Na pausa ponha sempre a cama.',
+    'Ao desligar a ignição o tacógrafo pode pôr martelo sozinho: confira o '
+        'visor a cada paragem.',
+    'Fronteira: os tacógrafos da 2.ª versão gravam sozinhos; nos antigos '
+        'marque o país na primeira paragem depois da fronteira.',
+    'Carga/descarga (2.ª versão): OK > Entrada veículo > Carga/descarga.',
+    'Ferry/comboio: OK > Entrada veículo > Ferry/comboio início, e cama.',
+    'Acabar o dia: segure a tecla 1 mais de 2 segundos, escolha o país de '
+        'fim, confirme e, se quiser, imprima o dia.',
+    'Talão do dia: OK > Imprimir condutor 1 > 24h dia > data > OK (em UTC).',
+    'Leve sempre rolos de papel de reserva. Mesmo para manobrar, meta o '
+        'cartão.',
+    'Os nomes dos menus mudam um pouco entre marcas e versões; veja o '
+        'manual do seu aparelho.',
+  ]),
   LawTopic('Função OUT (fora do âmbito)',
       'Reg. 561/2006, art. 3.º e art. 13.º; Reg. (UE) n.º 165/2014',
       Icons.do_not_disturb_on_rounded, [
