@@ -146,6 +146,23 @@ const List<LawTopic> kLaw = [
     'Com trabalho noturno, o máximo é de 10 horas de trabalho em cada '
         '24 horas.',
   ]),
+  LawTopic('Gravidade das infrações (multas)',
+      'Diretiva 2006/22/CE, anexo III; Reg. (UE) 2016/403',
+      Icons.gavel_rounded, [
+    'Escalões: leve (MI), grave (SI), muito grave (VSI) e gravíssima '
+        '(MSI). A gravidade é igual em toda a UE; o valor da multa é cada '
+        'país que fixa.',
+    'Duas semanas (limite 90 h): até menos de 100 h leve; 100 a 105 h '
+        'grave; 105 a 112h30 muito grave; 112h30 ou mais gravíssima.',
+    'Semana (limite 56 h): até menos de 60 h leve; 60 a 65 h grave; 65 a '
+        '70 h muito grave; 70 h ou mais gravíssima.',
+    'Condução contínua (limite 4h30): até 5 h leve; 5 a 6 h grave; mais '
+        'de 6 h muito grave.',
+    'Condução diária: 13h30 (dia de 9 h) ou 15 h (dia de 10 h) sem pausa '
+        'nem descanso de 4h30 é gravíssima.',
+    'Na fiscalização podem ser multadas as infrações do dia atual e dos '
+        '56 dias anteriores, mesmo que tenham sido noutro país.',
+  ]),
   LawTopic('Tacógrafo e fiscalização', 'Reg. (UE) n.º 165/2014',
       Icons.fact_check_rounded, [
     'Selecione sempre a atividade certa: condução, outros trabalhos '

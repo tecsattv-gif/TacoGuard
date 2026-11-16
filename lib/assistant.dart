@@ -558,12 +558,71 @@ const List<FaqGroup> kFaqGroups = [
         '$_r561, art. 2.º',
         ['que veiculos', 'quais veiculos', '3,5 toneladas', '2,5 toneladas',
           'carrinha', 'furgao', 'toneladas']),
+  ]),
+
+  // ------------------------------------------------- Multas e gravidade
+  FaqGroup('Multas e gravidade das infrações', Icons.gavel_rounded, [
+    Faq('Como são classificadas as infrações?',
+        'A UE tem uma tabela comum de gravidade, por escalões: leve (MI), '
+            'grave (SI), muito grave (VSI) e gravíssima (MSI). Quanto mais '
+            'passa do limite, mais grave. O valor da multa em euros é cada '
+            'país que decide; a gravidade é igual em toda a UE.',
+        'Diretiva 2006/22/CE, anexo III; Reg. (UE) 2016/403',
+        ['classificadas', 'gravidade', 'leve', 'grave', 'muito grave',
+          'gravissima', 'escalao', 'escaloes', 'tipo de infracao']),
+    Faq('O que acontece se fizer 99 ou 100 horas em duas semanas?',
+        'O limite é 90 horas. De mais de 90 até menos de 100 horas é '
+            'infração leve. De 100 até menos de 112h30 já é grave '
+            '(100 a 105 grave; 105 a 112h30 muito grave). A partir de '
+            '112h30 (25% a mais) é gravíssima. Por isso 99 horas é leve e '
+            '100 horas já sobe de escalão.',
+        'Reg. 561/2006, art. 6.º, n.º 3; Reg. (UE) 2016/403',
+        ['99', '100 horas', '99 horas', '105', '112', 'passar das 90',
+          'mais de 90', 'duas semanas multa']),
+    Faq('E se passar das 56 horas na semana?',
+        'De mais de 56 até menos de 60 horas é leve. De 60 a 65 grave; de 65 '
+            'a 70 muito grave. A partir de 70 horas (25% a mais) é '
+            'gravíssima.',
+        'Reg. 561/2006, art. 6.º, n.º 2; Reg. (UE) 2016/403',
+        ['passar das 56', 'mais de 56', '60 horas semana', '65', '70 horas',
+          'semana multa']),
+    Faq('E se conduzir mais de 4h30 sem pausa?',
+        'De 4h30 até 5 horas é leve. De 5 a 6 horas é grave. Mais de '
+            '6 horas sem pausa é muito grave.',
+        'Reg. 561/2006, art. 7.º; Diretiva 2006/22/CE, anexo III',
+        ['mais de 4h30', '5 horas sem pausa', 'sem pausa multa',
+          'passar das 4h30', '6 horas sem pausa']),
+    Faq('Qual é a infração mais grave na condução diária?',
+        'Passar 50% do limite diário sem pausa nem descanso de pelo menos '
+            '4h30: 13h30 de condução num dia de 9 horas, ou 15 horas num '
+            'dia de 10 horas. É gravíssima.',
+        'Reg. 561/2006, art. 6.º, n.º 1; Reg. (UE) 2016/403',
+        ['13h30', '13 horas e meia', 'conducao diaria multa',
+          'passar das 9', 'passar das 10', 'gravissima diaria']),
     Faq('Qual é o valor das multas?',
-        'Muda de país para país, e depende da gravidade (leve, grave, muito '
-            'grave). O TacoGuard não tem os valores. Em vários países a '
-            'multa é cobrada na hora ao motorista estrangeiro.',
-        'Diretiva 2006/22/CE',
-        ['multa', 'multas', 'coima', 'valor', 'quanto pago']),
+        'Muda de país para país. A gravidade (leve, grave, muito grave, '
+            'gravíssima) é igual em toda a UE, mas o valor em euros é cada '
+            'país que fixa, e pode ir de dezenas a milhares de euros. Em '
+            'vários países a multa é cobrada na hora ao motorista '
+            'estrangeiro, e o caminhão pode ficar imobilizado até pagar.',
+        'Diretiva 2006/22/CE; Reg. 561/2006, art. 19.º',
+        ['multa', 'multas', 'coima', 'valor', 'quanto pago', 'euros',
+          'pagar na hora']),
+    Faq('A empresa também é multada?',
+        'Pode ser. A empresa responde pelas infrações dos seus motoristas, a '
+            'não ser que prove que organizou bem o trabalho. As infrações '
+            'graves e gravíssimas repetidas podem levar a empresa a perder a '
+            'idoneidade (a licença de transportador).',
+        'Reg. 561/2006, art. 10.º; Reg. (CE) 1071/2009',
+        ['empresa multada', 'empresa tambem', 'idoneidade', 'licenca',
+          'responsabilidade da empresa']),
+    Faq('A polícia de outro país pode multar infrações de dias atrás?',
+        'Pode. Numa fiscalização o agente vê o dia atual e os 56 dias '
+            'anteriores e pode multar infrações desse período, mesmo que '
+            'tenham sido noutro país.',
+        'Reg. 561/2006, art. 19.º, n.º 2',
+        ['dias atras', 'outro pais', 'infracao antiga', 'multar depois',
+          'semana passada']),
   ]),
 
   // --------------------------------------------------- Tempo de trabalho

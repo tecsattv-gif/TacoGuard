@@ -22,7 +22,7 @@ O APK mais novo fica em [Releases](https://github.com/tecsattv-gif/TacoGuard/rel
 - **Histórico**: todas as jornadas, com avisos de limite excedido. Cada trecho pode ser corrigido (tipo, nome do local) e aberto no mapa.
 - **Relatórios em PDF**: diário, semanal, bissemanal e mensal. Abrir, salvar no telefone ou compartilhar.
 - **Lei do tacógrafo**: resumo por tema, com o artigo, busca e funcionando sem internet.
-- **Consulta**: 92 perguntas e respostas prontas (offline), agrupadas por assunto e com busca, e IA (Gemini), que responde só com base no resumo da lei que está no app.
+- **Consulta**: 99 perguntas e respostas prontas (offline), agrupadas por assunto e com busca, e IA (Gemini), que responde só com base no resumo da lei que está no app.
 - **Passar do tempo (art. 12.º)**: passo a passo para quando não há vaga no park ou para chegar a casa, com o que escrever atrás do talão.
 - **Backup**: salvar, compartilhar e restaurar as jornadas.
 
@@ -59,6 +59,7 @@ Segredos do repositório (Settings > Secrets and variables > Actions):
 
 ## Versões
 
+- **1.6.1**: **Multas e gravidade das infrações**: novo assunto na Consulta e novo tema na Lei, com os escalões da UE (leve, grave, muito grave, gravíssima). Ex.: em duas semanas, até menos de 100 h é leve e a partir de 100 h já é grave; na semana, de 60 h em diante é grave. 99 perguntas offline.
 - **1.6.0**: **92 perguntas e respostas offline**, por assunto (condução, pausas, descansos, artigo 12.º, tacógrafo e cartão, tempo de trabalho, dois motoristas e ferry, uso do app), com busca enquanto escreve e sugestão de perguntas parecidas. **Passar do tempo (art. 12.º)** explicado passo a passo: procurar park depois de o horário acabar, hora ou 2 horas a mais para chegar a casa, como imprimir o talão e o que escrever atrás. Textos de botões e abas já não ficam partidos com letra grande no telefone.
 - **1.5.0**: **Matrícula do veículo** em Ajustes > Relatórios: sai no cabeçalho dos relatórios PDF, junto com o nome do motorista, e vai no backup. Créditos em destaque na tela de abertura (splash), com a versão do app.
 - **1.4.0**: **Reabrir a jornada**. Encerrou e surgiu uma viagem de última hora? Enquanto o descanso não chega a 9 h, a jornada pode ser reaberta: a amplitude e os tempos continuam contando desde o início original, e o intervalo fechado entra como pausa ou martelo.
