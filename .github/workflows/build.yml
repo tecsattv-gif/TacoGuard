@@ -1,0 +1,166 @@
+name: Build APK
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write   # para guardar a chave criptografada na 1ª vez
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          # Mesma versão fixa usada no SpeedGuard (compila com estes pacotes).
+          flutter-version: 3.47.9
+          cache: true
+
+      # Gera os arquivos Android que faltam (não sobrescreve o que já existe)
+      - name: Gerar projeto Android
+        run: flutter create --platforms android --org com.tecsattv --project-name tacoguard .
+
+      # O "flutter create" cria um teste de exemplo que não serve para este app.
+      - name: Tirar teste de exemplo
+        run: rm -f test/widget_test.dart
+
+      - name: Dependências
+        run: flutter pub get
+
+      # Assinatura fixa: sem ela cada build sai com uma chave nova e o
+      # Android recusa instalar por cima ("conflito com pacote existente").
+      # A chave fica no repositório CRIPTOGRAFADA (android/signing.enc); a senha
+      # é derivada do segredo TACOGUARD_KEYSTORE, que nunca sai do GitHub.
+      # Na 1ª vez (arquivo ainda não existe) o build cria a chave e guarda.
+      - name: Chave de assinatura fixa
+        env:
+          KS: ${{ secrets.TACOGUARD_KEYSTORE }}
+        run: |
+          if [ -z "$KS" ]; then
+            # Sem o segredo: compila e testa, mas NÃO publica a Release
+            # (um APK com chave provisória não aceitaria atualizações).
+            echo "::warning::Falta o segredo TACOGUARD_KEYSTORE (Settings > Secrets and variables > Actions). APK compilado só para teste, sem Release."
+            echo "SIGNED=no" >> "$GITHUB_ENV"
+            exit 0
+          fi
+          echo "SIGNED=yes" >> "$GITHUB_ENV"
+          PASS=$(printf '%s' "$KS" | sha256sum | cut -d' ' -f1)
+          if [ ! -f android/signing.enc ]; then
+            keytool -genkeypair -keystore /tmp/ks.p12 -storetype PKCS12 \
+              -alias androiddebugkey -storepass android -keypass android \
+              -keyalg RSA -keysize 2048 -validity 20000 \
+              -dname "CN=TacoGuard, O=tecsattv, C=BE"
+            openssl enc -aes-256-cbc -pbkdf2 -salt -in /tmp/ks.p12 \
+              -out android/signing.enc -pass "pass:$PASS"
+            rm /tmp/ks.p12
+            git config user.name "TacoGuard build"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add android/signing.enc
+            git commit -m "Chave de assinatura fixa (criptografada) [skip ci]"
+            git push
+          fi
+          mkdir -p ~/.android
+          openssl enc -d -aes-256-cbc -pbkdf2 -in android/signing.enc \
+            -out ~/.android/debug.keystore -pass "pass:$PASS"
+          # Chave ilegível = build para aqui (antes saía com chave aleatória).
+          keytool -list -v -keystore ~/.android/debug.keystore -storepass android \
+            | grep -m1 "SHA256" || { echo "::error::Chave de assinatura ilegível"; exit 1; }
+
+      # Força o Gradle a usar a nossa chave (sozinho ele criava outra).
+      - name: Usar a chave fixa no Gradle
+        if: env.SIGNED == 'yes'
+        run: |
+          F=android/app/build.gradle.kts
+          if [ -f "$F" ]; then
+            python3 - "$F" <<'PY'
+          import sys,os
+          f=sys.argv[1]; s=open(f).read()
+          ks=os.path.expanduser("~/.android/debug.keystore")
+          blk=("    signingConfigs {\n"
+               "        getByName(\"debug\") {\n"
+               f"            storeFile = file(\"{ks}\")\n"
+               "            storePassword = \"android\"\n"
+               "            keyAlias = \"androiddebugkey\"\n"
+               "            keyPassword = \"android\"\n"
+               "        }\n    }\n")
+          i=s.index("android {")+len("android {\n")
+          s=s[:i]+blk+s[i:]
+          open(f,"w").write(s)
+          PY
+          else
+            F=android/app/build.gradle
+            python3 - "$F" <<'PY'
+          import sys,os
+          f=sys.argv[1]; s=open(f).read()
+          ks=os.path.expanduser("~/.android/debug.keystore")
+          blk=("    signingConfigs {\n        debug {\n"
+               f"            storeFile file('{ks}')\n"
+               "            storePassword 'android'\n            keyAlias 'androiddebugkey'\n"
+               "            keyPassword 'android'\n        }\n    }\n")
+          i=s.index("android {")+len("android {\n")
+          s=s[:i]+blk+s[i:]
+          open(f,"w").write(s)
+          PY
+          fi
+          grep -n -A6 "signingConfigs" "$F" | head -12
+
+      - name: minSdk 24
+        run: |
+          for F in android/app/build.gradle.kts android/app/build.gradle; do
+            [ -f "$F" ] || continue
+            sed -i -E 's/minSdk( =|Version)? *flutter\.minSdkVersion/minSdk = 24/' "$F"
+            grep -n "minSdk" "$F"
+          done
+
+      # Testes das regras do tacógrafo: se uma conta estiver errada, não sai APK.
+      - name: Testes das regras
+        run: flutter test
+
+      # A chave do Gemini (segredo GEMINI_API_KEY) vai embutida no app.
+      # Sem o segredo o app compila igual; só a consulta por IA fica desligada.
+      - name: Compilar APK
+        env:
+          GEMINI: ${{ secrets.GEMINI_API_KEY }}
+        run: flutter build apk --release --dart-define=GEMINI_KEY="$GEMINI"
+
+      - name: Renomear APK
+        run: cp build/app/outputs/flutter-apk/app-release.apk TacoGuard.apk
+
+      # Mostra com qual chave o APK saiu (precisa ser a mesma em todo build).
+      - name: Conferir assinatura do APK
+        if: env.SIGNED == 'yes'
+        run: |
+          AS=$(ls -d $ANDROID_HOME/build-tools/*/ | sort -V | tail -1)apksigner
+          $AS verify --print-certs TacoGuard.apk | grep -E "SHA-256|DN"
+          # Tem que ser a nossa chave (CN=TacoGuard), não uma gerada na hora.
+          $AS verify --print-certs TacoGuard.apk | grep -q "CN=TacoGuard" || { echo "::error::APK assinado com chave errada"; exit 1; }
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: TacoGuard-apk
+          path: TacoGuard.apk
+
+      # Publica o APK numa Release (v<versão>). O app procura a última
+      # Release para avisar que há atualização.
+      - name: Publicar Release
+        if: env.SIGNED == 'yes'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          VER=$(grep -m1 '^version:' pubspec.yaml | sed 's/version: *//; s/+.*//')
+          TAG="v$VER"
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" TacoGuard.apk --clobber
+          else
+            gh release create "$TAG" TacoGuard.apk --title "TacoGuard $VER" \
+              --notes "APK do TacoGuard $VER. Veja as novidades no README." --latest
+          fi

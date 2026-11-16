@@ -1,0 +1,498 @@
+import 'dart:async';
+import 'dart:convert';
+import 'dart:io';
+
+import 'package:flutter/foundation.dart';
+import 'package:flutter_tts/flutter_tts.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import 'models.dart';
+import 'rules.dart';
+
+/// Coração do app: guarda as jornadas, recebe o GPS, descobre sozinho
+/// quando o caminhão parou ou arrancou e solta os avisos.
+class Tracker extends ChangeNotifier {
+  Tracker._();
+  static final Tracker I = Tracker._();
+
+  final List<Shift> shifts = [];
+  Shift? get current {
+    for (final s in shifts) {
+      if (s.open) return s;
+    }
+    return null;
+  }
+
+  // ---------- Ajustes ----------
+  int stopMinutes = 2; // parado este tempo = parada (antes disso é trânsito)
+  bool voice = true;
+  bool popup = true;
+  String driver = '';
+
+  // ---------- GPS ----------
+  StreamSubscription<Position>? _sub;
+  Timer? _timer;
+  double speedKmh = 0;
+  double? lat, lon;
+  DateTime? lastFix;
+  bool gpsOn = false;
+  String? gpsError;
+
+  DateTime? _stopSince; // parado desde (candidato a parada)
+  DateTime? _moveSince; // andando desde (candidato a arranque)
+  final List<(DateTime, double, double)> _hist = [];
+
+  /// Chamado quando uma parada é detectada: a tela mostra o pop-up.
+  void Function(Segment seg)? onAsk;
+
+  /// Chamado quando o caminhão arranca: fecha o pop-up, se ainda aberto.
+  void Function()? onAskCancel;
+
+  /// Último aviso (aparece na tela "Hoje").
+  String? lastAlert;
+  DateTime? lastAlertAt;
+
+  final _tts = FlutterTts();
+  final Set<String> _fired = {};
+  Duration _lastDriven = Duration.zero;
+  DateTime _lastSave = DateTime.fromMillisecondsSinceEpoch(0);
+
+  // ---------- Arquivo ----------
+  Future<File> _file() async {
+    final dir = await getApplicationDocumentsDirectory();
+    return File('${dir.path}/tacoguard.json');
+  }
+
+  Future<void> load() async {
+    try {
+      final p = await SharedPreferences.getInstance();
+      stopMinutes = p.getInt('stopMinutes') ?? 2;
+      voice = p.getBool('voice') ?? true;
+      popup = p.getBool('popup') ?? true;
+      driver = p.getString('driver') ?? '';
+    } catch (_) {}
+    try {
+      final f = await _file();
+      if (await f.exists()) {
+        _fromJson(await f.readAsString());
+      }
+    } catch (_) {}
+    try {
+      await _tts.setLanguage('pt-BR');
+      await _tts.setSpeechRate(0.5);
+    } catch (_) {}
+    notifyListeners();
+  }
+
+  void _fromJson(String text) {
+    final m = jsonDecode(text) as Map;
+    final l = ((m['shifts'] as List?) ?? [])
+        .map((x) => Shift.fromJson(Map<String, dynamic>.from(x as Map)))
+        .toList();
+    shifts
+      ..clear()
+      ..addAll(sorted(l));
+  }
+
+  String exportJson() => jsonEncode({
+        'app': 'TacoGuard',
+        'v': 1,
+        'shifts': shifts.map((s) => s.toJson()).toList(),
+      });
+
+  /// Restaura um backup (substitui tudo). Devolve false se o arquivo
+  /// não for um backup do TacoGuard.
+  Future<bool> importJson(String text) async {
+    try {
+      final m = jsonDecode(text);
+      if (m is! Map || m['app'] != 'TacoGuard') return false;
+      await stopGps();
+      _fromJson(text);
+      await save();
+      notifyListeners();
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  Future<void> save() async {
+    _lastSave = DateTime.now();
+    try {
+      final f = await _file();
+      final tmp = File('${f.path}.tmp');
+      await tmp.writeAsString(exportJson(), flush: true);
+      await tmp.rename(f.path);
+    } catch (_) {}
+  }
+
+  Future<void> saveSettings() async {
+    try {
+      final p = await SharedPreferences.getInstance();
+      await p.setInt('stopMinutes', stopMinutes);
+      await p.setBool('voice', voice);
+      await p.setBool('popup', popup);
+      await p.setString('driver', driver);
+    } catch (_) {}
+    notifyListeners();
+  }
+
+  // ---------- Jornada ----------
+  Segment? get currentSegment {
+    final c = current;
+    if (c == null || c.segments.isEmpty) return null;
+    final s = c.segments.last;
+    return s.end == null ? s : null;
+  }
+
+  Act? get currentAct => currentSegment?.act;
+
+  /// Descanso desde o fim da última jornada (com a jornada fechada).
+  Duration? restSoFar(DateTime now) {
+    if (current != null || shifts.isEmpty) return null;
+    final e = shifts.last.end;
+    if (e == null) return null;
+    return now.difference(e);
+  }
+
+  Future<String?> startShift() async {
+    if (current != null) return null;
+    final err = await startGps();
+    final now = DateTime.now();
+    final sh = Shift(start: now, startLat: lat, startLon: lon);
+    // Até arrancar, conta como outros trabalhos (verificação do veículo).
+    sh.segments.add(Segment(act: Act.work, start: now, lat: lat, lon: lon));
+    shifts.add(sh);
+    _fired.clear();
+    _lastDriven = Duration.zero;
+    _stopSince = null;
+    _moveSince = null;
+    await save();
+    notifyListeners();
+    return err;
+  }
+
+  Future<void> endShift() async {
+    final c = current;
+    if (c == null) return;
+    final now = DateTime.now();
+    final s = currentSegment;
+    if (s != null) s.end = now;
+    c.end = now;
+    c.endLat = lat;
+    c.endLon = lon;
+    onAskCancel?.call();
+    await stopGps();
+    await save();
+    notifyListeners();
+  }
+
+  /// Troca a atividade atual (manual, ou resposta do pop-up).
+  void setAct(Act a, {DateTime? at}) {
+    final c = current;
+    if (c == null) return;
+    final now = at ?? DateTime.now();
+    final s = currentSegment;
+    if (s != null) {
+      if (s.act == a) return;
+      // Parada "a classificar": só muda o tipo, mantém o início e o local.
+      if (s.act == Act.unknown && a != Act.drive) {
+        s.act = a;
+        save();
+        notifyListeners();
+        return;
+      }
+      s.end = now;
+      // Trecho de menos de 5 s não vale a pena guardar.
+      if (s.dur(now).inSeconds < 5 && c.segments.length > 1) {
+        c.segments.removeLast();
+      }
+    }
+    c.segments.add(Segment(act: a, start: now, lat: lat, lon: lon));
+    _stopSince = null;
+    _moveSince = null;
+    save();
+    notifyListeners();
+  }
+
+  /// Corrige o tipo de um trecho já gravado.
+  void reclassify(Segment s, Act a) {
+    s.act = a;
+    save();
+    notifyListeners();
+  }
+
+  void setNote(Segment s, String note) {
+    s.note = note.trim();
+    save();
+    notifyListeners();
+  }
+
+  Future<void> deleteShift(Shift sh) async {
+    if (sh.open) return;
+    shifts.remove(sh);
+    await save();
+    notifyListeners();
+  }
+
+  // ---------- GPS ----------
+  /// Liga o GPS em segundo plano. Devolve um texto de erro, ou null.
+  Future<String?> startGps() async {
+    if (_sub != null) return null;
+    gpsError = null;
+    try {
+      if (!await Geolocator.isLocationServiceEnabled()) {
+        gpsError = 'Ative o GPS do celular.';
+      } else {
+        var perm = await Geolocator.checkPermission();
+        if (perm == LocationPermission.denied) {
+          perm = await Geolocator.requestPermission();
+        }
+        if (perm == LocationPermission.denied ||
+            perm == LocationPermission.deniedForever) {
+          gpsError = 'Permissão de localização negada. Libere nas '
+              'configurações do celular.';
+        }
+      }
+    } catch (e) {
+      gpsError = 'Erro no GPS: $e';
+    }
+    _timer?.cancel();
+    _timer = Timer.periodic(const Duration(seconds: 5), (_) => _tick());
+    if (gpsError != null) {
+      notifyListeners();
+      return gpsError;
+    }
+    final settings = AndroidSettings(
+      accuracy: LocationAccuracy.high,
+      distanceFilter: 0,
+      intervalDuration: const Duration(seconds: 2),
+      foregroundNotificationConfig: ForegroundNotificationConfig(
+        notificationTitle: 'TacoGuard ativo',
+        notificationText: 'Controlando a jornada pelo GPS',
+        enableWakeLock: true,
+      ),
+    );
+    _sub = Geolocator.getPositionStream(locationSettings: settings).listen(
+      _onPosition,
+      onError: (e) {
+        gpsError = 'Erro no GPS: $e';
+        notifyListeners();
+      },
+    );
+    gpsOn = true;
+    notifyListeners();
+    return null;
+  }
+
+  Future<void> stopGps() async {
+    await _sub?.cancel();
+    _sub = null;
+    _timer?.cancel();
+    _timer = null;
+    gpsOn = false;
+    speedKmh = 0;
+    _hist.clear();
+  }
+
+  /// Parado de verdade? O GPS do celular "anda" sozinho quando parado.
+  bool _isStill(Position p, DateTime now) {
+    _hist.add((now, p.latitude, p.longitude));
+    _hist.removeWhere((h) => now.difference(h.$1).inSeconds > 10);
+    if (p.speed * 3.6 < 4) return true;
+    final old = _hist.first;
+    final secs = now.difference(old.$1).inMilliseconds / 1000;
+    if (secs >= 6) {
+      final moved = Geolocator.distanceBetween(
+          old.$2, old.$3, p.latitude, p.longitude);
+      if (moved < 8) return true;
+    }
+    return false;
+  }
+
+  void _onPosition(Position p) {
+    // Leitura de antena/Wi-Fi (imprecisa): ignora.
+    if (p.accuracy > 60) return;
+    final now = DateTime.now();
+    lastFix = now;
+    lat = p.latitude;
+    lon = p.longitude;
+    gpsError = null;
+    final still = _isStill(p, now);
+    speedKmh = still ? 0 : p.speed * 3.6;
+    _motion(still, speedKmh, now);
+  }
+
+  /// Máquina de estados parado/andando.
+  void _motion(bool still, double kmh, DateTime now) {
+    final c = current;
+    if (c == null) return;
+    final act = currentAct;
+    if (still) {
+      _moveSince = null;
+      if (act == Act.drive) {
+        _stopSince ??= now;
+        if (now.difference(_stopSince!) >= Duration(minutes: stopMinutes)) {
+          _beginStop(_stopSince!);
+        }
+      }
+    } else if (kmh >= 8) {
+      _stopSince = null;
+      if (act != Act.drive) {
+        _moveSince ??= now;
+        // 6 s andando de verdade = arrancou (não é manobra de 1 metro).
+        if (now.difference(_moveSince!).inSeconds >= 6) {
+          final at = _moveSince!;
+          onAskCancel?.call();
+          setAct(Act.drive, at: at);
+        }
+      }
+    }
+  }
+
+  /// O caminhão parou há [stopMinutes]: fecha a condução no instante em
+  /// que parou e abre uma parada "a classificar", com as coordenadas.
+  void _beginStop(DateTime since) {
+    final c = current;
+    final s = currentSegment;
+    if (c == null || s == null) return;
+    s.end = since;
+    final seg = Segment(act: Act.unknown, start: since, lat: lat, lon: lon);
+    c.segments.add(seg);
+    _stopSince = null;
+    save();
+    notifyListeners();
+    if (voice) {
+      _say('Parada detectada. Pausa, martelo ou carga e descarga?');
+    }
+    if (popup) onAsk?.call(seg);
+  }
+
+  void _tick() {
+    final now = DateTime.now();
+    final c = current;
+    if (c == null) return;
+    // Sem leitura há 20 s (garagem, túnel): se vinha devagar, está parado.
+    if (lastFix != null &&
+        now.difference(lastFix!).inSeconds > 20 &&
+        speedKmh < 15) {
+      speedKmh = 0;
+      _motion(true, 0, now);
+    }
+    _alerts(c, now);
+    if (now.difference(_lastSave).inSeconds >= 60) save();
+    notifyListeners();
+  }
+
+  // ---------- Avisos ----------
+  void _say(String text) {
+    try {
+      _tts.speak(text);
+    } catch (_) {}
+  }
+
+  void _alert(String key, String text) {
+    if (_fired.contains(key)) return;
+    _fired.add(key);
+    lastAlert = text;
+    lastAlertAt = DateTime.now();
+    if (voice) _say(text);
+  }
+
+  void _alerts(Shift c, DateTime now) {
+    final st = computeStatus(shifts, c, now);
+    final b = st.brk;
+    // Pausa feita: os avisos de condução contínua valem de novo.
+    if (b.driven < _lastDriven) {
+      _fired.removeWhere((k) => k.startsWith('cd'));
+    }
+    _lastDriven = b.driven;
+    final act = currentAct;
+    if (act == Act.drive) {
+      final left = Limits.continuousDrive - b.driven;
+      final need = b.breakNeeded.inMinutes;
+      if (left.inSeconds <= 0) {
+        _alert('cd0', 'Atenção. Quatro horas e meia de condução. '
+            'Faça a pausa de $need minutos agora.');
+      } else if (left.inMinutes < 15) {
+        _alert('cd15', 'Faltam 15 minutos para a pausa de $need minutos.');
+      } else if (left.inMinutes < 30) {
+        _alert('cd30', 'Faltam 30 minutos para a pausa de $need minutos.');
+      }
+      final dl = st.dayLimit - st.dayDrive;
+      final lim = st.dayLimit.inHours;
+      if (dl.inSeconds <= 0) {
+        _alert('dd0', 'Atenção. Limite de $lim horas de condução do dia '
+            'atingido.');
+      } else if (dl.inMinutes < 30) {
+        _alert('dd30', 'Faltam 30 minutos para o limite de $lim horas de '
+            'condução do dia.');
+      }
+      if (st.dayDrive >= Limits.dailyDrive && st.dayLimit > Limits.dailyDrive) {
+        _alert('dd9', 'Nove horas de condução. A partir de agora conta como '
+            'dia de dez horas.');
+      }
+      if (st.weekLeft.inSeconds <= 0) {
+        _alert('wk0', 'Atenção. Limite de condução da semana atingido.');
+      } else if (st.weekLeft.inMinutes < 60) {
+        _alert('wk60', 'Falta menos de uma hora de condução nesta semana.');
+      }
+    }
+    // Pausa em curso: avisa quando completa.
+    final seg = currentSegment;
+    if (seg != null && seg.act == Act.pause) {
+      final d = seg.dur(now);
+      final id = seg.start.millisecondsSinceEpoch;
+      if (d >= Limits.breakFull) {
+        _alert('p45-$id', 'Pausa de 45 minutos completa.');
+      } else if (b.firstPartDone && d >= Limits.breakSecond) {
+        // firstPartDone já inclui esta pausa se ela passou de 15 min:
+        // só vale como 2ª parte se houve uma 1ª parte antes.
+        if (_hadFirstPartBefore(c, seg)) {
+          _alert('p30-$id', 'Pausa de 30 minutos completa. '
+              'Pausa de 45 minutos cumprida.');
+        }
+      } else if (d >= Limits.breakFirst && !_hadFirstPartBefore(c, seg)) {
+        _alert('p15-$id', 'Pausa de 15 minutos completa. '
+            'Falta uma de 30 minutos.');
+      }
+    }
+    // Amplitude.
+    final amp = st.amplitude;
+    if (amp >= Limits.amplitudeExt) {
+      _alert('a15', 'Atenção. Quinze horas de amplitude. '
+          'Encerre a jornada.');
+    } else if (amp >= Limits.amplitudeExt - const Duration(minutes: 30)) {
+      _alert('a1430', 'Faltam 30 minutos para as quinze horas de amplitude.');
+    } else if (amp >= Limits.amplitude) {
+      _alert(
+          'a13',
+          st.canExtendAmplitude
+              ? 'Treze horas de amplitude. A partir de agora o descanso '
+                  'desta noite será reduzido, de nove horas.'
+              : 'Atenção. Treze horas de amplitude e já não há descanso '
+                  'reduzido disponível. Encerre a jornada.');
+    } else if (amp >= Limits.amplitude - const Duration(minutes: 30)) {
+      _alert('a1230', 'Faltam 30 minutos para as treze horas de amplitude.');
+    }
+  }
+
+  /// Já havia uma pausa de 15 a 44 min desde a última pausa completa,
+  /// antes de [seg]?
+  bool _hadFirstPartBefore(Shift c, Segment seg) {
+    var first = false;
+    for (final s in c.segments) {
+      if (identical(s, seg)) break;
+      if (s.act != Act.pause && s.act != Act.unknown) continue;
+      final d = s.dur(DateTime.now());
+      if (d >= Limits.breakFull || (first && d >= Limits.breakSecond)) {
+        first = false;
+      } else if (!first && d >= Limits.breakFirst) {
+        first = true;
+      }
+    }
+    return first;
+  }
+}
