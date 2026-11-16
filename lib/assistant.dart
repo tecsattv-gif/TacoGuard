@@ -18,121 +18,784 @@ class Faq {
   const Faq(this.q, this.a, this.ref, this.keys);
 }
 
-const List<Faq> kFaq = [
-  Faq('Quanto tempo posso conduzir sem parar?',
-      'No máximo 4h30. Depois é obrigatória a pausa de 45 minutos seguidos, '
-          'ou dividida em 15 + 30 minutos (nesta ordem).',
-      'Reg. 561/2006, art. 7.º',
-      ['seguid', 'sem parar', '4h30', 'quatro horas', 'continua', '4 30']),
-  Faq('Como funciona a pausa de 45 minutos?',
-      'A pausa de 45 minutos pode ser feita de uma vez ou em duas partes: '
-          'a primeira de pelo menos 15 minutos e a segunda de pelo menos '
-          '30 minutos. A ordem não pode ser trocada (30 + 15 não vale). '
-          'Martelo e carga/descarga não contam como pausa.',
-      'Reg. 561/2006, art. 7.º',
-      ['pausa', '45', '15', '30', 'dividir', 'dividida', 'parada']),
-  Faq('Quantas horas posso conduzir por dia?',
-      '9 horas. Duas vezes por semana pode chegar a 10 horas.',
-      'Reg. 561/2006, art. 6.º, n.º 1',
-      ['dia', 'diaria', 'diario', '9 horas', '10 horas', 'conduzir por dia']),
-  Faq('Quantas horas posso conduzir por semana?',
-      '56 horas na semana (segunda a domingo) e 90 horas em duas semanas '
-          'seguidas. Se fez 56 numa semana, na seguinte só pode fazer 34.',
-      'Reg. 561/2006, art. 6.º, n.os 2 e 3',
-      ['semana', 'semanal', '56', '90', 'quinzena', 'duas semanas',
-        'bissemanal']),
-  Faq('O que é a amplitude? 13 ou 15 horas?',
-      'É o tempo do início ao fim da jornada. Com descanso de 11 horas o '
-          'máximo é 13 horas; com descanso reduzido de 9 horas pode chegar '
-          'a 15 horas, no máximo 3 vezes entre dois descansos semanais.',
-      'Reg. 561/2006, art. 8.º',
-      ['amplitude', '13', '15', 'jornada', 'treze', 'quinze']),
-  Faq('Quanto tempo de descanso diário?',
-      'Regular: 11 horas seguidas (ou 3 + 9 horas). Reduzido: pelo menos '
-          '9 horas, no máximo 3 vezes entre dois descansos semanais. O '
-          'descanso tem de caber nas 24 horas depois do descanso anterior.',
-      'Reg. 561/2006, art. 8.º',
-      ['descanso diario', 'dormir', '11 horas', '9 horas', 'reduzido',
-        'noite', 'descanso']),
-  Faq('Como é o descanso semanal?',
-      'Regular: 45 horas. Reduzido: 24 horas, com compensação do que '
-          'faltou até o fim da 3.ª semana seguinte. Tem de começar no '
-          'máximo 144 horas (6 dias) depois do descanso semanal anterior.',
-      'Reg. 561/2006, art. 8.º, n.º 6',
-      ['descanso semanal', '45 horas', '24 horas', 'fim de semana',
-        'compensa', '144', 'seis dias']),
-  Faq('Posso fazer o descanso de 45 horas na cabine?',
-      'Não. O descanso semanal regular (45 horas ou mais) não pode ser '
-          'feito no veículo; a empresa paga o alojamento. O diário e o '
-          'semanal reduzido podem ser feitos na cabine com cama.',
-      'Reg. 561/2006, art. 8.º, n.º 8',
-      ['cabine', 'cabina', 'veiculo', 'hotel', 'alojamento', 'cama']),
-  Faq('Martelo conta como pausa?',
-      'Não. Martelo (outros trabalhos) e carga/descarga são trabalho. Só '
-          'a pausa/descanso (cama) conta para os 45 minutos.',
-      'Reg. 561/2006, art. 4.º e art. 7.º',
-      ['martelo', 'outros trabalhos', 'carga', 'descarga', 'conta como']),
-  Faq('Posso passar do tempo para chegar a um park?',
-      'Pode, só o necessário para chegar a um local de paragem adequado e '
-          'seguro, sem pôr em risco a segurança. Escreva o motivo à mão no '
-          'talão do tacógrafo, o mais tardar ao chegar.',
-      'Reg. 561/2006, art. 12.º',
-      ['passar', 'exceder', 'park', 'estacionamento', 'talao', 'local seguro',
-        'artigo 12']),
-  Faq('Posso conduzir mais para chegar em casa?',
-      'Em situação excecional, até 1 hora a mais para chegar a casa ou à '
-          'base e fazer o descanso semanal; até 2 horas a mais se for o '
-          'descanso semanal regular e fizer antes uma pausa de 30 minutos. '
-          'Anote o motivo no talão e compense depois.',
-      'Reg. 561/2006, art. 12.º',
-      ['casa', 'base', 'uma hora a mais', 'duas horas', 'regressar',
-        'voltar']),
-  Faq('E no ferry ou no comboio?',
-      'O descanso diário regular pode ser interrompido no máximo 2 vezes, '
-          'somando até 1 hora, para embarcar e desembarcar, com acesso a '
-          'cama.',
-      'Reg. 561/2006, art. 9.º',
-      ['ferry', 'barco', 'comboio', 'trem', 'balsa']),
-  Faq('Quantos dias a polícia pode pedir?',
-      'O dia atual e os 56 dias anteriores.',
-      'Reg. (UE) n.º 165/2014, art. 36.º',
-      ['dias', 'policia', 'fiscalizacao', '56 dias', '28 dias', 'controle',
-        'controlo']),
-  Faq('E com dois motoristas?',
-      'Cada um faz um descanso diário de pelo menos 9 horas dentro das '
-          '30 horas depois do descanso anterior.',
-      'Reg. 561/2006, art. 8.º, n.º 5',
-      ['dois motoristas', 'dupla', 'tripulacao', 'equipe', '30 horas']),
-  Faq('Quanto tempo posso trabalhar sem pausa (martelo)?',
-      'Não mais de 6 horas seguidas de trabalho sem pausa. De 6 a 9 horas '
-          'de trabalho: 30 minutos de pausa; mais de 9 horas: 45 minutos.',
-      'Diretiva 2002/15/CE, art. 5.º',
-      ['trabalhar', 'trabalho', '6 horas', 'seis horas', '48', '60']),
-  Faq('Como o TacoGuard sabe que parei?',
-      'Pelo GPS. Depois de alguns minutos parado (você escolhe o tempo em '
-          'Ajustes) ele grava o local e pergunta: Pausa, Martelo ou '
-          'Carga/Descarga. Sem resposta, a parada fica "a classificar" e '
-          'conta como pausa até você corrigir.',
-      'Ajuda do app',
-      ['app', 'tacoguard', 'gps', 'parei', 'pop-up', 'popup', 'classificar']),
+/// Grupo de perguntas prontas (um assunto).
+class FaqGroup {
+  final String title;
+  final IconData icon;
+  final List<Faq> items;
+  const FaqGroup(this.title, this.icon, this.items);
+}
+
+const _r561 = 'Reg. 561/2006';
+const _a12 = 'Reg. 561/2006, art. 12.º';
+const _r165 = 'Reg. (UE) n.º 165/2014';
+const _app = 'Ajuda do app';
+
+const List<FaqGroup> kFaqGroups = [
+  // ------------------------------------------------------------ Condução
+  FaqGroup('Condução', Icons.local_shipping_rounded, [
+    Faq('Quanto tempo posso conduzir sem parar?',
+        'No máximo 4h30. Depois é obrigatória a pausa de 45 minutos seguidos, '
+            'ou dividida em 15 + 30 minutos (nesta ordem).',
+        '$_r561, art. 7.º',
+        ['seguid', 'sem parar', '4h30', 'quatro horas', 'continua', '4 30']),
+    Faq('Quantas horas posso conduzir por dia?',
+        '9 horas. Duas vezes por semana pode chegar a 10 horas. Conta toda '
+            'a condução entre dois descansos (diário ou semanal).',
+        '$_r561, art. 6.º, n.º 1',
+        ['diaria', 'conduzir por dia', 'conducao diaria', 'por dia']),
+    Faq('Quantas vezes posso fazer 10 horas de condução?',
+        'Duas vezes em cada semana (segunda 00:00 a domingo 24:00). Nos '
+            'outros dias o máximo é de 9 horas.',
+        '$_r561, art. 6.º, n.º 1',
+        ['10 horas', 'dez horas', 'quantas vezes', 'esticar']),
+    Faq('Para conduzir 10 horas, quantas pausas preciso?',
+        'Duas pausas completas: uma de 45 minutos (ou 15 + 30) depois das '
+            'primeiras 4h30 e outra de 45 minutos (ou 15 + 30) depois de '
+            'mais 4h30, antes de fazer a última hora.',
+        '$_r561, art. 6.º e art. 7.º',
+        ['quantas pausas', 'segunda pausa', 'ultima hora', 'duas pausas']),
+    Faq('Quantas horas posso conduzir por semana?',
+        '56 horas na semana (segunda a domingo) e 90 horas em duas semanas '
+            'seguidas. Se fez 56 numa semana, na seguinte só pode fazer 34.',
+        '$_r561, art. 6.º, n.os 2 e 3',
+        ['semanal', '56', 'conduzir por semana', 'conducao semanal']),
+    Faq('Como contam as 90 horas em duas semanas?',
+        'Somam-se sempre duas semanas seguidas: a semana passada com esta, '
+            'e esta com a próxima. Nenhuma dessas somas pode passar de '
+            '90 horas. O artigo 12.º não permite passar das 90 horas.',
+        '$_r561, art. 6.º, n.º 3',
+        ['90', 'noventa', 'quinzena', 'duas semanas', 'bissemanal']),
+    Faq('Quando começa e quando acaba a semana?',
+        'Começa na segunda-feira às 00:00 e acaba no domingo às 24:00. O '
+            'tacógrafo conta em hora UTC, e o TacoGuard faz igual (em '
+            'Portugal no inverno é a mesma hora; em Espanha, França ou '
+            'Alemanha é 1 hora a menos no inverno e 2 no verão).',
+        '$_r561, art. 4.º, al. i)',
+        ['comeca a semana', 'acaba a semana', 'utc', 'segunda-feira',
+          'domingo', 'meia-noite']),
+    Faq('Posso trabalhar 6 dias seguidos?',
+        'Pode. O descanso semanal tem de começar, no máximo, ao fim de seis '
+            'períodos de 24 horas (144 horas) depois do fim do descanso '
+            'semanal anterior. Sétimo dia seguido de trabalho não pode.',
+        '$_r561, art. 8.º, n.º 6',
+        ['6 dias', 'seis dias', 'dias seguidos', 'setimo dia', '7 dias']),
+    Faq('Uma manobra pequena conta como condução?',
+        'Conta. O tacógrafo regista como condução qualquer movimento do '
+            'veículo, mesmo curto. E mexer o caminhão interrompe a pausa ou '
+            'o descanso que estava a fazer.',
+        '$_r561, art. 4.º, al. j)',
+        ['manobra', 'mexer', 'mudar de lugar', 'andar um pouco', 'metros']),
+    Faq('Parado no trânsito ou na fila conta como pausa?',
+        'Não. Parado no trânsito, o tacógrafo passa sozinho para martelo '
+            '(outros trabalhos), que é trabalho e não pausa. No TacoGuard, '
+            'paragens mais curtas que o tempo escolhido em Ajustes ficam '
+            'como condução (trânsito).',
+        '$_r561, art. 4.º, al. d)',
+        ['transito', 'engarrafamento', 'fila parada', 'semaforo']),
+  ]),
+
+  // -------------------------------------------------------------- Pausas
+  FaqGroup('Pausas', Icons.free_breakfast_rounded, [
+    Faq('Como funciona a pausa de 45 minutos?',
+        'A pausa de 45 minutos pode ser feita de uma vez ou em duas partes: '
+            'a primeira de pelo menos 15 minutos e a segunda de pelo menos '
+            '30 minutos. A ordem não pode ser trocada (30 + 15 não vale). '
+            'Martelo e carga/descarga não contam como pausa.',
+        '$_r561, art. 7.º',
+        ['pausa de 45', '45 minutos', 'dividir a pausa', 'dividida']),
+    Faq('Posso fazer a pausa de 30 primeiro e a de 15 depois?',
+        'Não. A ordem é obrigatória: primeiro a de pelo menos 15 minutos, '
+            'depois a de pelo menos 30. Se fez 30 e depois 15, a pausa não '
+            'está completa: precisa de mais uma de 30 minutos.',
+        '$_r561, art. 7.º',
+        ['30 primeiro', '30 + 15', '30+15', 'ordem trocada', 'trocar a ordem',
+          '30 e depois 15']),
+    Faq('Posso fazer três pausas de 15 minutos?',
+        'Não. Três de 15 não valem como pausa de 45. Só vale 45 de uma vez, '
+            'ou uma de pelo menos 15 seguida de uma de pelo menos 30.',
+        '$_r561, art. 7.º',
+        ['tres pausas', '15 + 15', '15+15', 'tres de 15', '3 pausas']),
+    Faq('Uma pausa de 20 ou 25 minutos conta?',
+        'Conta como a primeira parte (pelo menos 15 minutos). Depois ainda '
+            'falta uma de pelo menos 30 minutos, antes de completar 4h30 de '
+            'condução. Pausa com menos de 15 minutos não conta para nada.',
+        '$_r561, art. 7.º',
+        ['20 minutos', '25 minutos', 'pausa de 10', 'pausa curta',
+          'menos de 15']),
+    Faq('Fiz a pausa de 45 antes das 4h30. A contagem zera?',
+        'Zera. Depois de uma pausa completa (45 minutos, ou 15 + 30) começa '
+            'uma nova contagem de 4h30, mesmo que ainda não tivesse '
+            'conduzido as 4h30.',
+        '$_r561, art. 7.º',
+        ['zera', 'antes das 4h30', 'nova contagem', 'recomeca', 'reinicia']),
+    Faq('Posso fazer a pausa enquanto carregam ou descarregam?',
+        'Só se estiver mesmo livre para descansar: sem ajudar, sem vigiar a '
+            'carga e sem ter de ficar à disposição. Se tem de ajudar, '
+            'acompanhar ou esperar ordens, é martelo ou disponibilidade, '
+            'não é pausa.',
+        '$_r561, art. 4.º, al. d)',
+        ['enquanto carregam', 'enquanto descarregam', 'durante a carga',
+          'durante a descarga', 'cais']),
+    Faq('Martelo conta como pausa?',
+        'Não. Martelo (outros trabalhos) e carga/descarga são trabalho. Só '
+            'a pausa/descanso (cama) conta para os 45 minutos.',
+        '$_r561, art. 4.º e art. 7.º',
+        ['martelo conta', 'outros trabalhos', 'conta como pausa']),
+    Faq('Disponibilidade (quadrado) conta como pausa?',
+        'Para um motorista só, não. Disponibilidade é tempo de espera: não é '
+            'pausa nem descanso. Só com dois motoristas é que os 45 minutos '
+            'ao lado do colega, com o caminhão a andar, podem valer como '
+            'pausa.',
+        '$_r561, art. 7.º; Diretiva 2002/15/CE, art. 3.º',
+        ['disponibilidade conta', 'quadrado', 'espera conta']),
+    Faq('Se vou parar para dormir, preciso fazer a pausa de 45 antes?',
+        'Não. A pausa só é obrigatória se for continuar a conduzir. Se ao '
+            'fim das 4h30 começa logo o descanso diário ou semanal, o '
+            'descanso substitui a pausa.',
+        '$_r561, art. 7.º',
+        ['parar para dormir', 'fim do dia', 'descanso substitui',
+          'ultima conducao']),
+  ]),
+
+  // ----------------------------------------------------- Descanso diário
+  FaqGroup('Descanso diário e amplitude', Icons.hotel_rounded, [
+    Faq('Quanto tempo de descanso diário?',
+        'Regular: 11 horas seguidas (ou 3 + 9 horas). Reduzido: pelo menos '
+            '9 horas, no máximo 3 vezes entre dois descansos semanais. O '
+            'descanso tem de caber nas 24 horas depois do descanso anterior.',
+        '$_r561, art. 8.º',
+        ['descanso diario', 'dormir', '11 horas', 'descanso da noite']),
+    Faq('Um descanso de 10 horas conta como quê?',
+        'Como reduzido. Tudo o que tiver pelo menos 9 horas e menos de 11 é '
+            'descanso diário reduzido, e gasta uma das 3 vezes permitidas '
+            'entre dois descansos semanais.',
+        '$_r561, art. 4.º, al. g)',
+        ['descanso de 10', '10 horas de descanso', '9h30', '10h30']),
+    Faq('Quantos descansos reduzidos (9 horas) posso fazer?',
+        'Três entre dois descansos semanais. Depois do descanso semanal a '
+            'conta volta a zero.',
+        '$_r561, art. 8.º, n.º 4',
+        ['quantos reduzidos', 'descansos reduzidos', 'tres vezes',
+          '3 vezes', 'descanso de 9']),
+    Faq('Tenho de compensar o descanso diário reduzido?',
+        'Não. Só o descanso semanal reduzido é que tem de ser compensado. '
+            'O diário reduzido (9 horas) não se compensa; só está limitado a '
+            '3 vezes entre descansos semanais.',
+        '$_r561, art. 8.º',
+        ['compensar o diario', 'compensar descanso diario',
+          'compensar as 9']),
+    Faq('Como funciona o descanso dividido 3 + 9?',
+        'O descanso regular pode ser feito em duas partes: a primeira de '
+            'pelo menos 3 horas seguidas e a segunda de pelo menos 9 horas '
+            'seguidas (12 no total), nesta ordem. Conta como regular: não '
+            'gasta nenhuma das 3 vezes de reduzido.',
+        '$_r561, art. 4.º, al. g)',
+        ['3 + 9', '3+9', 'descanso dividido', 'tres mais nove', 'duas partes',
+          '12 horas']),
+    Faq('O que quer dizer descanso dentro das 24 horas?',
+        'A partir da hora em que acabou o descanso anterior contam-se '
+            '24 horas, e o novo descanso tem de caber aí dentro. Exemplo: '
+            'começou às 6:00. Para 11 horas de descanso tem de parar até às '
+            '19:00; para 9 horas (reduzido), até às 21:00.',
+        '$_r561, art. 8.º, n.º 2',
+        ['dentro das 24', '24 horas', 'ate que horas', 'que horas tenho de '
+              'parar']),
+    Faq('O que é a amplitude? 13 ou 15 horas?',
+        'É o tempo do início ao fim da jornada. Com descanso de 11 horas o '
+            'máximo é 13 horas; com descanso reduzido de 9 horas pode chegar '
+            'a 15 horas, no máximo 3 vezes entre dois descansos semanais.',
+        '$_r561, art. 8.º',
+        ['amplitude', 'treze', 'quinze', '13 horas', '15 horas']),
+    Faq('Passei das 13 horas de amplitude. E agora?',
+        'Não é infração por si só: o descanso dessa noite passa a contar '
+            'como reduzido (tem de ter pelo menos 9 horas) e gasta uma das '
+            '3 vezes. Se já gastou as 3, aí sim é infração.',
+        '$_r561, art. 8.º, n.os 2 e 4',
+        ['passei das 13', 'mais de 13', 'passou de 13']),
+    Faq('Passei das 15 horas de amplitude. E agora?',
+        'O descanso de 9 horas já não cabe nas 24 horas: é infração, a não '
+            'ser que tenha sido para chegar a um local de paragem seguro. '
+            'Nesse caso imprima o talão e escreva o motivo atrás '
+            '(artigo 12.º). Depois faça o descanso completo.',
+        '$_r561, art. 8.º e art. 12.º',
+        ['passei das 15', 'mais de 15', 'passou de 15']),
+    Faq('Posso mexer o caminhão durante o descanso?',
+        'Não. O descanso tem de ser seguido: qualquer condução interrompe e '
+            'o descanso recomeça do zero. A exceção é o ferry ou comboio. Se '
+            'a polícia ou o dono do local mandar tirar o caminhão, imprima '
+            'o talão e escreva atrás o motivo, a hora e quem mandou.',
+        '$_r561, art. 4.º, al. f) e g)',
+        ['mexer o caminhao', 'durante o descanso', 'interromper o descanso',
+          'tirar o caminhao', 'mandou sair']),
+    Faq('Posso fazer o descanso diário na cabine?',
+        'Pode, se o veículo tiver cama e estiver parado. O mesmo vale para '
+            'o descanso semanal reduzido (24 horas). Só o semanal regular '
+            '(45 horas) é que não pode ser na cabine.',
+        '$_r561, art. 8.º, n.º 8',
+        ['diario na cabine', 'dormir na cabine', 'dormir no caminhao']),
+  ]),
+
+  // ---------------------------------------------------- Descanso semanal
+  FaqGroup('Descanso semanal', Icons.weekend_rounded, [
+    Faq('Como é o descanso semanal?',
+        'Regular: 45 horas. Reduzido: 24 horas, com compensação do que '
+            'faltou até o fim da 3.ª semana seguinte. Tem de começar no '
+            'máximo 144 horas (6 dias) depois do descanso semanal anterior.',
+        '$_r561, art. 8.º, n.º 6',
+        ['descanso semanal', '45 horas', 'fim de semana']),
+    Faq('O que são as 144 horas?',
+        'É o prazo para começar o descanso semanal: seis períodos de '
+            '24 horas contados a partir do fim do descanso semanal anterior. '
+            'Exemplo: o descanso acabou na segunda às 6:00; o próximo '
+            'descanso semanal tem de começar até domingo às 6:00.',
+        '$_r561, art. 8.º, n.º 6',
+        ['144', 'cento e quarenta', 'prazo do descanso semanal']),
+    Faq('Um descanso de 30 horas conta como quê?',
+        'Como descanso semanal reduzido (pelo menos 24 e menos de 45 horas). '
+            'Ficam a faltar 15 horas, que têm de ser compensadas.',
+        '$_r561, art. 4.º, al. h)',
+        ['30 horas', '35 horas', '40 horas', 'menos de 45', '36 horas']),
+    Faq('Como compenso o descanso semanal reduzido?',
+        'O que faltou para as 45 horas tem de ser feito de uma só vez, '
+            'colado a outro descanso de pelo menos 9 horas, até o fim da '
+            '3.ª semana seguinte. Exemplo: fez 24 horas, faltaram 21. Pode '
+            'juntar as 21 horas a um descanso diário (9 + 21 = 30 horas) ou '
+            'a um semanal (45 + 21 = 66 horas).',
+        '$_r561, art. 8.º, n.os 6 e 7',
+        ['compensar', 'compensacao', 'compenso', 'horas em falta',
+          'compensar descanso', 'compensar o descanso semanal',
+          'devolver horas']),
+    Faq('Posso fazer dois descansos semanais reduzidos seguidos?',
+        'Só em transporte internacional de mercadorias e fora do país da '
+            'empresa. Em 4 semanas seguidas tem de haver 4 descansos '
+            'semanais, 2 deles regulares. Depois dos dois reduzidos, o '
+            'descanso semanal seguinte tem de ser regular e vir junto com a '
+            'compensação dos dois.',
+        '$_r561, art. 8.º, n.os 6 e 6-B',
+        ['dois reduzidos', 'reduzidos seguidos', 'dois descansos reduzidos',
+          '24 seguidos']),
+    Faq('Posso fazer o descanso de 45 horas na cabine?',
+        'Não. O descanso semanal regular (45 horas ou mais) não pode ser '
+            'feito no veículo; a empresa paga o alojamento. O diário e o '
+            'semanal reduzido podem ser feitos na cabine com cama.',
+        '$_r561, art. 8.º, n.º 8',
+        ['45 na cabine', 'cabina', 'descanso de 45 horas na cabine']),
+    Faq('Quem paga o hotel no descanso de 45 horas?',
+        'A empresa. O descanso semanal regular fora de casa tem de ser num '
+            'alojamento adequado, com cama e casa de banho, pago pelo '
+            'empregador.',
+        '$_r561, art. 8.º, n.º 8',
+        ['hotel', 'alojamento', 'quem paga', 'pensao', 'dormida']),
+    Faq('De quanto em quanto tempo tenho de voltar a casa?',
+        'A empresa tem de organizar o trabalho para o motorista voltar a '
+            'casa ou à base pelo menos a cada 4 semanas, para um descanso '
+            'semanal regular. Se fez dois reduzidos seguidos, tem de voltar '
+            'antes do descanso regular da 3.ª semana.',
+        '$_r561, art. 8.º, n.º 8-A',
+        ['voltar a casa', 'ir a casa', '4 semanas', 'quatro semanas',
+          'regresso a casa']),
+    Faq('O descanso semanal apanhou duas semanas. Conta para qual?',
+        'Conta para uma ou para a outra, à escolha, mas nunca para as duas. '
+            'Exemplo: começou no domingo e acabou na terça.',
+        '$_r561, art. 8.º, n.º 9',
+        ['duas semanas conta', 'apanhou duas', 'entre duas semanas',
+          'conta para qual']),
+    Faq('O descanso semanal pode ser em qualquer dia?',
+        'Pode. Não precisa de ser ao fim de semana. O que conta é ter pelo '
+            'menos 24 ou 45 horas e começar dentro das 144 horas depois do '
+            'descanso semanal anterior.',
+        '$_r561, art. 8.º, n.º 6',
+        ['qualquer dia', 'meio da semana', 'sabado', 'dia da semana']),
+  ]),
+
+  // ------------------------------------------------- Artigo 12 (exceções)
+  FaqGroup('Passar do tempo: park, casa e talão (art. 12.º)',
+      Icons.report_problem_rounded, [
+    Faq('Posso passar do tempo para chegar a um park?',
+        'Pode. O artigo 12.º deixa passar dos limites só o necessário para '
+            'chegar a um local de paragem adequado e seguro, sem pôr em '
+            'risco a segurança rodoviária. Vale para a condução, para a '
+            'pausa e para o descanso. Ao chegar, imprima o talão e escreva '
+            'o motivo atrás, à mão.',
+        _a12,
+        ['passar do tempo', 'exceder', 'chegar a um park', 'estacionamento',
+          'achar park', 'achar um park', 'procurar park', 'procurar um park',
+          'passar uns minutos', 'passar 10 minutos', 'tempinho',
+          'local seguro', 'artigo 12', 'passar do horario']),
+    Faq('O tempo acabou e não achei vaga no park. O que faço?',
+        '1. Siga com calma até o próximo local seguro (park, área de '
+            'serviço, zona industrial). Não pare na berma nem em sítio '
+            'perigoso.\n'
+            '2. Só o necessário: pare no primeiro local adequado, não no '
+            'que lhe dá mais jeito.\n'
+            '3. Logo ao parar, imprima o talão do dia (cartão do condutor, '
+            '24 h).\n'
+            '4. Atrás do talão escreva à mão o motivo, o local, a data e a '
+            'hora, "Art. 12.º Reg. (CE) 561/2006", o nome e assine.\n'
+            '5. Faça a pausa ou o descanso completo e guarde o talão para '
+            'mostrar na fiscalização.',
+        _a12,
+        ['nao achei vaga', 'sem vaga', 'park cheio', 'parque cheio',
+          'nao encontrei', 'nao tem lugar', 'sem lugar', 'lotado',
+          'tempo acabou', 'horario acabou']),
+    Faq('O que escrevo atrás do talão (ticket)?',
+        'Escreva à mão, com letra legível:\n'
+            '• Motivo. Ex.: "Park da A1 km 120 cheio, sem lugar seguro. '
+            'Segui até a área de serviço seguinte."\n'
+            '• Local onde parou.\n'
+            '• Data e hora em que chegou.\n'
+            '• "Art. 12.º do Regulamento (CE) n.º 561/2006".\n'
+            '• Nome e assinatura.\n'
+            'A lei obriga a escrever o motivo; o resto é boa prática, para '
+            'não haver dúvida na fiscalização.',
+        _a12,
+        ['atras do talao', 'o que escrevo', 'escrever no talao',
+          'verso', 'o que coloco', 'anotar', 'justificar', 'justificacao']),
+    Faq('Que lei coloco no talão?',
+        'Artigo 12.º do Regulamento (CE) n.º 561/2006. Pode escrever '
+            'abreviado: "Art. 12.º Reg. (CE) 561/2006". É o artigo das '
+            'exceções para chegar a um local de paragem adequado, a casa '
+            'ou à base.',
+        _a12,
+        ['que lei', 'qual lei', 'qual artigo', 'que artigo',
+          'numero da lei']),
+    Faq('Como imprimo o talão no tacógrafo?',
+        'Com o caminhão parado e a ignição ligada, entre no menu do '
+            'tacógrafo: Impressão > Condutor 1 > Dia (24 h) e escolha a '
+            'data de hoje. O caminho muda um pouco conforme a marca (VDO, '
+            'Stoneridge). Tenha sempre um rolo de papel de reserva.',
+        _r165,
+        ['como imprimo', 'imprimir', 'impressao', 'tirar o talao',
+          'imprimir o talao', 'rolo', 'papel']),
+    Faq('Quando tenho de imprimir e escrever no talão?',
+        'O mais tardar ao chegar ao local de paragem (ou ao destino, no '
+            'caso de ir para casa ou para a base). Não deixe para o dia '
+            'seguinte: anotação feita depois pode não ser aceite.',
+        _a12,
+        ['quando imprimir', 'quando escrever', 'mais tardar', 'ao chegar',
+          'no dia seguinte']),
+    Faq('Posso conduzir mais para chegar em casa?',
+        'Em situação excecional, pode passar até 1 hora da condução diária '
+            'e semanal para chegar a casa ou à base e fazer o descanso '
+            'semanal. Podem ser até 2 horas se for para o descanso semanal '
+            'regular (45 h) e fizer uma pausa de 30 minutos seguidos logo '
+            'antes do tempo a mais. Escreva o motivo no talão ao chegar e '
+            'compense depois.',
+        _a12,
+        ['chegar em casa', 'chegar a casa', 'chegar a base', 'hora a mais',
+          'uma hora a mais', 'hora extra', 'horas extraordinarias',
+          'extraordinaria', 'regressar']),
+    Faq('Como funcionam as 2 horas a mais para chegar a casa?',
+        'Valem só para ir fazer o descanso semanal regular (45 horas ou '
+            'mais) em casa ou na base. Antes de começar o tempo a mais tem '
+            'de fazer uma pausa de 30 minutos seguidos. Exemplo: acabou as '
+            '9 horas a 1h40 de casa. Pare 30 minutos, conduza até casa, '
+            'imprima o talão e escreva o motivo atrás.',
+        _a12,
+        ['2 horas a mais', 'duas horas a mais', 'duas horas',
+          'pausa de 30 antes']),
+    Faq('A hora a mais serve para um descanso diário normal?',
+        'Não. A hora (ou as 2 horas) a mais é só para chegar a casa ou à '
+            'base e fazer o descanso semanal. Num dia normal só pode passar '
+            'do tempo o necessário para chegar a um local de paragem '
+            'seguro.',
+        _a12,
+        ['serve para', 'descanso diario normal', 'dia normal',
+          'durante a semana']),
+    Faq('Tenho de compensar o tempo que passei?',
+        'A hora ou as 2 horas a mais para chegar a casa ou à base, sim: com '
+            'o mesmo tempo de descanso, de uma só vez, junto a outro '
+            'descanso, até o fim da 3.ª semana seguinte. Exemplo: passou '
+            '50 minutos; faça um descanso com 50 minutos a mais.',
+        _a12,
+        ['compensar o tempo', 'tempo que passei', 'compensar a hora',
+          'devolver o tempo']),
+    Faq('Posso usar o artigo 12.º todos os dias?',
+        'Não. É para situações que não dava para prever: park cheio, '
+            'acidente, estrada cortada, mau tempo, demora fora do normal. '
+            'Não serve para viagem mal planeada nem pode ser usado sempre. '
+            'Quem decide se aceita é o agente na fiscalização, caso a caso.',
+        _a12,
+        ['todos os dias', 'sempre', 'varias vezes', 'abusar',
+          'quantas vezes posso usar']),
+    Faq('Trânsito ou acidente atrasou e o tempo acabou. E agora?',
+        'Vale o mesmo: siga só até o primeiro local de paragem seguro, '
+            'imprima o talão ao chegar e escreva atrás o que aconteceu '
+            '(ex.: "Acidente na A4, estrada cortada 1h20"), o local, a '
+            'hora, o artigo 12.º e assine.',
+        _a12,
+        ['acidente', 'atrasou', 'estrada cortada', 'atraso', 'mau tempo',
+          'neve', 'imprevisto']),
+    Faq('A empresa pode mandar eu passar do tempo?',
+        'Não. A decisão de usar o artigo 12.º é do motorista, por '
+            'segurança. A empresa tem de organizar o trabalho para os '
+            'tempos serem cumpridos e não pode pagar prémios que levem a '
+            'passar dos limites.',
+        '$_r561, art. 10.º e art. 12.º',
+        ['empresa mandar', 'empresa manda', 'patrao', 'chefe', 'obrigar',
+          'premio']),
+    Faq('Por quanto tempo guardo o talão?',
+        'Leve-o consigo enquanto puder ser pedido na estrada: o dia atual e '
+            'os 56 dias anteriores. Depois entregue à empresa, que tem de '
+            'guardar os registos pelo menos 1 ano.',
+        '$_r165, art. 33.º e art. 36.º',
+        ['guardo o talao', 'guardar o talao', 'guardar o ticket',
+          'quanto tempo guardo']),
+  ]),
+
+  // -------------------------------------------- Tacógrafo e fiscalização
+  FaqGroup('Tacógrafo, cartão e fiscalização', Icons.fact_check_rounded, [
+    Faq('Quantos dias a polícia pode pedir?',
+        'O dia atual e os 56 dias anteriores (cartão, talões e registos '
+            'manuais).',
+        '$_r165, art. 36.º',
+        ['policia', 'fiscalizacao', '56 dias', '28 dias', 'controlo',
+          'quantos dias']),
+    Faq('O que querem dizer os símbolos do tacógrafo?',
+        'Volante: condução. Martelos cruzados: outros trabalhos (martelo). '
+            'Quadrado com um risco: disponibilidade (espera). Cama: pausa '
+            'ou descanso.',
+        '$_r165, art. 34.º, n.º 5',
+        ['simbolos', 'simbolo', 'volante', 'cama', 'desenho']),
+    Faq('O que é a disponibilidade (quadrado)?',
+        'É o tempo de espera em que não tem de ficar no posto de trabalho '
+            'mas tem de estar pronto a arrancar, e cuja duração já sabia '
+            'antes: espera para carregar com hora marcada, espera em '
+            'fronteira ou ferry, e o tempo ao lado do colega com o caminhão '
+            'a andar. Não é pausa nem descanso.',
+        'Diretiva 2002/15/CE, art. 3.º, al. b)',
+        ['o que e disponibilidade', 'disponibilidade', 'tempo de espera',
+          'esperar para carregar']),
+    Faq('Tenho de marcar o país no tacógrafo?',
+        'Sim: o país onde começa e o país onde acaba o trabalho do dia. E, '
+            'ao passar uma fronteira, o país onde entrou, na primeira '
+            'paragem possível na fronteira ou logo a seguir. Os '
+            'tacógrafos inteligentes da 2.ª versão registam a fronteira '
+            'sozinhos.',
+        '$_r165, art. 34.º, n.os 6 e 7',
+        ['pais', 'fronteira', 'marcar o pais', 'entrada no pais']),
+    Faq('O que é a entrada manual ao meter o cartão?',
+        'Ao inserir o cartão, o tacógrafo pergunta o que fez desde que o '
+            'tirou. Tem de indicar essas horas: descanso (cama), martelo ou '
+            'disponibilidade. Sem isso ficam períodos em branco, que podem '
+            'dar multa.',
+        '$_r165, art. 34.º, n.º 3',
+        ['entrada manual', 'meter o cartao', 'inserir o cartao',
+          'periodo em branco', 'atividade desconhecida']),
+    Faq('Como justifico férias, folgas ou baixa?',
+        'Ao voltar, ao inserir o cartão, registe esses dias como descanso '
+            '(cama) na entrada manual. Em alguns países e empresas usa-se '
+            'também a declaração de atividade, assinada pela empresa; '
+            'pergunte na sua.',
+        '$_r165, art. 34.º, n.º 3',
+        ['ferias', 'folga', 'baixa', 'doenca', 'declaracao de atividade',
+          'dias sem conduzir']),
+    Faq('Perdi o cartão ou foi roubado. Posso conduzir?',
+        'Pode, até 15 dias de calendário (ou mais, se for preciso para '
+            'levar o caminhão à base). Peça o cartão novo em 7 dias de '
+            'calendário; se foi roubado, participe à polícia do local. No '
+            'início e no fim de cada viagem imprima o talão, escreva o '
+            'nome e o número da carta ou do cartão e assine.',
+        '$_r165, art. 29.º e art. 35.º',
+        ['perdi o cartao', 'roubado', 'roubaram', 'cartao perdido',
+          'sem cartao']),
+    Faq('O cartão avariou ou não lê. O que faço?',
+        'É igual ao cartão perdido: pode conduzir até 15 dias de '
+            'calendário, pede a substituição em 7 dias e devolve o cartão '
+            'avariado. No início e no fim de cada viagem imprima o talão '
+            'com o nome, o número da carta ou do cartão e a assinatura.',
+        '$_r165, art. 29.º e art. 35.º',
+        ['cartao avariou', 'cartao avariado', 'nao le', 'cartao estragado',
+          'erro de cartao', 'cartao com defeito']),
+    Faq('Esqueci o cartão em casa. Posso conduzir?',
+        'Não. Os 15 dias sem cartão valem só para cartão perdido, roubado '
+            'ou avariado. Conduzir sem o cartão por esquecimento é infração '
+            'grave.',
+        '$_r165, art. 27.º e art. 29.º',
+        ['esqueci o cartao', 'cartao em casa', 'esquecimento']),
+    Faq('Quando tenho de renovar o cartão?',
+        'O cartão vale 5 anos. Peça a renovação pelo menos 15 dias úteis '
+            'antes de acabar a validade. Com o cartão caducado não pode '
+            'conduzir.',
+        '$_r165, art. 28.º',
+        ['renovar', 'renovacao', 'validade do cartao', 'caducado',
+          'caduca', '5 anos']),
+    Faq('O tacógrafo avariou na viagem. O que faço?',
+        'Anote à mão as atividades (condução, martelo, pausas, descanso) '
+            'num talão ou numa folha, com o nome, o número do cartão e a '
+            'assinatura. A empresa tem de mandar reparar numa oficina '
+            'autorizada; se não der para voltar à base numa semana, a '
+            'reparação é feita em viagem.',
+        '$_r165, art. 37.º',
+        ['tacografo avariou', 'tacografo avariado', 'tacografo parou',
+          'reparar', 'oficina']),
+    Faq('Posso usar o cartão de outro motorista?',
+        'Nunca. O cartão é pessoal. Usar o cartão de outro, ou ter mais de '
+            'um cartão, é das infrações mais graves e pode ser crime.',
+        '$_r165, art. 27.º',
+        ['cartao de outro', 'cartao do colega', 'cartao emprestado',
+          'dois cartoes']),
+    Faq('De quanto em quanto tempo a empresa descarrega o cartão?',
+        'O cartão do motorista, no máximo a cada 28 dias; o tacógrafo do '
+            'veículo, no máximo a cada 90 dias. A empresa guarda os dados '
+            'pelo menos 1 ano.',
+        'Reg. (UE) n.º 581/2010; Reg. 561/2006, art. 10.º',
+        ['descarregar', 'descarrega', 'download', 'baixar o cartao',
+          '90 dias', 'leitura do cartao']),
+    Faq('Ir de carro buscar o caminhão conta como quê?',
+        'Se o caminhão não está em casa nem na base, o tempo de viagem até '
+            'ele não é descanso nem pausa. Se for você a conduzir o carro, '
+            'conta como martelo (outros trabalhos); registe na entrada '
+            'manual ao meter o cartão.',
+        '$_r561, art. 9.º, n.os 2 e 3',
+        ['buscar o caminhao', 'ir de carro', 'viagem de carro',
+          'deslocacao ate o caminhao']),
+    Faq('Que veículos têm de cumprir a lei do tacógrafo?',
+        'Veículos de mercadorias com mais de 3,5 toneladas (com reboque). '
+            'Desde 1 de julho de 2026 também os de mais de 2,5 toneladas em '
+            'transporte internacional ou cabotagem por conta de outrem.',
+        '$_r561, art. 2.º',
+        ['que veiculos', 'quais veiculos', '3,5 toneladas', '2,5 toneladas',
+          'carrinha', 'furgao', 'toneladas']),
+    Faq('Qual é o valor das multas?',
+        'Muda de país para país, e depende da gravidade (leve, grave, muito '
+            'grave). O TacoGuard não tem os valores. Em vários países a '
+            'multa é cobrada na hora ao motorista estrangeiro.',
+        'Diretiva 2006/22/CE',
+        ['multa', 'multas', 'coima', 'valor', 'quanto pago']),
+  ]),
+
+  // --------------------------------------------------- Tempo de trabalho
+  FaqGroup('Tempo de trabalho (martelo)', Icons.construction_rounded, [
+    Faq('Quanto tempo posso trabalhar sem pausa (martelo)?',
+        'Não mais de 6 horas seguidas de trabalho sem pausa. De 6 a 9 horas '
+            'de trabalho: 30 minutos de pausa; mais de 9 horas: 45 minutos. '
+            'Podem ser divididas em partes de pelo menos 15 minutos.',
+        'Diretiva 2002/15/CE, art. 5.º',
+        ['trabalhar sem pausa', '6 horas', 'seis horas seguidas']),
+    Faq('Quantas horas posso trabalhar por semana?',
+        'Em média 48 horas por semana (condução + martelo + '
+            'carga/descarga). Numa semana pode chegar a 60 horas, desde que '
+            'a média de 4 meses não passe de 48.',
+        'Diretiva 2002/15/CE, art. 4.º',
+        ['trabalhar por semana', '48 horas', '60 horas', 'horas de trabalho',
+          'media']),
+    Faq('O martelo conta para as 9 horas de condução?',
+        'Não. As 9 (ou 10) horas são só de condução. Mas o martelo conta '
+            'para o tempo de trabalho (48/60 horas), para as 6 horas sem '
+            'pausa e para a amplitude.',
+        '$_r561, art. 6.º; Diretiva 2002/15/CE',
+        ['martelo conta para', 'conta para as 9', 'soma na conducao']),
+    Faq('Carga e descarga contam como trabalho?',
+        'Sim. Carregar, descarregar, ajudar, vigiar a carga, limpar, '
+            'abastecer e tratar de papéis é trabalho (martelo). No '
+            'TacoGuard aparece separado como Carga/Descarga, mas soma como '
+            'trabalho.',
+        'Diretiva 2002/15/CE, art. 3.º, al. a)',
+        ['carga e descarga', 'carregar', 'descarregar', 'abastecer',
+          'limpar', 'lavar']),
+    Faq('Como é com trabalho noturno?',
+        'Se fizer trabalho no período noturno, o tempo de trabalho não pode '
+            'passar de 10 horas em cada 24 horas. O período noturno é '
+            'definido pela lei de cada país (pelo menos 4 horas entre as '
+            '00:00 e as 7:00).',
+        'Diretiva 2002/15/CE, art. 7.º',
+        ['noturno', 'noite', 'madrugada', 'trabalho de noite']),
+  ]),
+
+  // ----------------------------------------- Dois motoristas, ferry, etc.
+  FaqGroup('Dois motoristas e ferry', Icons.groups_rounded, [
+    Faq('E com dois motoristas?',
+        'Cada um faz um descanso diário de pelo menos 9 horas dentro das '
+            '30 horas depois do descanso anterior. Os limites de condução '
+            '(4h30, 9/10 h, 56 h, 90 h) são iguais para cada um.',
+        '$_r561, art. 8.º, n.º 5',
+        ['dois motoristas', 'dupla', 'tripulacao', 'equipe', '30 horas',
+          'dupla tripulacao']),
+    Faq('Com dois motoristas, qual é a amplitude?',
+        'Até 21 horas (30 horas menos as 9 de descanso). Na primeira hora o '
+            'segundo motorista pode ainda não estar a bordo; depois disso '
+            'tem de estar.',
+        '$_r561, art. 4.º, al. o), e art. 8.º, n.º 5',
+        ['21 horas', 'amplitude dupla', 'amplitude com dois']),
+    Faq('Com dois motoristas, a pausa pode ser com o caminhão a andar?',
+        'Pode. O motorista que vai ao lado pode fazer a pausa de 45 minutos '
+            'com o caminhão a andar, desde que não ajude quem conduz. O '
+            'descanso diário não: tem de ser com o veículo parado.',
+        '$_r561, art. 7.º',
+        ['pausa a andar', 'caminhao a andar', 'ao lado', 'passageiro',
+          'colega a conduzir']),
+    Faq('E no ferry ou no comboio?',
+        'O descanso diário regular ou o semanal reduzido podem ser '
+            'interrompidos no máximo 2 vezes, somando até 1 hora, para '
+            'embarcar e desembarcar, com acesso a cama. No descanso semanal '
+            'regular isso só vale se a travessia durar 8 horas ou mais e '
+            'houver camarote.',
+        '$_r561, art. 9.º',
+        ['ferry', 'barco', 'comboio', 'trem', 'balsa', 'travessia',
+          'embarcar']),
+  ]),
+
+  // ----------------------------------------------------------------- App
+  FaqGroup('Como usar o TacoGuard', Icons.phone_android_rounded, [
+    Faq('Como começo a jornada no TacoGuard?',
+        'Na tela Hoje, toque em Iniciar jornada. O início é sempre manual, '
+            'para o app não abrir a jornada sozinho quando anda de carro. '
+            'Depois disso o GPS faz o resto.',
+        _app,
+        ['comeco a jornada', 'iniciar jornada', 'abrir a jornada',
+          'comecar o dia']),
+    Faq('Como o TacoGuard sabe que parei?',
+        'Pelo GPS. Depois de alguns minutos parado (você escolhe o tempo em '
+            'Ajustes) ele grava o local e pergunta: Pausa, Martelo ou '
+            'Carga/Descarga. Sem resposta, a parada fica "a classificar" e '
+            'conta como pausa até você corrigir.',
+        _app,
+        ['sabe que parei', 'gps', 'classificar', 'detecta']),
+    Faq('O pop-up da parada não aparece. O que faço?',
+        'Em Ajustes, libere "Sobrepor a outros apps" e deixe a bateria '
+            '"Sem restrições". Confira também se a localização está em '
+            '"Permitir o tempo todo". Enquanto isso, responda pelo cartão '
+            '"Parado há…" na tela Hoje.',
+        _app,
+        ['pop-up', 'popup', 'nao aparece', 'nao apareceu', 'janela',
+          'sobrepor']),
+    Faq('Vou almoçar de carro. Como faço?',
+        'Com o caminhão parado, toque em "Vou sair de carro" antes de sair. '
+            'O trajeto de carro não conta como condução e a pausa continua. '
+            'Ao voltar para perto do caminhão o app retoma sozinho.',
+        _app,
+        ['almocar', 'sair de carro', 'vou sair', 'de carro', 'boleia']),
+    Faq('Encerrei a jornada e surgiu outra viagem. E agora?',
+        'Na tela Hoje, toque em Reabrir a jornada. Dá para reabrir enquanto '
+            'o descanso não chegou a 9 horas. A amplitude continua a contar '
+            'desde o início original.',
+        _app,
+        ['reabrir', 'encerrei', 'fechei a jornada', 'ultima hora',
+          'por engano']),
+    Faq('Como corrijo uma parada marcada errada?',
+        'Em Histórico, abra a jornada e toque no trecho. Pode trocar o tipo '
+            '(condução, pausa, martelo, carga/descarga) e escrever o nome '
+            'do local.',
+        _app,
+        ['corrijo', 'corrigir', 'marcada errada', 'trocar o tipo',
+          'editar']),
+    Faq('Como faço o relatório em PDF?',
+        'Na tela Relatórios escolha Diário, Semanal, Bissemanal ou Mensal, '
+            'ande com as setas até a data e toque em Abrir PDF, Salvar ou '
+            'Compartilhar. O nome do motorista e a matrícula saem no '
+            'cabeçalho.',
+        _app,
+        ['relatorio', 'pdf', 'imprimir relatorio', 'mensal']),
+    Faq('Onde coloco o meu nome e a matrícula?',
+        'Em Ajustes > Relatórios. Os dois saem no cabeçalho dos PDF e vão '
+            'no backup.',
+        _app,
+        ['matricula', 'meu nome', 'nome do motorista', 'placa']),
+    Faq('Como faço e restauro o backup?',
+        'Em Ajustes > Backup: Salvar guarda um arquivo no telefone, '
+            'Compartilhar manda por WhatsApp, e-mail ou Drive, e Restaurar '
+            'backup traz tudo de volta (substitui o que está no app).',
+        _app,
+        ['backup', 'restaurar', 'copia de seguranca', 'trocar de telefone',
+          'perder os dados']),
+    Faq('Como atualizo o TacoGuard?',
+        'O app avisa quando há versão nova. Também pode ir em Ajustes > '
+            'Sobre > Procurar atualização. As jornadas e as configurações '
+            'continuam.',
+        _app,
+        ['atualizo', 'atualizar', 'atualizacao', 'versao nova',
+          'nova versao']),
+    Faq('Os quilômetros do app batem com o hodômetro?',
+        'Quase. Os km são medidos pelo GPS e costumam diferir 1 a 3% do '
+            'hodômetro. O trajeto no modo "de carro" não entra na conta.',
+        _app,
+        ['quilometros', 'km', 'hodometro', 'distancia']),
+    Faq('O GPS para quando a tela apaga?',
+        'Não deve parar. Para o celular não cortar o GPS, em Ajustes toque '
+            'em Abrir ajustes de bateria e deixe o TacoGuard "Sem '
+            'restrições".',
+        _app,
+        ['tela apaga', 'tela apagada', 'bateria', 'gps para',
+          'sem restricoes']),
+    Faq('O TacoGuard substitui o tacógrafo?',
+        'Não. É um auxiliar para o motorista se organizar. O registo '
+            'oficial é o do tacógrafo e do cartão, e pode haver diferenças '
+            'de alguns minutos entre os dois.',
+        _app,
+        ['substitui', 'oficial', 'vale na fiscalizacao', 'diferenca']),
+  ]),
 ];
+
+/// Todas as perguntas prontas, na ordem dos grupos.
+final List<Faq> kFaq = [for (final g in kFaqGroups) ...g.items];
+
+const _stop = {
+  'que', 'como', 'para', 'posso', 'pode', 'quanto', 'quantas', 'quantos',
+  'uma', 'com', 'por', 'dos', 'das', 'nos', 'nas', 'tenho', 'ser', 'mais',
+  'hora', 'horas', 'tempo', 'fazer', 'faco', 'qual', 'quando', 'the', 'meu',
+  'minha', 'isso', 'esta', 'esse', 'nao', 'sim', 'tem', 'ter', 'foi',
+};
+
+/// Normaliza e troca sinónimos (dirigir = conduzir, parque = park...).
+String _n(String s) => norm(s)
+    .replaceAll('dirigir', 'conduzir')
+    .replaceAll('guiar', 'conduzir')
+    .replaceAll('parque', 'park')
+    .replaceAll('ticket', 'talao')
+    .replaceAll('camiao', 'caminhao')
+    .replaceAll('camioes', 'caminhoes');
+
+List<String> _words(String s) => _n(s)
+    .split(RegExp(r'[^a-z0-9]+'))
+    .where((w) => w.length >= 3 && !_stop.contains(w))
+    .toList();
+
+/// Pontos de [f] para a pergunta já normalizada [q].
+int _faqScore(Faq f, String q, List<String> qWords) {
+  var score = 0;
+  for (final k in f.keys) {
+    if (q.contains(_n(k))) score += k.length > 4 ? 3 : 1;
+  }
+  final fw = _words(f.q).toSet();
+  for (final w in qWords) {
+    if (fw.contains(w)) score += 1;
+  }
+  return score;
+}
 
 /// Melhor resposta pronta para [question], ou null.
 Faq? faqMatch(String question) {
-  final q = norm(question);
+  final q = _n(question).trim();
+  for (final f in kFaq) {
+    if (_n(f.q).trim() == q) return f; // tocou numa pergunta da lista
+  }
+  final qw = _words(q);
   Faq? best;
   var bestScore = 0;
   for (final f in kFaq) {
-    var score = 0;
-    for (final k in f.keys) {
-      if (q.contains(norm(k))) score += k.length > 4 ? 2 : 1;
-    }
+    final score = _faqScore(f, q, qw);
     if (score > bestScore) {
       bestScore = score;
       best = f;
     }
   }
   return bestScore >= 2 ? best : null;
+}
+
+/// Perguntas prontas que combinam com o que está a ser escrito.
+List<Faq> faqFilter(String text) {
+  final q = _n(text).trim();
+  final qw = _words(q);
+  if (qw.isEmpty) return kFaq;
+  final scored = <(int, Faq)>[];
+  for (final f in kFaq) {
+    final s = _faqScore(f, q, qw);
+    if (s > 0) scored.add((s, f));
+  }
+  scored.sort((a, b) => b.$1.compareTo(a.$1));
+  return [for (final x in scored) x.$2];
 }
 
 /// Chave do Gemini embutida no build (segredo GEMINI_API_KEY do GitHub).
@@ -257,10 +920,17 @@ class _AssistantPageState extends State<AssistantPage> {
     if (f != null) {
       _msgs.add(_Msg(f.a, false, ref: f.ref, tag: 'Offline'));
     } else {
-      _msgs.add(const _Msg(
-          'Não encontrei essa resposta nas perguntas prontas. Veja o menu '
-          '"Lei" ou tente com outras palavras (ex.: pausa, descanso, '
-          'amplitude, semana).',
+      final all = faqFilter(q);
+      final near =
+          identical(all, kFaq) ? <Faq>[] : all.take(3).toList();
+      _msgs.add(_Msg(
+          near.isEmpty
+              ? 'Não encontrei essa resposta nas perguntas prontas. Veja o '
+                  'menu "Lei" ou tente com outras palavras (ex.: pausa, '
+                  'descanso, amplitude, talão, park, cartão).'
+              : 'Não encontrei uma resposta certa. Perguntas parecidas:\n'
+                  '${near.map((f) => '• ${f.q}').join('\n')}\n\n'
+                  'Toque em "Nova consulta" para ver a lista completa.',
           false,
           tag: 'Offline'));
     }
@@ -340,6 +1010,60 @@ class _AssistantPageState extends State<AssistantPage> {
     );
   }
 
+  Widget _faqCard(Faq f) => Padding(
+        padding: const EdgeInsets.only(bottom: 8),
+        child: TCard(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          onTap: () => _send(f.q),
+          child: Row(children: [
+            Expanded(child: Text(f.q, style: const TextStyle(fontSize: 15))),
+            const Icon(Icons.chevron_right_rounded, color: TG.muted),
+          ]),
+        ),
+      );
+
+  /// Perguntas prontas: por assunto, ou filtradas pelo que está escrito.
+  List<Widget> _faqList() {
+    final typed = _ctrl.text.trim();
+    if (typed.length >= 3) {
+      final found = faqFilter(typed);
+      return [
+        Text(
+            found.isEmpty
+                ? 'Nenhuma pergunta pronta com essas palavras. Toque em '
+                    'enviar para procurar na lei.'
+                : 'Perguntas prontas sobre "$typed"',
+            style: const TextStyle(
+                color: TG.muted, fontWeight: FontWeight.w700)),
+        const SizedBox(height: 8),
+        for (final f in found.take(12)) _faqCard(f),
+      ];
+    }
+    return [
+      Text('${kFaq.length} perguntas prontas, sem internet. Toque numa ou '
+          'escreva abaixo para procurar.',
+          style: const TextStyle(color: TG.muted, fontSize: 13)),
+      const SizedBox(height: 4),
+      for (final g in kFaqGroups) ...[
+        Padding(
+          padding: const EdgeInsets.fromLTRB(2, 12, 2, 8),
+          child: Row(children: [
+            Icon(g.icon, size: 18, color: TG.accent),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(g.title,
+                  style: const TextStyle(
+                      color: TG.accent,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w800)),
+            ),
+          ]),
+        ),
+        for (final f in g.items) _faqCard(f),
+      ],
+    ];
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -351,12 +1075,12 @@ class _AssistantPageState extends State<AssistantPage> {
               const ButtonSegment(
                   value: false,
                   icon: Icon(Icons.offline_bolt_rounded),
-                  label: Text('Offline')),
+                  label: Fit('Offline')),
               ButtonSegment(
                   value: true,
                   enabled: aiAvailable,
                   icon: const Icon(Icons.auto_awesome_rounded),
-                  label: Text(aiAvailable ? 'IA' : 'IA (sem chave)')),
+                  label: Fit(aiAvailable ? 'IA' : 'IA (sem chave)')),
             ],
             selected: {_useAi},
             onSelectionChanged: (s) => setState(() => _useAi = s.first),
@@ -366,28 +1090,7 @@ class _AssistantPageState extends State<AssistantPage> {
           child: _msgs.isEmpty
               ? ListView(
                   padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-                  children: [
-                    const Text('Perguntas frequentes',
-                        style: TextStyle(
-                            color: TG.muted, fontWeight: FontWeight.w700)),
-                    const SizedBox(height: 8),
-                    for (final f in kFaq)
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 8),
-                        child: TCard(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 14, vertical: 12),
-                          onTap: () => _send(f.q),
-                          child: Row(children: [
-                            Expanded(
-                                child: Text(f.q,
-                                    style: const TextStyle(fontSize: 15))),
-                            const Icon(Icons.chevron_right_rounded,
-                                color: TG.muted),
-                          ]),
-                        ),
-                      ),
-                  ],
+                  children: _faqList(),
                 )
               : ListView(
                   controller: _scroll,
@@ -431,9 +1134,12 @@ class _AssistantPageState extends State<AssistantPage> {
                 child: TextField(
                   controller: _ctrl,
                   textInputAction: TextInputAction.send,
+                  onChanged: (_) {
+                    if (_msgs.isEmpty) setState(() {});
+                  },
                   onSubmitted: (_) => _send(),
                   decoration: const InputDecoration(
-                      hintText: 'Pergunte sobre a lei do tacógrafo'),
+                      hintText: 'Pergunte sobre a lei'),
                 ),
               ),
               const SizedBox(width: 8),

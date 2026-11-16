@@ -148,3 +148,25 @@ class TCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(20), onTap: onTap, child: box);
   }
 }
+
+/// Texto de uma linha que encolhe para caber (botões, abas, números).
+/// Evita palavras partidas ao meio quando a letra do telefone é grande.
+class Fit extends StatelessWidget {
+  final String text;
+  final TextStyle? style;
+  final Alignment alignment;
+  const Fit(this.text,
+      {super.key, this.style, this.alignment = Alignment.center});
+
+  @override
+  Widget build(BuildContext context) => FittedBox(
+        fit: BoxFit.scaleDown,
+        alignment: alignment,
+        child: Text(text, maxLines: 1, softWrap: false, style: style),
+      );
+}
+
+/// Limita o aumento de letra do sistema, para as telas não desmontarem.
+Widget clampTextScale(BuildContext context, Widget? child) =>
+    MediaQuery.withClampedTextScaling(
+        maxScaleFactor: 1.3, child: child ?? const SizedBox.shrink());

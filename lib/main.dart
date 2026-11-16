@@ -25,6 +25,7 @@ void overlayMain() {
   runApp(MaterialApp(
     debugShowCheckedModeBanner: false,
     theme: TG.theme(),
+    builder: clampTextScale,
     home: const StopPopupWindow(),
   ));
 }
@@ -47,6 +48,7 @@ class TacoApp extends StatelessWidget {
         title: 'TacoGuard',
         debugShowCheckedModeBanner: false,
         theme: TG.theme(),
+        builder: clampTextScale,
         home: const SplashScreen(next: HomeShell()),
       );
 }
@@ -533,7 +535,7 @@ class _TodayPageState extends State<TodayPage> {
             child: FilledButton.icon(
               onPressed: _start,
               icon: const Icon(Icons.play_arrow_rounded, size: 30),
-              label: const Text('Iniciar jornada',
+              label: const Fit('Iniciar jornada',
                   style: TextStyle(fontSize: 19, fontWeight: FontWeight.w800)),
             ),
           ),
@@ -545,7 +547,7 @@ class _TodayPageState extends State<TodayPage> {
               child: OutlinedButton.icon(
                 onPressed: () => _reopen(_t.reopenable!),
                 icon: const Icon(Icons.replay_rounded),
-                label: Text(
+                label: Fit(
                     'Reabrir a jornada das ${fmtTime(_t.reopenable!.start)}',
                     style: const TextStyle(
                         fontSize: 15, fontWeight: FontWeight.w700)),
@@ -740,7 +742,7 @@ class _TodayPageState extends State<TodayPage> {
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16))),
             icon: const Icon(Icons.directions_car_rounded),
-            label: const Text('Vou sair de carro (o caminhão fica parado)'),
+            label: const Fit('Vou sair de carro'),
           ),
         ),
       ],
@@ -932,7 +934,7 @@ class _TodayPageState extends State<TodayPage> {
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(18))),
           icon: const Icon(Icons.stop_rounded),
-          label: const Text('Encerrar jornada',
+          label: const Fit('Encerrar jornada',
               style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800)),
         ),
       ),

@@ -311,15 +311,22 @@ class _Mini extends StatelessWidget {
   const _Mini(this.label, this.value, this.color);
   @override
   Widget build(BuildContext context) => Expanded(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(value,
-                style: TextStyle(
-                    color: color, fontSize: 16, fontWeight: FontWeight.w800)),
-            Text(label,
-                style: const TextStyle(color: TG.muted, fontSize: 11.5)),
-          ],
+        child: Padding(
+          padding: const EdgeInsets.only(right: 6),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Fit(value,
+                  alignment: Alignment.centerLeft,
+                  style: TextStyle(
+                      color: color,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w800)),
+              Fit(label,
+                  alignment: Alignment.centerLeft,
+                  style: const TextStyle(color: TG.muted, fontSize: 11.5)),
+            ],
+          ),
         ),
       );
 }
@@ -623,7 +630,7 @@ class _ReportsPageState extends State<ReportsPage> {
             for (final k in ReportKind.values)
               ButtonSegment(
                   value: k,
-                  label: Text(reportName(k),
+                  label: Fit(reportName(k),
                       style: const TextStyle(fontSize: 12.5))),
           ],
           selected: {_kind},
@@ -671,7 +678,7 @@ class _ReportsPageState extends State<ReportsPage> {
           child: FilledButton.icon(
             onPressed: _busy ? null : _open,
             icon: const Icon(Icons.picture_as_pdf_rounded),
-            label: Text(_busy ? 'Gerando...' : 'Abrir PDF',
+            label: Fit(_busy ? 'Gerando...' : 'Abrir PDF',
                 style:
                     const TextStyle(fontSize: 17, fontWeight: FontWeight.w800)),
           ),
@@ -684,7 +691,7 @@ class _ReportsPageState extends State<ReportsPage> {
               child: OutlinedButton.icon(
                 onPressed: _busy ? null : _save,
                 icon: const Icon(Icons.save_alt_rounded),
-                label: const Text('Salvar no telefone'),
+                label: const Fit('Salvar'),
               ),
             ),
           ),
@@ -695,7 +702,7 @@ class _ReportsPageState extends State<ReportsPage> {
               child: OutlinedButton.icon(
                 onPressed: _busy ? null : _share,
                 icon: const Icon(Icons.share_rounded),
-                label: const Text('Compartilhar'),
+                label: const Fit('Compartilhar'),
               ),
             ),
           ),
@@ -897,7 +904,7 @@ class _SettingsPageState extends State<SettingsPage> {
                       await _load();
                     },
                     icon: const Icon(Icons.layers_rounded),
-                    label: const Text('Liberar "Sobrepor a outros apps"'),
+                    label: const Fit('Liberar "Sobrepor a outros apps"'),
                   ),
                 ),
               SwitchListTile(
@@ -927,7 +934,7 @@ class _SettingsPageState extends State<SettingsPage> {
               OutlinedButton.icon(
                 onPressed: _battery,
                 icon: const Icon(Icons.battery_saver_rounded),
-                label: const Text('Abrir ajustes de bateria'),
+                label: const Fit('Abrir ajustes de bateria'),
               ),
             ],
           ),
@@ -967,7 +974,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 child: OutlinedButton.icon(
                   onPressed: _backupSave,
                   icon: const Icon(Icons.save_alt_rounded),
-                  label: const Text('Salvar'),
+                  label: const Fit('Salvar'),
                 ),
               ),
               const SizedBox(width: 10),
@@ -975,7 +982,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 child: OutlinedButton.icon(
                   onPressed: _backupShare,
                   icon: const Icon(Icons.share_rounded),
-                  label: const Text('Compartilhar'),
+                  label: const Fit('Compartilhar'),
                 ),
               ),
             ]),
@@ -985,7 +992,7 @@ class _SettingsPageState extends State<SettingsPage> {
               child: OutlinedButton.icon(
                 onPressed: _restore,
                 icon: const Icon(Icons.restore_rounded),
-                label: const Text('Restaurar backup'),
+                label: const Fit('Restaurar backup'),
               ),
             ),
           ]),
@@ -1021,7 +1028,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 child: OutlinedButton.icon(
                   onPressed: () => UpdateService.manualCheck(context),
                   icon: const Icon(Icons.system_update_rounded),
-                  label: const Text('Procurar atualização'),
+                  label: const Fit('Procurar atualização'),
                 ),
               ),
               const SizedBox(height: 10),

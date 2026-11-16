@@ -102,9 +102,38 @@ const List<LawTopic> kLaw = [
     'Pode conduzir até 2 horas a mais para fazer o descanso semanal '
         'regular em casa ou na base, desde que faça antes uma pausa de '
         '30 minutos seguidos.',
+    'A hora ou as 2 horas a mais valem para a condução diária e semanal. '
+        'O limite de 90 horas em duas semanas não pode ser passado.',
+    'A hora ou as 2 horas a mais servem só para ir fazer o descanso '
+        'semanal em casa ou na base. Num dia normal só pode passar o '
+        'necessário para chegar a um local de paragem seguro.',
     'Tem de escrever o motivo à mão no talão (impressão) do tacógrafo, o '
-        'mais tardar ao chegar. O tempo a mais é compensado com descanso '
-        'até o fim da 3.ª semana seguinte.',
+        'mais tardar ao chegar. A hora ou as 2 horas a mais são '
+        'compensadas com o mesmo tempo de descanso, de uma só vez, junto a '
+        'outro descanso, até o fim da 3.ª semana seguinte.',
+    'É uma exceção para o que não dava para prever (park cheio, acidente, '
+        'estrada cortada, mau tempo). Não serve para viagem mal planeada '
+        'nem pode ser usada sempre; o agente avalia caso a caso.',
+  ]),
+  LawTopic('Como anotar no talão quando passa do tempo',
+      'Reg. 561/2006, art. 12.º (procedimento)', Icons.receipt_long_rounded, [
+    '1. Siga só até o primeiro local de paragem adequado e seguro (park, '
+        'área de serviço, zona industrial). Não pare em sítio perigoso.',
+    '2. Logo ao parar, imprima o talão do dia: menu do tacógrafo, '
+        'Impressão > Condutor 1 > Dia (24 h).',
+    '3. Atrás do talão escreva à mão o motivo. Exemplo: "Park da A1 km 120 '
+        'cheio, sem lugar seguro. Segui até a área de serviço seguinte."',
+    '4. Escreva também o local onde parou, a data e a hora de chegada.',
+    '5. Escreva a lei: "Art. 12.º do Regulamento (CE) n.º 561/2006".',
+    '6. Ponha o nome e assine.',
+    '7. Faça a pausa ou o descanso completo. Guarde o talão: pode ser '
+        'pedido na estrada no próprio dia e nos 56 dias seguintes; depois '
+        'entregue à empresa.',
+    'A lei obriga a escrever o motivo; o local, a hora, o artigo e a '
+        'assinatura são boa prática para não haver dúvida na fiscalização.',
+    'Para chegar a casa ou à base com a hora (ou as 2 horas) a mais o '
+        'procedimento é o mesmo: talão impresso ao chegar, motivo atrás e '
+        'assinatura.',
   ]),
   LawTopic('Tempo de trabalho', 'Diretiva 2002/15/CE',
       Icons.construction_rounded, [
