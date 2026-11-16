@@ -41,6 +41,14 @@ class Tracker extends ChangeNotifier {
   String? gpsError;
 
   DateTime? _stopSince; // parado desde (candidato a parada)
+  double? _stopLat, _stopLon; // onde parou
+
+  /// Parado desde quando (ainda contando para virar parada), ou null.
+  DateTime? get stoppedSince => currentAct == Act.drive ? _stopSince : null;
+
+  /// GPS sem leitura boa há mais de 20 s.
+  bool get gpsStale =>
+      lastFix == null || DateTime.now().difference(lastFix!).inSeconds > 20;
   DateTime? _moveSince; // andando desde (candidato a arranque)
   final List<(DateTime, double, double)> _hist = [];
 
@@ -323,33 +331,73 @@ class Tracker extends ChangeNotifier {
     final still = _isStill(p, now);
     speedKmh = still ? 0 : p.speed * 3.6;
     _motion(still, speedKmh, now);
+    notifyListeners();
+  }
+
+  /// Distância (m) da posição atual até um ponto, ou null se não há GPS.
+  double? _distTo(double? la, double? lo) {
+    if (la == null || lo == null || lat == null || lon == null) return null;
+    return Geolocator.distanceBetween(la, lo, lat!, lon!);
   }
 
   /// Máquina de estados parado/andando.
+  ///
+  /// 1.0.1: parado, o GPS do celular "pula" e às vezes marca velocidade.
+  /// Antes, cada pulo zerava a contagem da parada e o pop-up não aparecia.
+  /// Agora a contagem só é cancelada se o caminhão sair de verdade do lugar
+  /// (mais de 40 m), e o arranque só vale se ele se afastar 30 m da parada.
   void _motion(bool still, double kmh, DateTime now) {
     final c = current;
     if (c == null) return;
     final act = currentAct;
-    if (still) {
+    if (act == Act.drive) {
       _moveSince = null;
-      if (act == Act.drive) {
-        _stopSince ??= now;
-        if (now.difference(_stopSince!) >= Duration(minutes: stopMinutes)) {
-          _beginStop(_stopSince!);
+      if (still) {
+        if (_stopSince == null) {
+          _stopSince = now;
+          _stopLat = lat;
+          _stopLon = lon;
         }
+      } else if (_stopSince != null && kmh >= 8) {
+        final d = _distTo(_stopLat, _stopLon);
+        if (d == null || d > 40) _stopSince = null;
       }
-    } else if (kmh >= 8) {
+      if (_stopSince != null &&
+          now.difference(_stopSince!) >= Duration(minutes: stopMinutes)) {
+        _beginStop(_stopSince!);
+      }
+    } else {
       _stopSince = null;
-      if (act != Act.drive) {
+      if (!still && kmh >= 8) {
         _moveSince ??= now;
-        // 6 s andando de verdade = arrancou (não é manobra de 1 metro).
-        if (now.difference(_moveSince!).inSeconds >= 6) {
+        final seg = currentSegment;
+        final d = _distTo(seg?.lat, seg?.lon);
+        // 6 s andando e já longe do ponto da parada = arrancou.
+        if (now.difference(_moveSince!).inSeconds >= 6 &&
+            (d == null || d > 30)) {
           final at = _moveSince!;
           onAskCancel?.call();
           setAct(Act.drive, at: at);
         }
+      } else if (still) {
+        _moveSince = null;
       }
     }
+  }
+
+  /// O motorista respondeu antes de o pop-up aparecer (cartão "Parado há…"
+  /// da tela Hoje): fecha a condução no instante em que parou.
+  void stopNow(Act a) {
+    final c = current;
+    final s = currentSegment;
+    if (c == null || s == null || s.act != Act.drive) return;
+    final since = _stopSince ?? DateTime.now();
+    s.end = since;
+    c.segments.add(Segment(
+        act: a, start: since, lat: _stopLat ?? lat, lon: _stopLon ?? lon));
+    _stopSince = null;
+    save();
+    notifyListeners();
   }
 
   /// O caminhão parou há [stopMinutes]: fecha a condução no instante em
@@ -359,7 +407,11 @@ class Tracker extends ChangeNotifier {
     final s = currentSegment;
     if (c == null || s == null) return;
     s.end = since;
-    final seg = Segment(act: Act.unknown, start: since, lat: lat, lon: lon);
+    final seg = Segment(
+        act: Act.unknown,
+        start: since,
+        lat: _stopLat ?? lat,
+        lon: _stopLon ?? lon);
     c.segments.add(seg);
     _stopSince = null;
     save();
@@ -375,9 +427,8 @@ class Tracker extends ChangeNotifier {
     final c = current;
     if (c == null) return;
     // Sem leitura há 20 s (garagem, túnel): se vinha devagar, está parado.
-    if (lastFix != null &&
-        now.difference(lastFix!).inSeconds > 20 &&
-        speedKmh < 15) {
+    // 1.0.1: vale também quando o GPS ainda não deu nenhuma leitura boa.
+    if (gpsStale && speedKmh < 15) {
       speedKmh = 0;
       _motion(true, 0, now);
     }

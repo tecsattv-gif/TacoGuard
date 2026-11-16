@@ -54,6 +54,7 @@ Segredos do repositório (Settings > Secrets and variables > Actions):
 
 ## Versões
 
+- **1.0.1**: a parada não era detectada quando o GPS "pulava" com o caminhão parado (o pop-up não aparecia); agora só conta como arranque se o caminhão sair do lugar. Novo cartão "Parado há…" na tela Hoje, para responder antes do pop-up. Aviso de GPS sem sinal. Cartões da tela Hoje alinhados.
 - **1.0.0**: primeira versão.
 
 Desenvolvido por Luiz Alberto Cardoso.

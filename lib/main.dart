@@ -514,6 +514,9 @@ class _TodayPageState extends State<TodayPage> {
         '${fmtDur(Limits.dailyRest - rest)} para 11 h';
   }
 
+  String _mmss(Duration d) =>
+      '${d.inMinutes}:${(d.inSeconds % 60).toString().padLeft(2, '0')}';
+
   // ---------- Jornada aberta ----------
   List<Widget> _open(Shift c, DateTime now) {
     final st = computeStatus(_t.shifts, c, now);
@@ -564,10 +567,14 @@ class _TodayPageState extends State<TodayPage> {
             Row(mainAxisSize: MainAxisSize.min, children: [
               Icon(
                   _t.gpsOn && _t.gpsError == null
-                      ? Icons.gps_fixed_rounded
+                      ? (_t.gpsStale
+                          ? Icons.gps_not_fixed_rounded
+                          : Icons.gps_fixed_rounded)
                       : Icons.gps_off_rounded,
                   size: 12,
-                  color: _t.gpsOn && _t.gpsError == null ? TG.ok : TG.danger),
+                  color: _t.gpsOn && _t.gpsError == null
+                      ? (_t.gpsStale ? TG.warn : TG.ok)
+                      : TG.danger),
               const SizedBox(width: 3),
               const Text('km/h',
                   style: TextStyle(color: TG.muted, fontSize: 11)),
@@ -575,6 +582,14 @@ class _TodayPageState extends State<TodayPage> {
           ]),
         ]),
       ),
+      if (_t.gpsError == null && _t.gpsOn && _t.gpsStale) ...[
+        const SizedBox(height: 10),
+        const _Banner(
+            icon: Icons.gps_not_fixed_rounded,
+            color: TG.warn,
+            text: 'Sem sinal de GPS no momento. Perto da janela ou do '
+                'para-brisa o sinal volta.'),
+      ],
       if (_t.gpsError != null) ...[
         const SizedBox(height: 10),
         _Banner(
@@ -583,6 +598,24 @@ class _TodayPageState extends State<TodayPage> {
             text: _t.gpsError!,
             action: 'Tentar',
             onAction: () => _t.startGps()),
+      ],
+      if (_t.stoppedSince != null &&
+          now.difference(_t.stoppedSince!).inSeconds >= 10) ...[
+        const SizedBox(height: 10),
+        TCard(
+          child: Column(children: [
+            Text('Parado há ${_mmss(now.difference(_t.stoppedSince!))}',
+                style:
+                    const TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
+            Text(
+                'Com ${_t.stopMinutes} min parado vira parada e o pop-up '
+                'aparece. Já pode responder:',
+                textAlign: TextAlign.center,
+                style: const TextStyle(color: TG.muted, fontSize: 12.5)),
+            const SizedBox(height: 10),
+            StopChoices(onPick: (a) => _t.stopNow(a)),
+          ]),
+        ),
       ],
       if (act == Act.unknown) ...[
         const SizedBox(height: 10),
@@ -637,17 +670,19 @@ class _TodayPageState extends State<TodayPage> {
           ),
           const SizedBox(height: 12),
           Text('Condução contínua: ${fmtDur(b.driven)} de 4h30',
+              textAlign: TextAlign.center,
               style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700)),
           const SizedBox(height: 2),
           Text(
               b.firstPartDone
                   ? '1ª parte (15 min) feita • falta a pausa de 30 min'
                   : 'Próxima pausa: 45 min (ou 15 + 30)',
+              textAlign: TextAlign.center,
               style: const TextStyle(color: TG.muted, fontSize: 13)),
         ]),
       ),
       const SizedBox(height: 12),
-      Row(children: [
+      _Pair(children: [
         Expanded(
             child: _Metric(
                 title: 'Condução hoje',
@@ -666,12 +701,12 @@ class _TodayPageState extends State<TodayPage> {
                 limit: st.amplitudeLimit,
                 mark: st.canExtendAmplitude ? Limits.amplitude : null,
                 note: st.canExtendAmplitude
-                    ? 'descansos de 9 h: ${st.reducedRestsUsed}/3'
+                    ? 'descansos 9 h: ${st.reducedRestsUsed}/3'
                     : 'limite 13 h (sem descanso reduzido)',
                 icon: Icons.timelapse_rounded)),
       ]),
       const SizedBox(height: 12),
-      Row(children: [
+      _Pair(children: [
         Expanded(
             child: _Metric(
                 title: 'Semana',
@@ -767,6 +802,18 @@ class _TodayPageState extends State<TodayPage> {
   }
 }
 
+/// Dois cartões lado a lado, da mesma altura.
+class _Pair extends StatelessWidget {
+  final List<Widget> children;
+  const _Pair({required this.children});
+  @override
+  Widget build(BuildContext context) => IntrinsicHeight(
+        child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: children),
+      );
+}
+
 class _Section extends StatelessWidget {
   final String text;
   const _Section(this.text);
@@ -842,12 +889,16 @@ class _Metric extends StatelessWidget {
             Icon(icon, size: 16, color: TG.muted),
             const SizedBox(width: 6),
             Expanded(
-              child: Text(title,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                      color: TG.muted,
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600)),
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
+                child: Text(title,
+                    maxLines: 1,
+                    style: const TextStyle(
+                        color: TG.muted,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600)),
+              ),
             ),
           ]),
           const SizedBox(height: 6),
@@ -864,31 +915,36 @@ class _Metric extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 8),
-          LayoutBuilder(builder: (ctx, box) {
-            final w = box.maxWidth;
-            return SizedBox(
-              height: 10,
-              child: Stack(children: [
-                Container(
+          SizedBox(
+            height: 10,
+            child: Stack(children: [
+              Positioned.fill(
+                child: DecoratedBox(
                   decoration: BoxDecoration(
                       color: TG.surfaceHigh,
                       borderRadius: BorderRadius.circular(6)),
                 ),
-                Container(
-                  width: w * used.clamp(0.0, 1.0),
-                  decoration: BoxDecoration(
-                      color: color, borderRadius: BorderRadius.circular(6)),
-                ),
-                if (mark != null)
-                  Positioned(
-                    left: w * (mark!.inSeconds / limit.inSeconds) - 1,
-                    top: 0,
-                    bottom: 0,
-                    child: Container(width: 2, color: TG.text),
+              ),
+              Positioned.fill(
+                child: FractionallySizedBox(
+                  alignment: Alignment.centerLeft,
+                  widthFactor: used.clamp(0.0, 1.0).toDouble(),
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                        color: color, borderRadius: BorderRadius.circular(6)),
                   ),
-              ]),
-            );
-          }),
+                ),
+              ),
+              if (mark != null)
+                Positioned.fill(
+                  child: Align(
+                    alignment: Alignment(
+                        -1 + 2 * (mark!.inSeconds / limit.inSeconds), 0),
+                    child: Container(width: 2, height: 10, color: TG.text),
+                  ),
+                ),
+            ]),
+          ),
           if (note != null) ...[
             const SizedBox(height: 6),
             Text(note!,
