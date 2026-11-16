@@ -442,6 +442,14 @@ class _TodayPageState extends State<TodayPage> {
             Text(_restText(rest),
                 textAlign: TextAlign.center,
                 style: const TextStyle(color: TG.muted, fontSize: 14)),
+            if (ref != null && ref.endLat != null && ref.endLon != null)
+              TextButton.icon(
+                onPressed: () => openMap(context, ref.endLat!, ref.endLon!),
+                icon: const Icon(Icons.place_rounded, size: 18),
+                label: Text('Local do descanso: '
+                    '${ref.endLat!.toStringAsFixed(5)}, '
+                    '${ref.endLon!.toStringAsFixed(5)}'),
+              ),
             const SizedBox(height: 12),
             _RestBar(rest: rest),
           ],

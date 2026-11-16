@@ -68,7 +68,11 @@ class SegmentList extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(actLabel(s.act),
+                    Text(
+                        s.act == Act.pause &&
+                                s.dur(shift.end ?? now) >= Limits.breakFirst
+                            ? pauseLabel(s.dur(shift.end ?? now))
+                            : actLabel(s.act),
                         style: const TextStyle(
                             fontSize: 15, fontWeight: FontWeight.w700)),
                     Text(
@@ -368,6 +372,47 @@ class _ShiftDetailPageState extends State<ShiftDetailPage> {
     if (mounted) Navigator.pop(context);
   }
 
+  /// Descanso feito depois desta jornada, com o local (onde ela acabou).
+  Widget _restCard(Shift s, DateTime now) {
+    final ordered = sorted(_t.shifts);
+    final i = ordered.indexWhere((x) => identical(x, s));
+    final next = (i >= 0 && i + 1 < ordered.length) ? ordered[i + 1] : null;
+    final gap = (next?.start ?? now).difference(s.end!);
+    final k = restKind(gap);
+    final label = next == null && k == RestKind.tooShort
+        ? 'Descanso em curso'
+        : restLabel(k);
+    final has = s.endLat != null && s.endLon != null;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: TCard(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        onTap: has ? () => openMap(context, s.endLat!, s.endLon!) : null,
+        child: Row(children: [
+          const Icon(Icons.hotel_rounded, color: TG.pause),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('$label  •  ${fmtDur(gap)}',
+                    style: const TextStyle(
+                        fontSize: 15, fontWeight: FontWeight.w700)),
+                Text(
+                    has
+                        ? 'Local: ${s.endLat!.toStringAsFixed(5)}, '
+                            '${s.endLon!.toStringAsFixed(5)}'
+                        : 'Local não gravado (sem GPS ao encerrar)',
+                    style: const TextStyle(color: TG.muted, fontSize: 12.5)),
+              ],
+            ),
+          ),
+          if (has) const Icon(Icons.map_rounded, color: TG.muted, size: 20),
+        ]),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final s = widget.shift;
@@ -434,6 +479,7 @@ class _ShiftDetailPageState extends State<ShiftDetailPage> {
                 ]),
               ),
             ),
+          if (s.end != null) _restCard(s, now),
           const SizedBox(height: 6),
           const Padding(
             padding: EdgeInsets.only(left: 4, bottom: 8),

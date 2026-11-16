@@ -213,44 +213,81 @@ Future<File> buildReport(ReportKind kind, DateTime ref, List<Shift> all,
     ));
     content.add(pw.SizedBox(height: 12));
 
-    // Descansos entre as jornadas.
+    // Pausas (15, 30, 45 min) e descansos (9 h, 11 h, 24 h, 45 h), cada um
+    // com as coordenadas do local. O descanso fica no local onde a jornada
+    // foi encerrada.
     final ordered = sorted(all);
-    final rests = <pw.TableRow>[];
+    final rows = <pw.TableRow>[];
     for (final s in list) {
+      for (final g in s.segments) {
+        if (g.act != Act.pause && g.act != Act.unknown) continue;
+        final d = g.dur(s.end ?? now);
+        if (d < Limits.breakFirst) continue;
+        rows.add(pw.TableRow(children: [
+          _cell(fmtDateTime(g.start)),
+          _cell(g.end == null ? 'em curso' : fmtTime(g.end!)),
+          _cell(fmtDur(d)),
+          _cell(g.act == Act.unknown
+              ? '${pauseLabel(d)} (a classificar)'
+              : pauseLabel(d)),
+          _cell(_coord(g.lat, g.lon)),
+          _cell(g.note),
+        ]));
+      }
+      if (s.end == null) continue;
       final i = ordered.indexWhere((x) => identical(x, s));
-      if (i <= 0 || ordered[i - 1].end == null) continue;
-      final gap = s.start.difference(ordered[i - 1].end!);
+      final next = (i >= 0 && i + 1 < ordered.length) ? ordered[i + 1] : null;
+      final restEnd = next?.start ?? now;
+      final gap = restEnd.difference(s.end!);
       final k = restKind(gap);
-      rests.add(pw.TableRow(children: [
-        _cell('${fmtDateTime(ordered[i - 1].end!)} a ${fmtDateTime(s.start)}'),
-        _cell(fmtDur(gap)),
-        _cell(restLabel(k),
-            color: k == RestKind.tooShort ? _red : null,
-            bold: k == RestKind.tooShort),
-      ]));
+      final bad = next != null && k == RestKind.tooShort;
+      rows.add(pw.TableRow(
+        decoration: const pw.BoxDecoration(color: _light),
+        children: [
+          _cell(fmtDateTime(s.end!), bold: true),
+          _cell(next == null ? 'em curso' : fmtDateTime(next.start),
+              bold: true),
+          _cell(fmtDur(gap), bold: true),
+          _cell(next == null && k == RestKind.tooShort
+              ? 'Descanso em curso'
+              : restLabel(k),
+              bold: true, color: bad ? _red : null),
+          _cell(_coord(s.endLat, s.endLon), bold: true),
+          _cell(''),
+        ],
+      ));
     }
-    if (rests.isNotEmpty) {
-      content.add(pw.Text('Descansos',
+    if (rows.isNotEmpty) {
+      content.add(pw.Text('Pausas e descansos, com o local',
           style: pw.TextStyle(
               fontSize: 12, fontWeight: pw.FontWeight.bold, color: _blue)));
       content.add(pw.SizedBox(height: 4));
       content.add(pw.Table(
         border: pw.TableBorder.all(color: PdfColors.grey400, width: 0.4),
         columnWidths: const {
-          0: pw.FlexColumnWidth(3),
-          1: pw.FlexColumnWidth(1),
-          2: pw.FlexColumnWidth(2.6),
+          0: pw.FlexColumnWidth(1.9),
+          1: pw.FlexColumnWidth(1.9),
+          2: pw.FlexColumnWidth(1),
+          3: pw.FlexColumnWidth(2.6),
+          4: pw.FlexColumnWidth(2.3),
+          5: pw.FlexColumnWidth(1.8),
         },
         children: [
           pw.TableRow(
             decoration: const pw.BoxDecoration(color: _blue),
             children: [
-              _cell('Período', bold: true, color: PdfColors.white),
-              _cell('Duração', bold: true, color: PdfColors.white),
-              _cell('Tipo', bold: true, color: PdfColors.white),
+              for (final h in [
+                'Início',
+                'Fim',
+                'Duração',
+                'Tipo',
+                'Coordenadas',
+                'Local / nota'
+              ])
+                _cell(h, bold: true, color: PdfColors.white),
             ],
           ),
-          ...rests,
+          ...rows,
         ],
       ));
       content.add(pw.SizedBox(height: 12));

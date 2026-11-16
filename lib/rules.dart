@@ -120,6 +120,14 @@ Duration maxContinuousDrive(Shift sh, DateTime now) {
   return best;
 }
 
+/// Nome da pausa pelo tempo que durou: 15, 30 ou 45 minutos.
+String pauseLabel(Duration d) {
+  if (d >= Limits.breakFull) return 'Pausa 45 min';
+  if (d >= Limits.breakSecond) return 'Pausa 30 min';
+  if (d >= Limits.breakFirst) return 'Pausa 15 min';
+  return 'Pausa curta';
+}
+
 /// Tipo do descanso entre duas jornadas.
 enum RestKind { tooShort, dailyReduced, daily, weeklyReduced, weekly }
 

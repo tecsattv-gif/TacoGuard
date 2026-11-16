@@ -196,6 +196,14 @@ void main() {
     expect(fmtKm(4.66), '4,7 km');
   });
 
+  test('nome da pausa pelo tempo', () {
+    expect(pauseLabel(const Duration(minutes: 10)), 'Pausa curta');
+    expect(pauseLabel(const Duration(minutes: 15)), 'Pausa 15 min');
+    expect(pauseLabel(const Duration(minutes: 30)), 'Pausa 30 min');
+    expect(pauseLabel(const Duration(minutes: 44)), 'Pausa 30 min');
+    expect(pauseLabel(const Duration(minutes: 45)), 'Pausa 45 min');
+  });
+
   test('formatos', () {
     expect(fmtDur(const Duration(hours: 4, minutes: 5)), '4h05');
     expect(fmtDur(const Duration(minutes: 45)), '0h45');
