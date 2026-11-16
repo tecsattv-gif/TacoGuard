@@ -46,6 +46,52 @@ class Tracker extends ChangeNotifier {
   /// Parado desde quando (ainda contando para virar parada), ou null.
   DateTime? get stoppedSince => currentAct == Act.drive ? _stopSince : null;
 
+  /// 1.1.0 "De carro": o motorista deixou o caminhão parado e saiu de
+  /// carro (ex.: almoçar na pausa). O movimento é ignorado e a parada
+  /// continua contando, até ele voltar para perto do caminhão.
+  bool carMode = false;
+  double? _truckLat, _truckLon; // onde o caminhão ficou
+  bool _carAway = false; // já se afastou do caminhão
+
+  Future<void> _saveCar() async {
+    try {
+      final p = await SharedPreferences.getInstance();
+      await p.setBool('carMode', carMode);
+      if (_truckLat != null && _truckLon != null) {
+        await p.setDouble('truckLat', _truckLat!);
+        await p.setDouble('truckLon', _truckLon!);
+      } else {
+        await p.remove('truckLat');
+        await p.remove('truckLon');
+      }
+      await p.setBool('carAway', _carAway);
+    } catch (_) {}
+  }
+
+  /// Liga o modo "De carro" (só com o caminhão parado).
+  void startCar() {
+    final s = currentSegment;
+    if (s == null || s.act == Act.drive) return;
+    carMode = true;
+    _truckLat = s.lat ?? lat;
+    _truckLon = s.lon ?? lon;
+    _carAway = false;
+    _moveSince = null;
+    _saveCar();
+    notifyListeners();
+  }
+
+  /// Desliga o modo "De carro" (voltou ao caminhão).
+  void endCar({bool spoken = false}) {
+    if (!carMode) return;
+    carMode = false;
+    _carAway = false;
+    _moveSince = null;
+    _saveCar();
+    if (spoken && voice) _say('De volta ao caminhão.');
+    notifyListeners();
+  }
+
   /// GPS sem leitura boa há mais de 20 s.
   bool get gpsStale =>
       lastFix == null || DateTime.now().difference(lastFix!).inSeconds > 20;
@@ -80,6 +126,10 @@ class Tracker extends ChangeNotifier {
       voice = p.getBool('voice') ?? true;
       popup = p.getBool('popup') ?? true;
       driver = p.getString('driver') ?? '';
+      carMode = p.getBool('carMode') ?? false;
+      _truckLat = p.getDouble('truckLat');
+      _truckLon = p.getDouble('truckLon');
+      _carAway = p.getBool('carAway') ?? false;
     } catch (_) {}
     try {
       final f = await _file();
@@ -192,6 +242,11 @@ class Tracker extends ChangeNotifier {
     c.endLat = lat;
     c.endLon = lon;
     onAskCancel?.call();
+    if (carMode) {
+      carMode = false;
+      _carAway = false;
+      await _saveCar();
+    }
     await stopGps();
     await save();
     notifyListeners();
@@ -202,6 +257,11 @@ class Tracker extends ChangeNotifier {
     final c = current;
     if (c == null) return;
     final now = at ?? DateTime.now();
+    if (a == Act.drive && carMode) {
+      carMode = false;
+      _carAway = false;
+      _saveCar();
+    }
     final s = currentSegment;
     if (s != null) {
       if (s.act == a) return;
@@ -228,6 +288,29 @@ class Tracker extends ChangeNotifier {
   /// Corrige o tipo de um trecho já gravado.
   void reclassify(Segment s, Act a) {
     s.act = a;
+    // 1.1.0: junta trechos vizinhos do mesmo tipo. Ex.: um trajeto de carro
+    // contado como condução no meio da pausa, corrigido para Pausa, volta a
+    // formar uma pausa só (senão não somava os 45 minutos).
+    for (final sh in shifts) {
+      if (!sh.segments.contains(s)) continue;
+      var i = 0;
+      while (i < sh.segments.length - 1) {
+        final x = sh.segments[i], y = sh.segments[i + 1];
+        if (x.act == y.act &&
+            x.end != null &&
+            y.start.difference(x.end!).inSeconds.abs() <= 2) {
+          x.end = y.end;
+          if (x.note.isEmpty) x.note = y.note;
+          if (!x.hasCoords) {
+            x.lat = y.lat;
+            x.lon = y.lon;
+          }
+          sh.segments.removeAt(i + 1);
+        } else {
+          i++;
+        }
+      }
+    }
     save();
     notifyListeners();
   }
@@ -350,6 +433,20 @@ class Tracker extends ChangeNotifier {
     final c = current;
     if (c == null) return;
     final act = currentAct;
+    // De carro: nada de condução. Volta ao normal quando o motorista
+    // se afastou (150 m), voltou para perto do caminhão (60 m) e parou.
+    if (carMode && act != Act.drive) {
+      final d = _distTo(_truckLat, _truckLon);
+      if (d != null) {
+        if (d > 150 && !_carAway) {
+          _carAway = true;
+          _saveCar();
+        } else if (_carAway && d < 60 && still) {
+          endCar(spoken: true);
+        }
+      }
+      return;
+    }
     if (act == Act.drive) {
       _moveSince = null;
       if (still) {

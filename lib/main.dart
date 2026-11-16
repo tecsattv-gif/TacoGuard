@@ -547,7 +547,7 @@ class _TodayPageState extends State<TodayPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(actLabel(act),
+                Text(_t.carMode ? '${actLabel(act)} • de carro' : actLabel(act),
                     style: TextStyle(
                         fontSize: 19,
                         fontWeight: FontWeight.w800,
@@ -615,6 +615,30 @@ class _TodayPageState extends State<TodayPage> {
             const SizedBox(height: 10),
             StopChoices(onPick: (a) => _t.stopNow(a)),
           ]),
+        ),
+      ],
+      if (_t.carMode) ...[
+        const SizedBox(height: 10),
+        _Banner(
+            icon: Icons.directions_car_rounded,
+            color: TG.accent,
+            text: 'De carro: o movimento não conta como condução e a '
+                'parada continua. Volta ao normal sozinho quando você '
+                'chegar ao caminhão.',
+            action: 'Voltei',
+            onAction: () => _t.endCar()),
+      ] else if (act != Act.drive) ...[
+        const SizedBox(height: 10),
+        SizedBox(
+          height: 50,
+          child: OutlinedButton.icon(
+            onPressed: () => _t.startCar(),
+            style: OutlinedButton.styleFrom(
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16))),
+            icon: const Icon(Icons.directions_car_rounded),
+            label: const Text('Vou sair de carro (o caminhão fica parado)'),
+          ),
         ),
       ],
       if (act == Act.unknown) ...[
