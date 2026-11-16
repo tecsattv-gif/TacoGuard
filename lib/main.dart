@@ -491,7 +491,8 @@ class _TodayPageState extends State<TodayPage> {
                   'Última jornada: ${weekdayShort(ref.start)} '
                   '${fmtDate(ref.start)}, ${fmtTime(ref.start)} às '
                   '${ref.end == null ? '-' : fmtTime(ref.end!)}  •  '
-                  'condução ${fmtDur(ref.total(Act.drive, now))}',
+                  'condução ${fmtDur(ref.total(Act.drive, now))}  •  '
+                  '${fmtKm(ref.km)}',
                   style: const TextStyle(fontSize: 14)),
             ),
           ]),
@@ -754,6 +755,17 @@ class _TodayPageState extends State<TodayPage> {
           _Total(Act.pause, st.pauseToday),
           _Total(Act.work, st.workToday),
           _Total(Act.load, st.loadToday),
+          Expanded(
+            child: Column(children: [
+              const Icon(Icons.route_rounded, color: TG.drive, size: 22),
+              const SizedBox(height: 4),
+              Text(fmtKm(c.km),
+                  style: const TextStyle(
+                      fontSize: 18, fontWeight: FontWeight.w800)),
+              const Text('Km hoje',
+                  style: TextStyle(color: TG.muted, fontSize: 11.5)),
+            ]),
+          ),
         ]),
       ),
       if (st.weeklyRestDeadline != null) ...[

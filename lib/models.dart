@@ -37,6 +37,7 @@ class Segment {
   double? lat;
   double? lon;
   String note;
+  double km; // distância rodada no trecho (GPS), só na condução
 
   Segment({
     required this.act,
@@ -45,6 +46,7 @@ class Segment {
     this.lat,
     this.lon,
     this.note = '',
+    this.km = 0,
   });
 
   /// Duração até [now] (ou até o fim, se já fechado).
@@ -63,6 +65,7 @@ class Segment {
         'la': lat,
         'lo': lon,
         'n': note,
+        if (km > 0) 'k': double.parse(km.toStringAsFixed(3)),
       };
 
   static Segment fromJson(Map<String, dynamic> m) => Segment(
@@ -78,6 +81,7 @@ class Segment {
         lat: (m['la'] as num?)?.toDouble(),
         lon: (m['lo'] as num?)?.toDouble(),
         note: (m['n'] as String?) ?? '',
+        km: (m['k'] as num?)?.toDouble() ?? 0,
       );
 }
 
@@ -111,6 +115,15 @@ class Shift {
     var t = Duration.zero;
     for (final s in segments) {
       if (s.act == a) t += s.dur(end ?? now);
+    }
+    return t;
+  }
+
+  /// Quilômetros rodados em condução (pelo GPS).
+  double get km {
+    var t = 0.0;
+    for (final s in segments) {
+      if (s.act == Act.drive) t += s.km;
     }
     return t;
   }
@@ -151,6 +164,11 @@ String fmtDur(Duration d) {
   final m = d.inMinutes - h * 60;
   return '${h}h${m.toString().padLeft(2, '0')}';
 }
+
+/// "312 km"; abaixo de 10 km mostra uma casa ("4,7 km").
+String fmtKm(double km) => km < 10
+    ? '${km.toStringAsFixed(1).replaceAll('.', ',')} km'
+    : '${km.round()} km';
 
 String two(int n) => n.toString().padLeft(2, '0');
 String fmtTime(DateTime t) => '${two(t.hour)}:${two(t.minute)}';

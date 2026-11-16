@@ -119,7 +119,9 @@ Future<File> buildReport(ReportKind kind, DateTime ref, List<Shift> all,
       load = Duration.zero,
       amp = Duration.zero;
   final issues = <String>[];
+  var km = 0.0;
   for (final s in list) {
+    km += s.km;
     drive += s.total(Act.drive, now);
     pause += s.total(Act.pause, now) + s.total(Act.unknown, now);
     work += s.total(Act.work, now);
@@ -147,6 +149,7 @@ Future<File> buildReport(ReportKind kind, DateTime ref, List<Shift> all,
       _box('Martelo', fmtDur(work)),
       _box('Carga/Descarga', fmtDur(load)),
       _box('Amplitude', fmtDur(amp)),
+      _box('Km', fmtKm(km)),
     ]),
     pw.SizedBox(height: 12),
   ];
@@ -174,6 +177,7 @@ Future<File> buildReport(ReportKind kind, DateTime ref, List<Shift> all,
         5: pw.FlexColumnWidth(1.2),
         6: pw.FlexColumnWidth(1.2),
         7: pw.FlexColumnWidth(1.4),
+        8: pw.FlexColumnWidth(1.1),
       },
       children: [
         pw.TableRow(
@@ -187,7 +191,8 @@ Future<File> buildReport(ReportKind kind, DateTime ref, List<Shift> all,
               'Condução',
               'Pausa',
               'Martelo',
-              'Carga/Desc.'
+              'Carga/Desc.',
+              'Km'
             ])
               _cell(h, bold: true, color: PdfColors.white),
           ],
@@ -202,6 +207,7 @@ Future<File> buildReport(ReportKind kind, DateTime ref, List<Shift> all,
             _cell(fmtDur(s.total(Act.pause, now) + s.total(Act.unknown, now))),
             _cell(fmtDur(s.total(Act.work, now))),
             _cell(fmtDur(s.total(Act.load, now))),
+            _cell(fmtKm(s.km)),
           ]),
       ],
     ));
@@ -303,7 +309,7 @@ Future<File> buildReport(ReportKind kind, DateTime ref, List<Shift> all,
               'Fim',
               'Duração',
               'Atividade',
-              'Coordenadas',
+              'Coordenadas / km',
               'Local / nota'
             ])
               _cell(h, bold: true, color: _grey),
@@ -314,7 +320,9 @@ Future<File> buildReport(ReportKind kind, DateTime ref, List<Shift> all,
               _cell(g.end == null ? '-' : fmtTime(g.end!)),
               _cell(fmtDur(g.dur(s.end ?? now))),
               _cell(actLabel(g.act), bold: g.act != Act.drive),
-              _cell(g.act == Act.drive ? '' : _coord(g.lat, g.lon)),
+              _cell(g.act == Act.drive
+                  ? (g.km > 0 ? fmtKm(g.km) : '')
+                  : _coord(g.lat, g.lon)),
               _cell(g.note),
             ]),
         ],

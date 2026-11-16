@@ -74,6 +74,7 @@ class SegmentList extends StatelessWidget {
                     Text(
                         '${fmtTime(s.start)} - '
                         '${s.end == null ? 'agora' : fmtTime(s.end!)}'
+                        '${s.act == Act.drive && s.km > 0 ? '  •  ${fmtKm(s.km)}' : ''}'
                         '${s.note.isEmpty ? '' : '  •  ${s.note}'}',
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -260,6 +261,7 @@ class _HistoryPageState extends State<HistoryPage> {
                 Text(
                     '${fmtTime(s.start)} às '
                     '${s.end == null ? 'agora' : fmtTime(s.end!)}'
+                    '  •  ${fmtKm(s.km)}'
                     '${rest == null ? '' : '  •  $rest'}',
                     style: const TextStyle(color: TG.muted, fontSize: 13)),
                 const SizedBox(height: 10),
@@ -406,8 +408,9 @@ class _ShiftDetailPageState extends State<ShiftDetailPage> {
               const SizedBox(height: 12),
               Row(children: [
                 _Mini('Carga/Desc.', fmtDur(s.total(Act.load, now)), TG.load),
-                _Mini('Maior condução seguida',
+                _Mini('Maior cond. seguida',
                     fmtDur(maxContinuousDrive(s, now)), TG.text),
+                _Mini('Km', fmtKm(s.km), TG.drive),
               ]),
             ]),
           ),
@@ -554,7 +557,9 @@ class _ReportsPageState extends State<ReportsPage> {
         work = Duration.zero,
         load = Duration.zero;
     var issues = 0;
+    var km = 0.0;
     for (final s in list) {
+      km += s.km;
       drive += s.total(Act.drive, now);
       pause += s.total(Act.pause, now) + s.total(Act.unknown, now);
       work += s.total(Act.work, now);
@@ -609,7 +614,7 @@ class _ReportsPageState extends State<ReportsPage> {
             Row(children: [
               _Mini('Jornadas', '${list.length}', TG.text),
               _Mini('Avisos', '$issues', issues > 0 ? TG.danger : TG.ok),
-              const Spacer(),
+              _Mini('Km', fmtKm(km), TG.drive),
               const Spacer(),
             ]),
           ]),

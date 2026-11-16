@@ -14,6 +14,7 @@ O APK mais novo fica em [Releases](https://github.com/tecsattv-gif/TacoGuard/rel
 - **Pop-up a cada parada**: depois de alguns minutos parado (1 a 5, você escolhe; o padrão é 2) aparece a pergunta *Pausa, Martelo ou Carga/Descarga?*, por cima do Google Maps ou de outro app. Sem resposta, a parada fica "a classificar" (conta como pausa até ser corrigida).
 - **Condução contínua**: anel com o tempo que falta para as 4h30 e controle da pausa de 45 min (ou 15 + 30).
 - **Limites**: condução diária (9 h, 10 h duas vezes por semana), semanal (56 h), duas semanas (90 h), amplitude (13 h / 15 h), descansos diários reduzidos (3 entre descansos semanais) e prazo do descanso semanal.
+- **Quilômetros**: distância rodada em condução, medida pelo GPS (costuma diferir 1 a 3% do hodômetro), por trecho, por jornada e por período.
 - **Sair de carro na pausa**: toque em *Vou sair de carro* antes de sair (por exemplo, para almoçar). O trajeto de carro não conta como condução e a pausa continua; ao voltar para perto do caminhão o app retoma o controle normal.
 - **Avisos por voz**: 30 e 15 minutos antes da pausa, pausa completa, limites do dia, da semana e da amplitude.
 - **Descanso**: com a jornada encerrada, mostra o tempo de descanso e quando chega às 9 h e às 11 h.
@@ -55,6 +56,7 @@ Segredos do repositório (Settings > Secrets and variables > Actions):
 
 ## Versões
 
+- **1.2.0**: quilômetros rodados pelo GPS: total do dia na tela Hoje, por jornada e por trecho no Histórico e nos relatórios PDF (com o total do período). O trajeto no modo "de carro" não entra na conta.
 - **1.1.0**: botão **Vou sair de carro**. Com o caminhão parado (pausa, martelo ou carga/descarga), o motorista pode sair de carro sem o app contar condução: a parada continua e tudo volta ao normal sozinho quando ele chega de volta ao caminhão. Ao corrigir um trecho, trechos vizinhos do mesmo tipo são unidos (a pausa volta a somar inteira).
 - **1.0.1**: a parada não era detectada quando o GPS "pulava" com o caminhão parado (o pop-up não aparecia); agora só conta como arranque se o caminhão sair do lugar. Novo cartão "Parado há…" na tela Hoje, para responder antes do pop-up. Aviso de GPS sem sinal. Cartões da tela Hoje alinhados.
 - **1.0.0**: primeira versão.

@@ -184,6 +184,18 @@ void main() {
     expect(shiftIssues([sh], sh, sh.end!), isEmpty);
   });
 
+  test('quilômetros: só a condução conta e o backup guarda', () {
+    final sh = mk(mon, [(Act.drive, 60), (Act.pause, 45), (Act.drive, 30)]);
+    sh.segments[0].km = 82.4;
+    sh.segments[1].km = 3.0; // trecho corrigido para pausa: não conta
+    sh.segments[2].km = 4.66;
+    expect(sh.km, closeTo(87.06, 0.001));
+    final back = Shift.fromJson(sh.toJson());
+    expect(back.km, closeTo(87.06, 0.001));
+    expect(fmtKm(87.06), '87 km');
+    expect(fmtKm(4.66), '4,7 km');
+  });
+
   test('formatos', () {
     expect(fmtDur(const Duration(hours: 4, minutes: 5)), '4h05');
     expect(fmtDur(const Duration(minutes: 45)), '0h45');

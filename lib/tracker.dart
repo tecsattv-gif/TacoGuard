@@ -97,6 +97,8 @@ class Tracker extends ChangeNotifier {
       lastFix == null || DateTime.now().difference(lastFix!).inSeconds > 20;
   DateTime? _moveSince; // andando desde (candidato a arranque)
   final List<(DateTime, double, double)> _hist = [];
+  double? _prevLat, _prevLon; // leitura anterior (para somar os km)
+  DateTime? _prevAt;
 
   /// Chamado quando uma parada é detectada: a tela mostra o pop-up.
   void Function(Segment seg)? onAsk;
@@ -300,6 +302,7 @@ class Tracker extends ChangeNotifier {
             x.end != null &&
             y.start.difference(x.end!).inSeconds.abs() <= 2) {
           x.end = y.end;
+          x.km += y.km;
           if (x.note.isEmpty) x.note = y.note;
           if (!x.hasCoords) {
             x.lat = y.lat;
@@ -386,6 +389,9 @@ class Tracker extends ChangeNotifier {
     gpsOn = false;
     speedKmh = 0;
     _hist.clear();
+    _prevLat = null;
+    _prevLon = null;
+    _prevAt = null;
   }
 
   /// Parado de verdade? O GPS do celular "anda" sozinho quando parado.
@@ -413,6 +419,28 @@ class Tracker extends ChangeNotifier {
     gpsError = null;
     final still = _isStill(p, now);
     speedKmh = still ? 0 : p.speed * 3.6;
+    // 1.2.0: quilômetros. Soma a distância entre as leituras enquanto a
+    // atividade é condução e o caminhão anda (parado, o GPS "pula" e
+    // somaria metros falsos). De carro não soma (a atividade não é condução).
+    final seg = currentSegment;
+    if (!still &&
+        seg != null &&
+        seg.act == Act.drive &&
+        _prevLat != null &&
+        _prevLon != null &&
+        _prevAt != null) {
+      final d = Geolocator.distanceBetween(
+          _prevLat!, _prevLon!, p.latitude, p.longitude);
+      final dt = now.difference(_prevAt!).inMilliseconds / 1000;
+      // Até 3 min sem leitura (túnel) entra em linha reta; salto
+      // impossível (mais de 45 m/s = 162 km/h) fica de fora.
+      if (dt > 0 && dt <= 180 && d / dt < 45) seg.km += d / 1000;
+    }
+    if (!still || _prevLat == null) {
+      _prevLat = p.latitude;
+      _prevLon = p.longitude;
+    }
+    _prevAt = now;
     _motion(still, speedKmh, now);
     notifyListeners();
   }
