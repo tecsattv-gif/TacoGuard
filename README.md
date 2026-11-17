@@ -12,6 +12,7 @@ O APK mais novo fica em [Releases](https://github.com/tecsattv-gif/TacoGuard/rel
 
 - **Jornada automática por GPS**: toque em *Iniciar jornada* de manhã e confirme no pop-up. Arrancou, conta condução. Parou, grava as coordenadas, a hora e o tempo parado.
 - **Pop-up a cada parada**: depois de alguns minutos parado (1 a 5, você escolhe; o padrão é 2) aparece a pergunta *Pausa, Martelo ou Carga/Descarga?*, por cima do Google Maps ou de outro app. Sem resposta, a parada fica "a classificar" (conta como pausa até ser corrigida). Se arrancar antes de 15 minutos sem ter respondido, a parada vira **martelo** sozinha, porque menos de 15 minutos não conta como pausa pela lei.
+- **Telefone e tablet, em pé ou deitado**: no tablet ou com o telefone deitado o menu fica na lateral e a tela Hoje em duas colunas.
 - **Tela Hoje fácil de ler na cabine**: um número principal (o anel com o tempo que falta para a pausa), a faixa colorida do dia como o disco do tacógrafo (condução, pausa, martelo, carga/descarga) com os km, e todos os limites numa lista só, com barra verde, amarela ou vermelha.
 - **Condução contínua**: anel com o tempo que falta para as 4h30 e controle da pausa de 45 min (ou 15 + 30).
 - **Limites**: condução diária (9 h, 10 h duas vezes por semana), semanal (56 h), duas semanas (90 h), amplitude (13 h / 15 h), descansos diários reduzidos (3 entre descansos semanais) e prazo do descanso semanal.
@@ -64,6 +65,7 @@ Segredos do repositório (Settings > Secrets and variables > Actions):
 
 ## Versões
 
+- **1.8.5**: **Tablet e telefone deitado**: com a tela larga (a partir de 640 px de largura), o menu passa para a lateral esquerda; a tela Hoje fica em **duas colunas** (à esquerda o estado, a velocidade e o anel da pausa; à direita a faixa do dia, os limites, a linha do tempo e os botões) e as outras telas ficam centradas com largura de leitura. Virando o aparelho, o layout muda na hora, sem perder nada. Telefone deitado mostra só os ícones no menu lateral.
 - **1.8.4**: Condução passa a ter o ícone de um **volante** (no lugar do caminhão) na tela Hoje, nos trechos, no Histórico e no pop-up. **Relatórios** abre no dia em que começou a jornada em curso (ou a última): a jornada conta no dia em que começou, e depois da meia-noite o relatório "de hoje" aparecia vazio.
 - **1.8.3**: Botão **Bip** em Ajustes → Velocidade para desligar o bip do aviso de velocidade. Desligado, o cartão continua vermelho a piscar com a contagem e o excesso continua registado aos 60 s; só o som sai.
 - **1.8.2**: **Despertador ao encerrar a jornada**: depois de confirmar o encerramento, o app pergunta se quer acertar o despertador do telefone para o fim do descanso de **9 h** ou de **11 h** (mostra a hora em cada botão). Escolhendo, o alarme é criado direto no app Relógio do Android, com o nome "TacoGuard: fim do descanso de 9 h/11 h".

@@ -331,6 +331,29 @@ class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
       const _LawTabs(),
       const SettingsPage(),
     ];
+    const dests = [
+      (Icons.speed_rounded, 'Hoje'),
+      (Icons.history_rounded, 'Histórico'),
+      (Icons.picture_as_pdf_rounded, 'Relatórios'),
+      (Icons.gavel_rounded, 'Lei'),
+      (Icons.settings_rounded, 'Ajustes'),
+    ];
+    final size = MediaQuery.sizeOf(context);
+    // 1.8.5: tablet ou telefone deitado: menu na lateral (sobra altura para
+    // o conteúdo) e as outras telas com largura de leitura, centradas.
+    final wide = size.width >= 640;
+    Widget page(int i) {
+      final p = pages[i];
+      if (!wide || i == 0) return p;
+      return Align(
+        alignment: Alignment.topCenter,
+        child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 820), child: p),
+      );
+    }
+
+    final body = IndexedStack(
+        index: _tab, children: [for (var i = 0; i < pages.length; i++) page(i)]);
     return Scaffold(
       appBar: AppBar(
         title: Row(children: [
@@ -345,23 +368,39 @@ class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
           Text(titles[_tab]),
         ]),
       ),
-      body: IndexedStack(index: _tab, children: pages),
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: _tab,
-        onDestinationSelected: (i) => setState(() => _tab = i),
-        destinations: const [
-          NavigationDestination(
-              icon: Icon(Icons.speed_rounded), label: 'Hoje'),
-          NavigationDestination(
-              icon: Icon(Icons.history_rounded), label: 'Histórico'),
-          NavigationDestination(
-              icon: Icon(Icons.picture_as_pdf_rounded), label: 'Relatórios'),
-          NavigationDestination(
-              icon: Icon(Icons.gavel_rounded), label: 'Lei'),
-          NavigationDestination(
-              icon: Icon(Icons.settings_rounded), label: 'Ajustes'),
-        ],
-      ),
+      body: wide
+          ? Row(children: [
+              SafeArea(
+                right: false,
+                child: NavigationRail(
+                  selectedIndex: _tab,
+                  onDestinationSelected: (i) => setState(() => _tab = i),
+                  groupAlignment: 0,
+                  // Telefone deitado tem pouca altura: só os ícones.
+                  labelType: size.height >= 520
+                      ? NavigationRailLabelType.all
+                      : NavigationRailLabelType.none,
+                  destinations: [
+                    for (final d in dests)
+                      NavigationRailDestination(
+                          icon: Icon(d.$1), label: Text(d.$2)),
+                  ],
+                ),
+              ),
+              const VerticalDivider(width: 1, color: TG.line),
+              Expanded(child: body),
+            ])
+          : body,
+      bottomNavigationBar: wide
+          ? null
+          : NavigationBar(
+              selectedIndex: _tab,
+              onDestinationSelected: (i) => setState(() => _tab = i),
+              destinations: [
+                for (final d in dests)
+                  NavigationDestination(icon: Icon(d.$1), label: d.$2),
+              ],
+            ),
     );
   }
 }
@@ -579,10 +618,37 @@ class _TodayPageState extends State<TodayPage> {
   Widget build(BuildContext context) {
     final c = _t.current;
     final now = DateTime.now();
-    return ListView(
-      padding: EdgeInsets.fromLTRB(16, 4, 16, 28 + MediaQuery.paddingOf(context).bottom),
-      children: c == null ? _closed(now) : _open(c, now),
-    );
+    final items = c == null ? _closed(now) : _open(c, now);
+    final pad = EdgeInsets.fromLTRB(
+        16, 4, 16, 28 + MediaQuery.paddingOf(context).bottom);
+    return LayoutBuilder(builder: (context, box) {
+      final cut = items.indexWhere((w) => w is _ColBreak);
+      // 1.8.5: tela larga (tablet ou telefone deitado): duas colunas. À
+      // esquerda o estado e o anel; à direita o dia, os limites e o resto.
+      if (box.maxWidth >= 700 && cut > 0) {
+        return SingleChildScrollView(
+          padding: pad,
+          child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Expanded(
+                child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: items.sublist(0, cut))),
+            const SizedBox(width: 16),
+            Expanded(
+                child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: items.sublist(cut + 1))),
+          ]),
+        );
+      }
+      return ListView(
+        padding: pad,
+        children: [
+          for (final w in items)
+            if (w is _ColBreak) const SizedBox(height: 12) else w,
+        ],
+      );
+    });
   }
 
   // ---------- Jornada fechada ----------
@@ -669,7 +735,7 @@ class _TodayPageState extends State<TodayPage> {
           ],
         ]),
       ),
-      const SizedBox(height: 12),
+      const _ColBreak(),
       _LimitList(rows: [
         _Limit('Semana', week, Limits.weeklyDrive),
         _Limit('2 semanas', week + prev, Limits.fortnightDrive),
@@ -973,7 +1039,7 @@ class _TodayPageState extends State<TodayPage> {
               style: const TextStyle(color: TG.muted, fontSize: 13)),
         ]),
       ),
-      const SizedBox(height: 12),
+      const _ColBreak(),
       // O dia numa faixa colorida, como o disco do tacógrafo.
       _DayStrip(shift: c, now: now),
       const SizedBox(height: 12),
@@ -1104,6 +1170,14 @@ class _Banner extends StatelessWidget {
 }
 
 /// Cartão principal da tela (sem contorno, um tom acima do fundo).
+/// 1.8.5: onde a tela Hoje se divide em duas colunas na tela larga.
+/// Na tela estreita vira só um espaço de 12.
+class _ColBreak extends StatelessWidget {
+  const _ColBreak();
+  @override
+  Widget build(BuildContext context) => const SizedBox(height: 12);
+}
+
 class _Hero extends StatelessWidget {
   final Widget child;
   final EdgeInsetsGeometry padding;
