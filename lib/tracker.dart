@@ -810,10 +810,15 @@ class Tracker extends ChangeNotifier {
     if (_overSince == null) {
       _overSince = now;
       _overMax = speedKmh;
+      // 1.8.1: um bip só, ao passar do limite.
+      _lastBeep = now;
+      beep();
     }
     if (speedKmh > _overMax) _overMax = speedKmh;
-    // Bip a cada 2 s enquanto estiver acima.
-    if (now.difference(_lastBeep).inMilliseconds >= 1900) {
+    // 1.8.1: depois de 40 s acima, bip seguido (a cada 1 s) até voltar
+    // ao limite escolhido. Entre o 1º bip e os 40 s, só o cartão pisca.
+    if (now.difference(_overSince!).inSeconds >= 40 &&
+        now.difference(_lastBeep).inMilliseconds >= 950) {
       _lastBeep = now;
       beep();
     }
