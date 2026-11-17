@@ -704,6 +704,7 @@ class _TodayPageState extends State<TodayPage> {
       // Estado atual: faixa na cor da atividade.
       _Tonal(
         color: TG.act(act),
+        blink: _t.overSpeed, // 1.7.9: acima do limite: vermelho a piscar
         padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
         child: Row(children: [
           Icon(TG.icon(act), color: TG.act(act), size: 28),
@@ -749,6 +750,17 @@ class _TodayPageState extends State<TodayPage> {
           ]),
         ]),
       ),
+      if (_t.overSpeed) ...[
+        const SizedBox(height: 10),
+        _Banner(
+            icon: Icons.speed_rounded,
+            color: TG.danger,
+            text: _t.overSecondsLeft != null
+                ? 'Acima de ${_t.speedLimit} km/h. Reduza: em '
+                    '${_t.overSecondsLeft} s vira infração.'
+                : 'Excesso de velocidade a ser registado. Reduza para '
+                    '${_t.speedLimit} km/h.'),
+      ],
       if (_t.gpsError == null && _t.gpsOn && _t.gpsStale) ...[
         const SizedBox(height: 10),
         const _Banner(
@@ -1057,15 +1069,58 @@ class _Tonal extends StatelessWidget {
   final Color color;
   final Widget child;
   final EdgeInsetsGeometry padding;
+  final bool blink;
   const _Tonal(
-      {required this.color, required this.child, required this.padding});
+      {required this.color,
+      required this.child,
+      required this.padding,
+      this.blink = false});
   @override
-  Widget build(BuildContext context) => Container(
-        padding: padding,
-        decoration: BoxDecoration(
-            color: color.withValues(alpha: 0.14),
-            borderRadius: BorderRadius.circular(18)),
-        child: child,
+  Widget build(BuildContext context) {
+    final box = Container(
+      padding: padding,
+      decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.14),
+          borderRadius: BorderRadius.circular(18)),
+      child: child,
+    );
+    return blink ? _RedBlink(child: box) : box;
+  }
+}
+
+/// 1.7.9: cartão vermelho a piscar (velocidade acima do limite).
+class _RedBlink extends StatefulWidget {
+  final Widget child;
+  const _RedBlink({required this.child});
+  @override
+  State<_RedBlink> createState() => _RedBlinkState();
+}
+
+class _RedBlinkState extends State<_RedBlink>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _a = AnimationController(
+      vsync: this, duration: const Duration(milliseconds: 450))
+    ..repeat(reverse: true);
+
+  @override
+  void dispose() {
+    _a.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => AnimatedBuilder(
+        animation: _a,
+        child: widget.child,
+        builder: (context, child) => Container(
+          decoration: BoxDecoration(
+            color: Color.lerp(const Color(0x33DC2626), const Color(0xFFDC2626),
+                _a.value),
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(color: const Color(0xFFEF4444), width: 2),
+          ),
+          child: child,
+        ),
       );
 }
 

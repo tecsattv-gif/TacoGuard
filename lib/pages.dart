@@ -998,6 +998,48 @@ class _SettingsPageState extends State<SettingsPage> {
     return ListView(
       padding: EdgeInsets.fromLTRB(16, 0, 16, 28 + MediaQuery.paddingOf(context).bottom),
       children: [
+        _title('Velocidade'),
+        TCard(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SwitchListTile(
+                contentPadding: EdgeInsets.zero,
+                title: const Text('Aviso de velocidade'),
+                subtitle: const Text(
+                    'Bip acima do limite; mais de 1 min acima fica '
+                    'registado como infração, como no tacógrafo'),
+                value: _t.speedAlert,
+                onChanged: (v) {
+                  setState(() => _t.speedAlert = v);
+                  _t.saveSettings();
+                },
+              ),
+              Text('Limite: ${_t.speedLimit} km/h',
+                  style: const TextStyle(
+                      fontSize: 15, fontWeight: FontWeight.w700)),
+              Slider(
+                value: _t.speedLimit.toDouble(),
+                min: 85,
+                max: 100,
+                divisions: 15,
+                label: '${_t.speedLimit} km/h',
+                onChanged: _t.speedAlert
+                    ? (v) => setState(() => _t.speedLimit = v.round())
+                    : null,
+                onChangeEnd: (_) => _t.saveSettings(),
+              ),
+              Align(
+                alignment: Alignment.centerRight,
+                child: TextButton.icon(
+                  onPressed: () => _t.beep(),
+                  icon: const Icon(Icons.volume_up_rounded),
+                  label: const Text('Testar o bip'),
+                ),
+              ),
+            ],
+          ),
+        ),
         _title('Paradas'),
         TCard(
           child: Column(

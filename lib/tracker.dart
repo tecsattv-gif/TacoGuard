@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:path_provider/path_provider.dart';
@@ -31,6 +32,9 @@ class Tracker extends ChangeNotifier {
   bool popup = true;
   String driver = '';
   String plate = ''; // matrícula do veículo (sai no PDF)
+  // 1.7.9: aviso de velocidade (bip acima do limite; 1 min acima = infração)
+  bool speedAlert = true;
+  int speedLimit = 90; // 85 a 100 km/h
 
   // ---------- GPS ----------
   StreamSubscription<Position>? _sub;
@@ -149,6 +153,8 @@ class Tracker extends ChangeNotifier {
       popup = p.getBool('popup') ?? true;
       driver = p.getString('driver') ?? '';
       plate = p.getString('plate') ?? '';
+      speedAlert = p.getBool('speedAlert') ?? true;
+      speedLimit = (p.getInt('speedLimit') ?? 90).clamp(85, 100);
       carMode = p.getBool('carMode') ?? false;
       _truckLat = p.getDouble('truckLat');
       _truckLon = p.getDouble('truckLon');
@@ -224,6 +230,8 @@ class Tracker extends ChangeNotifier {
       await p.setBool('popup', popup);
       await p.setString('driver', driver);
       await p.setString('plate', plate);
+      await p.setBool('speedAlert', speedAlert);
+      await p.setInt('speedLimit', speedLimit);
     } catch (_) {}
     notifyListeners();
   }
@@ -269,6 +277,7 @@ class Tracker extends ChangeNotifier {
     final c = current;
     if (c == null) return;
     final now = DateTime.now();
+    if (_overSince != null) _endOver(now);
     final s = currentSegment;
     if (s != null) s.end = now;
     c.end = now;
@@ -594,6 +603,7 @@ class Tracker extends ChangeNotifier {
     }
     _prevAt = now;
     _motion(still, speedKmh, now);
+    _speedCheck(now);
     notifyListeners();
   }
 
@@ -745,6 +755,7 @@ class Tracker extends ChangeNotifier {
     final c = current;
     if (c == null) return;
     _watchdog(now);
+    if (gpsStale && _overSince != null) _endOver(lastFix ?? now);
     // Sem leitura há 20 s (garagem, túnel): se vinha devagar, está parado.
     // 1.0.1: vale também quando o GPS ainda não deu nenhuma leitura boa.
     if (gpsStale && speedKmh < 15) {
@@ -755,6 +766,91 @@ class Tracker extends ChangeNotifier {
     _checkPopupAnswer();
     _alerts(c, now);
     if (now.difference(_lastSave).inSeconds >= 60) save();
+    notifyListeners();
+  }
+
+  // ---------- Velocidade (1.7.9) ----------
+  static const _beep = MethodChannel('tacoguard/beep');
+  DateTime? _overSince; // acima do limite desde
+  double _overMax = 0;
+  Speeding? _overEvent; // infração em curso (já passou de 1 min)
+  DateTime _lastBeep = DateTime.fromMillisecondsSinceEpoch(0);
+
+  /// Acima do limite escolhido agora (o cartão da velocidade pisca).
+  bool get overSpeed => _overSince != null;
+
+  /// Segundos que faltam para virar infração (null se não está acima).
+  int? get overSecondsLeft {
+    if (_overSince == null || _overEvent != null) return null;
+    final s = 60 - DateTime.now().difference(_overSince!).inSeconds;
+    return s < 0 ? 0 : s;
+  }
+
+  Future<void> beep() async {
+    try {
+      await _beep.invokeMethod('beep');
+    } catch (_) {
+      try {
+        await SystemSound.play(SystemSoundType.alert);
+      } catch (_) {}
+    }
+  }
+
+  void _speedCheck(DateTime now) {
+    final c = current;
+    final on = speedAlert &&
+        c != null &&
+        !carMode &&
+        currentAct == Act.drive &&
+        !gpsStale;
+    if (!on || speedKmh <= speedLimit) {
+      if (_overSince != null) _endOver(now);
+      return;
+    }
+    if (_overSince == null) {
+      _overSince = now;
+      _overMax = speedKmh;
+    }
+    if (speedKmh > _overMax) _overMax = speedKmh;
+    // Bip a cada 2 s enquanto estiver acima.
+    if (now.difference(_lastBeep).inMilliseconds >= 1900) {
+      _lastBeep = now;
+      beep();
+    }
+    final ev = _overEvent;
+    if (ev == null) {
+      // Mais de 1 min seguido acima: o tacógrafo regista a infração.
+      if (now.difference(_overSince!).inSeconds >= 60) {
+        final e = Speeding(
+            start: _overSince!,
+            maxKmh: _overMax,
+            limit: speedLimit,
+            lat: lat,
+            lon: lon);
+        c!.speeding.add(e);
+        _overEvent = e;
+        lastAlert = 'Excesso de velocidade registado: mais de 1 minuto '
+            'acima de $speedLimit km/h.';
+        lastAlertAt = now;
+        if (voice) _say('Atenção. Excesso de velocidade registado.');
+        save();
+      }
+    } else {
+      ev.maxKmh = _overMax;
+      ev.end = now;
+    }
+  }
+
+  void _endOver(DateTime at) {
+    final ev = _overEvent;
+    if (ev != null) {
+      ev.end = at;
+      ev.maxKmh = _overMax;
+      save();
+    }
+    _overSince = null;
+    _overEvent = null;
+    _overMax = 0;
     notifyListeners();
   }
 

@@ -85,23 +85,74 @@ class Segment {
       );
 }
 
+/// 1.7.9: excesso de velocidade registado (mais de 1 min acima do limite
+/// escolhido nos Ajustes, como o tacógrafo regista).
+class Speeding {
+  DateTime start;
+  DateTime? end;
+  double maxKmh;
+  int limit;
+  double? lat, lon;
+
+  Speeding({
+    required this.start,
+    this.end,
+    required this.maxKmh,
+    required this.limit,
+    this.lat,
+    this.lon,
+  });
+
+  Duration dur(DateTime now) {
+    final d = (end ?? now).difference(start);
+    return d.isNegative ? Duration.zero : d;
+  }
+
+  Map<String, dynamic> toJson() => {
+        's': start.toUtc().millisecondsSinceEpoch,
+        'e': end?.toUtc().millisecondsSinceEpoch,
+        'm': maxKmh.round(),
+        'l': limit,
+        'la': lat,
+        'lo': lon,
+      };
+
+  static Speeding fromJson(Map<String, dynamic> m) => Speeding(
+        start: DateTime.fromMillisecondsSinceEpoch((m['s'] as num).toInt(),
+                isUtc: true)
+            .toLocal(),
+        end: m['e'] == null
+            ? null
+            : DateTime.fromMillisecondsSinceEpoch((m['e'] as num).toInt(),
+                    isUtc: true)
+                .toLocal(),
+        maxKmh: (m['m'] as num?)?.toDouble() ?? 0,
+        limit: (m['l'] as num?)?.toInt() ?? 90,
+        lat: (m['la'] as num?)?.toDouble(),
+        lon: (m['lo'] as num?)?.toDouble(),
+      );
+}
+
 /// Uma jornada: do "Iniciar jornada" ao "Encerrar jornada".
 /// O tempo entre duas jornadas é o descanso (diário ou semanal).
 class Shift {
   DateTime start;
   DateTime? end; // null = jornada aberta
   List<Segment> segments;
+  List<Speeding> speeding; // 1.7.9: excessos de velocidade
   double? startLat, startLon, endLat, endLon;
 
   Shift({
     required this.start,
     this.end,
     List<Segment>? segments,
+    List<Speeding>? speeding,
     this.startLat,
     this.startLon,
     this.endLat,
     this.endLon,
-  }) : segments = segments ?? [];
+  })  : segments = segments ?? [],
+        speeding = speeding ?? [];
 
   bool get open => end == null;
 
@@ -132,6 +183,8 @@ class Shift {
         's': start.toUtc().millisecondsSinceEpoch,
         'e': end?.toUtc().millisecondsSinceEpoch,
         'g': segments.map((x) => x.toJson()).toList(),
+        if (speeding.isNotEmpty)
+          'sp': speeding.map((x) => x.toJson()).toList(),
         'sla': startLat,
         'slo': startLon,
         'ela': endLat,
@@ -149,6 +202,9 @@ class Shift {
                 .toLocal(),
         segments: ((m['g'] as List?) ?? [])
             .map((x) => Segment.fromJson(Map<String, dynamic>.from(x as Map)))
+            .toList(),
+        speeding: ((m['sp'] as List?) ?? [])
+            .map((x) => Speeding.fromJson(Map<String, dynamic>.from(x as Map)))
             .toList(),
         startLat: (m['sla'] as num?)?.toDouble(),
         startLon: (m['slo'] as num?)?.toDouble(),

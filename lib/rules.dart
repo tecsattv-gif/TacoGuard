@@ -348,6 +348,17 @@ List<String> shiftIssues(List<Shift> all, Shift sh, DateTime now) {
           '(mínimo 9h).');
     }
   }
+  // 1.7.9: excessos de velocidade (mais de 1 min acima do limite escolhido).
+  for (final v in sh.speeding) {
+    final d = v.dur(now);
+    final m = d.inMinutes, sec = d.inSeconds % 60;
+    final where = v.lat != null && v.lon != null
+        ? ', em ${v.lat!.toStringAsFixed(5)}, ${v.lon!.toStringAsFixed(5)}'
+        : '';
+    out.add('Excesso de velocidade às ${fmtTime(v.start)}: '
+        '${m}min${sec.toString().padLeft(2, '0')}s acima de ${v.limit} km/h '
+        '(máx. ${v.maxKmh.round()} km/h)$where.');
+  }
   for (final s in sh.segments) {
     if (s.act == Act.unknown) {
       out.add('Há paradas ainda não classificadas (contadas como pausa).');
