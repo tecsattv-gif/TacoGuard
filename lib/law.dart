@@ -173,6 +173,44 @@ const List<LawTopic> kLaw = [
     'As multas mudam de país para país. O TacoGuard é um auxiliar: o que '
         'vale na estrada é o registo do tacógrafo.',
   ]),
+  LawTopic('Cartão de motorista: obrigações e cuidados',
+      'Reg. (UE) n.º 165/2014, art. 26.º a 29.º, 32.º, 34.º e 35.º',
+      Icons.credit_card_rounded, [
+    'O cartão é pessoal e só pode haver um: cada motorista tem um único '
+        'cartão válido, emitido pelo país onde mora habitualmente. Vale '
+        '5 anos.',
+    'CERTO: meter o cartão antes de mexer o caminhão (mesmo para '
+        'manobrar) e deixá-lo durante todo o trabalho do dia, pausas '
+        'incluídas.',
+    'CERTO: ao meter o cartão, fazer a entrada manual de todo o tempo '
+        'fora do caminhão (cama, martelo ou quadrado). Não pode haver '
+        'períodos em branco.',
+    'CERTO: ao trocar de caminhão no mesmo dia, tirar o cartão do '
+        'primeiro e metê-lo no segundo, com a entrada manual do tempo entre '
+        'os dois.',
+    'CERTO: ter o cartão sempre consigo durante a viagem e mostrá-lo na '
+        'fiscalização, com os talões e registos manuais do dia e dos 56 '
+        'dias anteriores.',
+    'CERTO: pedir a renovação pelo menos 15 dias úteis antes de acabar a '
+        'validade; pedir um cartão novo em 7 dias se for perdido, roubado ou '
+        'avariado.',
+    'ERRADO (infração muito grave ou crime): usar o cartão de outro, '
+        'emprestar o seu, ter dois cartões, usar cartão falso, alterado ou '
+        'caducado.',
+    'ERRADO: conduzir sem cartão (por exemplo, esquecido em casa), tirar o '
+        'cartão na pausa para "limpar" o tempo, ou fazer entradas manuais '
+        'falsas.',
+    'ERRADO: deixar o cartão com a empresa ou no caminhão para outro usar. '
+        'A empresa pode descarregá-lo, mas não pode ficar com ele.',
+    'Cuidados: guardar numa capa, longe do sol, do calor (tablier no '
+        'verão), de ímanes e da humidade; não dobrar, riscar nem colar nada '
+        'no chip. Se estiver sujo, limpar o chip só com pano seco e macio.',
+    'O cartão guarda pelo menos 28 dias de atividades; depois os mais '
+        'antigos são escritos por cima. Por isso a empresa tem de o '
+        'descarregar a cada 28 dias no máximo.',
+    'O cartão de motorista não tem PIN. Quem tem PIN é o cartão da '
+        'empresa, da oficina e da polícia.',
+  ]),
   LawTopic('Usar o tacógrafo passo a passo (VDO)',
       'Reg. (UE) n.º 165/2014, art. 34.º; manual do tacógrafo',
       Icons.play_circle_rounded, [

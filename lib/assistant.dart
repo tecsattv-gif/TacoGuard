@@ -800,6 +800,122 @@ const List<FaqGroup> kFaqGroups = [
         ['conflito de tempo', 'conflito', 'hora do cartao', 'erro de hora']),
   ]),
 
+  // ---------------------------- Cartão de motorista: obrigações e cuidados
+  FaqGroup('Cartão do tacógrafo: certo e errado', Icons.credit_card_rounded, [
+    Faq('Quais são as minhas obrigações com o cartão?',
+        '1. Ter um só cartão, pessoal e dentro da validade. 2. Metê-lo antes '
+            'de mexer o caminhão e deixá-lo todo o dia de trabalho. 3. Fazer '
+            'a entrada manual do tempo fora do caminhão. 4. Selecionar a '
+            'atividade certa e marcar os países. 5. Levá-lo sempre consigo e '
+            'mostrá-lo na fiscalização. 6. Avisar e pedir outro em 7 dias se '
+            'perder, for roubado ou avariar. 7. Renovar a tempo.',
+        '$_r165, art. 26.º a 29.º e 34.º',
+        ['obrigacoes', 'obrigacao', 'deveres', 'regras do cartao',
+          'tudo sobre o cartao', 'uso do cartao', 'como usar o cartao']),
+    Faq('O que é proibido fazer com o cartão?',
+        'Usar o cartão de outro motorista, emprestar o seu, ter mais de um '
+            'cartão, usar cartão falso, alterado ou caducado, conduzir sem '
+            'cartão, tirar o cartão na pausa para apagar tempo, fazer '
+            'entradas manuais falsas e mexer no tacógrafo. Várias destas são '
+            'infrações gravíssimas e algumas são crime.',
+        '$_r165, art. 26.º, 32.º e 34.º; Reg. (UE) 2016/403',
+        ['proibido', 'nao pode', 'errado', 'o que nao fazer', 'infracao cartao',
+          'fraude', 'manipular']),
+    Faq('Como devo cuidar do cartão?',
+        'Guarde-o numa capa, longe do sol e do calor (não o deixe no tablier '
+            'no verão), de ímanes, telemóvel encostado e humidade. Não o '
+            'dobre, não o risque e não cole nada no chip. Se estiver sujo, '
+            'limpe o chip só com um pano seco e macio. Meta-o com o chip '
+            'virado para cima e para a frente, sem forçar.',
+        'Manual do tacógrafo',
+        ['cuidar', 'cuidados', 'estragar', 'proteger o cartao', 'limpar o chip',
+          'capa', 'calor', 'sol']),
+    Faq('Como meto o cartão do lado certo?',
+        'Chip virado para cima e a apontar para dentro da ranhura (a seta do '
+            'cartão também indica o sentido). Motorista na ranhura 1; '
+            'colega, em dupla, na ranhura 2. Empurre até o tacógrafo o '
+            'puxar; nunca force.',
+        'Manual do tacógrafo',
+        ['lado certo', 'meter o cartao', 'ranhura', 'posicao do cartao',
+          'chip para cima', 'como inserir']),
+    Faq('Posso ter dois cartões, de dois países?',
+        'Não. Cada motorista só pode ter um cartão válido, emitido pelo país '
+            'onde mora habitualmente. Ter dois é infração gravíssima.',
+        '$_r165, art. 26.º',
+        ['dois cartoes', 'segundo cartao', 'cartao de outro pais',
+          'cartao portugues e espanhol']),
+    Faq('Onde peço o cartão e quanto tempo demora?',
+        'No organismo do país onde mora (em Portugal, o IMT). Com o pedido '
+            'vão normalmente a carta de condução, documento de identificação e '
+            'foto. O cartão é emitido em até 1 mês e vale 5 anos.',
+        '$_r165, art. 26.º',
+        ['pedir o cartao', 'tirar o cartao', 'imt', 'primeiro cartao',
+          'onde peco', 'quanto tempo demora']),
+    Faq('Mudei de morada ou de país. E o cartão?',
+        'O cartão continua válido. Se mudou a residência habitual para outro '
+            'país da UE, pode pedir a troca pelo cartão desse país (e na '
+            'renovação tem de ser lá). Avise a mudança de morada à entidade '
+            'que o emitiu.',
+        '$_r165, art. 26.º e 31.º',
+        ['mudei de pais', 'mudar de pais', 'mudei de morada', 'trocar o cartao',
+          'residencia', 'mudei de casa']),
+    Faq('Mudei de empresa. O cartão fica com a empresa antiga?',
+        'Não. O cartão é seu e vai consigo. Antes de sair, a empresa antiga '
+            'deve descarregar o cartão; a nova descarrega a partir daí. A '
+            'empresa não pode ficar com o seu cartão.',
+        '$_r165, art. 27.º e 33.º',
+        ['mudei de empresa', 'nova empresa', 'empresa ficou com o cartao',
+          'patrao ficou com o cartao', 'mudar de patrao', 'despedido']),
+    Faq('A empresa pode guardar o meu cartão?',
+        'Não. O cartão é pessoal e tem de estar consigo quando conduz. A '
+            'empresa pode pedi-lo para o descarregar, mas depois tem de o '
+            'devolver.',
+        '$_r165, art. 27.º',
+        ['empresa guardar', 'empresa ficar', 'entregar o cartao',
+          'deixar o cartao na empresa', 'escritorio']),
+    Faq('Troquei de caminhão a meio do dia. Como faço?',
+        '1. No primeiro caminhão, parado, ponha a atividade certa e tire o '
+            'cartão (país de fim não é preciso se o dia continua). 2. No '
+            'segundo, meta o cartão e, na entrada manual, registe o tempo '
+            'entre os dois (martelo se andou a trabalhar, quadrado se '
+            'esperou). 3. Continue normalmente.',
+        '$_r165, art. 34.º',
+        ['troquei de caminhao', 'trocar de caminhao', 'outro caminhao',
+          'mudar de camiao', 'dois caminhoes no dia', 'troca de veiculo']),
+    Faq('O caminhão tem tacógrafo de disco. Uso o cartão?',
+        'Não. No tacógrafo analógico usa discos (folhas), um por dia, com '
+            'nome, locais, datas e quilómetros escritos. Na fiscalização '
+            'mostra os discos e também o cartão, se tiver um, porque os dias '
+            'no tacógrafo digital também contam.',
+        '$_r165, art. 34.º e 36.º',
+        ['disco', 'analogico', 'folha', 'tacografo antigo', 'disco diagrama']),
+    Faq('O cartão tem PIN?',
+        'O cartão de motorista não tem PIN. Só o cartão da empresa, o da '
+            'oficina e o da polícia é que pedem PIN.',
+        'Manual do tacógrafo',
+        ['pin', 'codigo', 'senha do cartao']),
+    Faq('Quantos dias o cartão guarda?',
+        'Pelo menos 28 dias de atividades (os mais novos guardam mais). '
+            'Depois os dias mais antigos são escritos por cima, por isso a '
+            'empresa tem de o descarregar a cada 28 dias no máximo.',
+        '$_r165, anexo IC',
+        ['quantos dias guarda', 'memoria do cartao', 'cartao cheio',
+          'capacidade', 'guarda quantos dias']),
+    Faq('Encontrei o cartão que dei como perdido. Posso usar?',
+        'Não. Depois de declarado perdido ou roubado o cartão fica anulado. '
+            'Entregue-o à entidade que o emitiu e use só o cartão novo.',
+        '$_r165, art. 29.º',
+        ['encontrei o cartao', 'achei o cartao', 'cartao antigo',
+          'cartao anulado', 'apareceu o cartao']),
+    Faq('O cartão ficou preso ou não sai. O que faço?',
+        'O cartão só sai com o caminhão parado e depois de escolher o país '
+            'de fim. Confirme que parou, ligue a ignição e segure a tecla da '
+            'ranhura. Se ainda assim não sair, não force: pode imprimir o '
+            'talão, anotar e levar a uma oficina autorizada.',
+        'Manual do tacógrafo',
+        ['preso', 'nao sai', 'cartao preso', 'encravado', 'nao ejeta']),
+  ]),
+
   // ------------------------------------------- Função OUT e hora do tacógrafo
   FaqGroup('Função OUT e hora do tacógrafo', Icons.schedule_rounded, [
     Faq('O que é a função OUT do tacógrafo?',
