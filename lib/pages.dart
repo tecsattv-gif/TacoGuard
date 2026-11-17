@@ -341,7 +341,7 @@ class _HistoryPageState extends State<HistoryPage> {
     }
     final ordered = sorted(_t.shifts);
     return ListView.builder(
-      padding: const EdgeInsets.fromLTRB(16, 4, 16, 24),
+      padding: EdgeInsets.fromLTRB(16, 4, 16, 24 + MediaQuery.paddingOf(context).bottom),
       itemCount: list.length,
       itemBuilder: (ctx, i) {
         final s = list[i];
@@ -564,7 +564,7 @@ class _ShiftDetailPageState extends State<ShiftDetailPage> {
         ],
       ),
       body: ListView(
-        padding: const EdgeInsets.fromLTRB(16, 4, 16, 24),
+        padding: EdgeInsets.fromLTRB(16, 4, 16, 24 + MediaQuery.paddingOf(context).bottom),
         children: [
           TCard(
             child: Column(children: [
@@ -749,7 +749,7 @@ class _ReportsPageState extends State<ReportsPage> {
           .length;
     }
     return ListView(
-      padding: const EdgeInsets.fromLTRB(16, 4, 16, 24),
+      padding: EdgeInsets.fromLTRB(16, 4, 16, 24 + MediaQuery.paddingOf(context).bottom),
       children: [
         SegmentedButton<ReportKind>(
           showSelectedIcon: false,
@@ -985,7 +985,7 @@ class _SettingsPageState extends State<SettingsPage> {
   @override
   Widget build(BuildContext context) {
     return ListView(
-      padding: const EdgeInsets.fromLTRB(16, 0, 16, 28),
+      padding: EdgeInsets.fromLTRB(16, 0, 16, 28 + MediaQuery.paddingOf(context).bottom),
       children: [
         _title('Paradas'),
         TCard(

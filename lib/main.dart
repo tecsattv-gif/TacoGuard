@@ -517,7 +517,7 @@ class _TodayPageState extends State<TodayPage> {
     final c = _t.current;
     final now = DateTime.now();
     return ListView(
-      padding: const EdgeInsets.fromLTRB(16, 4, 16, 28),
+      padding: EdgeInsets.fromLTRB(16, 4, 16, 28 + MediaQuery.paddingOf(context).bottom),
       children: c == null ? _closed(now) : _open(c, now),
     );
   }
