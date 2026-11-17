@@ -649,6 +649,28 @@ class _TodayPageState extends State<TodayPage> {
   String _mmss(Duration d) =>
       '${d.inMinutes}:${(d.inSeconds % 60).toString().padLeft(2, '0')}';
 
+  /// Ex.: 7h de condução num dia em que ainda há dias de 10 h:
+  /// "Ainda pode conduzir: 2h00 (9h) ou 3h00 (10h)".
+  String _canDriveText(Status st) {
+    Duration rest(Duration lim) {
+      final d = lim - st.dayDrive;
+      return d.isNegative ? Duration.zero : d;
+    }
+
+    final r9 = rest(Limits.dailyDrive);
+    final r10 = rest(Limits.dailyDriveExt);
+    if (st.dayLimit < Limits.dailyDriveExt) {
+      return r9 == Duration.zero
+          ? 'Limite de 9h do dia atingido'
+          : 'Ainda pode conduzir: ${fmtDur(r9)} (até 9h)';
+    }
+    if (r10 == Duration.zero) return 'Limite de 10h do dia atingido';
+    if (r9 == Duration.zero) {
+      return 'Ainda pode conduzir: ${fmtDur(r10)} (até 10h)';
+    }
+    return 'Ainda pode conduzir: ${fmtDur(r9)} (9h) ou ${fmtDur(r10)} (10h)';
+  }
+
   // ---------- Jornada aberta ----------
   List<Widget> _open(Shift c, DateTime now) {
     final st = computeStatus(_t.shifts, c, now);
@@ -843,10 +865,13 @@ class _TodayPageState extends State<TodayPage> {
           Fit('Condução contínua: ${fmtDur(b.driven)} de 4h30',
               style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700)),
           const SizedBox(height: 2),
-          Fit(
-              'Condução do dia: ${fmtDur(st.dayDrive)} de '
-              '${st.dayLimit.inHours}h • faltam ${fmtDur(st.dayLeft)}',
+          Fit('Condução do dia: ${fmtDur(st.dayDrive)}',
               style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+          const SizedBox(height: 2),
+          // 1.7.5: quanto ainda pode conduzir hoje, nas 9 h e nas 10 h.
+          Fit(_canDriveText(st),
+              style: const TextStyle(
+                  fontSize: 14, fontWeight: FontWeight.w800, color: TG.ok)),
           const SizedBox(height: 2),
           Fit(
               b.firstPartDone

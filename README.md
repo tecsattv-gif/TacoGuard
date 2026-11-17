@@ -63,6 +63,7 @@ Segredos do repositório (Settings > Secrets and variables > Actions):
 
 ## Versões
 
+- **1.7.5**: Painel da tela Hoje mostra quanto ainda pode conduzir no dia, nas 9 h e nas 10 h. Ex.: com 4h + 3h feitas, "Ainda pode conduzir: 2h00 (9h) ou 3h00 (10h)". Sem dias de 10 h disponíveis na semana, mostra só até às 9h.
 - **1.7.4**: Nos relatórios PDF, a coluna "Local / nota" sem nota escrita pelo motorista mostra as coordenadas do local automaticamente (também nas linhas de condução e de descanso).
 - **1.7.3**: O fim das listas (detalhe do dia, Histórico, Relatórios, Lei, Ajustes) não fica mais escondido atrás da barra de navegação do Android.
 - **1.7.2**: Pausa completa (45 min, ou 15 + 30) zera a condução contínua e o contador volta às **4h30**, mesmo quando a pausa ficou gravada em pedaços seguidos ("a classificar" + pausa, ou partida por um pulo do GPS de poucos segundos). Martelo ou carga no meio continuam cortando a pausa, como na lei. O anel da tela Hoje mostra o que falta pelo limite que chega primeiro: a pausa, as **9 h/10 h do dia** ou a semana (ex.: depois de 9h de condução num dia de 10 h, mostra "Faltam 1h00 para as 10h do dia"), e há uma linha com a condução do dia e o que falta.
