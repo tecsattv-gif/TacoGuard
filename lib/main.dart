@@ -5,6 +5,7 @@ import 'dart:ui' show FontFeature;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:android_intent_plus/android_intent.dart';
 import 'package:flutter_overlay_window/flutter_overlay_window.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
@@ -519,7 +520,59 @@ class _TodayPageState extends State<TodayPage> {
         ],
       ),
     );
-    if (ok == true) await _t.endShift();
+    if (ok != true) return;
+    await _t.endShift();
+    if (!mounted) return;
+    await _askAlarm();
+  }
+
+  /// 1.8.2: ao encerrar, pergunta se quer pôr o despertador do telefone
+  /// para o fim do descanso de 9 h ou de 11 h.
+  Future<void> _askAlarm() async {
+    final end = DateTime.now();
+    final h = await showDialog<int>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Acertar o despertador?'),
+        content: const Text(
+            'O despertador do telefone toca no fim do descanso.'),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(ctx, 0),
+              child: const Text('Não')),
+          FilledButton(
+              onPressed: () => Navigator.pop(ctx, 9),
+              child: Text('9 h  (${fmtTime(end.add(const Duration(hours: 9)))})')),
+          FilledButton(
+              onPressed: () => Navigator.pop(ctx, 11),
+              child: Text('11 h  (${fmtTime(end.add(const Duration(hours: 11)))})')),
+        ],
+      ),
+    );
+    if (h == null || h == 0) return;
+    final at = end.add(Duration(hours: h));
+    try {
+      await AndroidIntent(
+        action: 'android.intent.action.SET_ALARM',
+        arguments: <String, dynamic>{
+          'android.intent.extra.alarm.HOUR': at.hour,
+          'android.intent.extra.alarm.MINUTES': at.minute,
+          'android.intent.extra.alarm.MESSAGE': 'TacoGuard: fim do descanso de $h h',
+          'android.intent.extra.alarm.SKIP_UI': true,
+        },
+      ).launch();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text('Despertador acertado para ${fmtTime(at)} '
+                '(descanso de $h h).')));
+      }
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text('Não deu para acertar o despertador. Acerte '
+                'à mão para ${fmtTime(at)}.')));
+      }
+    }
   }
 
   @override

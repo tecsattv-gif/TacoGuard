@@ -6,6 +6,8 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <!-- 1.8.2: acertar o despertador do telefone no fim do descanso -->
+    <uses-permission android:name="com.android.alarm.permission.SET_ALARM" />
     <!-- 1.7.7: pedir para ficar fora da economia de bateria (GPS não cai) -->
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
     <!-- Pop-up "Pausa / Martelo / Carga-Descarga" por cima dos outros apps -->
@@ -49,6 +51,9 @@
     </application>
 
     <queries>
+        <intent>
+            <action android:name="android.intent.action.SET_ALARM" />
+        </intent>
         <package android:name="com.google.android.apps.maps" />
         <intent>
             <action android:name="android.intent.action.TTS_SERVICE" />

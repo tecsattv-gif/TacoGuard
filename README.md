@@ -35,7 +35,7 @@ O APK mais novo fica em [Releases](https://github.com/tecsattv-gif/TacoGuard/rel
 1. Abra o app e toque em **Iniciar jornada** e confirme no pop-up. Aceite as permissões de localização e de "Sobrepor a outros apps".
 2. Em **Ajustes**, toque em *Abrir ajustes de bateria* e toque em **Permitir** (o TacoGuard fica fora da economia de bateria, para o celular não cortar o GPS com a tela apagada). No Xiaomi, ligue também *Início automático* do TacoGuard, deixe a localização em *Permitir o tempo todo* com *Localização precisa*, e tranque o app nos recentes (cadeado).
 3. Dirija normalmente. Quando parar, a parada fica em martelo (como no tacógrafo). Se for pausa, mude no cartão da tela Hoje ou no pop-up que aparece aos 15 min parado.
-4. No fim do dia, toque em **Encerrar jornada**. Começa a contar o descanso.
+4. No fim do dia, toque em **Encerrar jornada**. Começa a contar o descanso. Logo a seguir o app pergunta se quer **acertar o despertador** do telefone para o fim do descanso de **9 h** ou de **11 h** (ou Não).
 5. Encerrou cedo demais? Toque em **Reabrir a jornada** (disponível até o descanso chegar a 9 h).
 6. Apagou uma jornada sem querer? Toque em **DESFAZER** na barra que aparece (8 segundos).
 
@@ -64,6 +64,7 @@ Segredos do repositório (Settings > Secrets and variables > Actions):
 
 ## Versões
 
+- **1.8.2**: **Despertador ao encerrar a jornada**: depois de confirmar o encerramento, o app pergunta se quer acertar o despertador do telefone para o fim do descanso de **9 h** ou de **11 h** (mostra a hora em cada botão). Escolhendo, o alarme é criado direto no app Relógio do Android, com o nome "TacoGuard: fim do descanso de 9 h/11 h".
 - **1.8.1**: Bip do aviso de velocidade mais calmo: **um bip só** ao passar do limite escolhido; depois silêncio (o cartão continua vermelho a piscar com a contagem) e, a partir dos **40 s** acima, **bip seguido a cada 1 s** até a velocidade voltar ao limite do seletor. A infração continua a ser registada aos 60 s.
 - **1.8.0**: Novo som do bip do aviso de velocidade (alerta curto escolhido pelo motorista, em `android/app/src/main/res/raw/bip.wav`), tocado no volume de alarme. O botão "Testar o bip" dos Ajustes já toca o som novo.
 - **1.7.9**: **Aviso de velocidade**: limite de 85 a 100 km/h nos Ajustes (padrão 90, com botão para testar o bip). Acima do limite: bip a cada 2 s, cartão da velocidade vermelho a piscar e contagem dos 60 s. Mais de 1 minuto acima fica registado como excesso de velocidade (hora, duração, máxima e local) em "Avisos" na tela Hoje, no Histórico e em "Avisos e infrações" do PDF, junto com a quebra de pausa e a condução acima do permitido.
