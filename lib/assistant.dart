@@ -1110,7 +1110,7 @@ const List<FaqGroup> kFaqGroups = [
   // ----------------------------------------------------------------- App
   FaqGroup('Como usar o TacoGuard', Icons.phone_android_rounded, [
     Faq('Como começo a jornada no TacoGuard?',
-        'Na tela Hoje, toque em Iniciar jornada. O início é sempre manual, '
+        'Na tela Hoje, toque em Iniciar jornada e confirme no pop-up. O início é sempre manual, '
             'para o app não abrir a jornada sozinho quando anda de carro. '
             'Depois disso o GPS faz o resto.',
         _app,

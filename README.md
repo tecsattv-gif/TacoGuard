@@ -10,7 +10,7 @@ O APK mais novo fica em [Releases](https://github.com/tecsattv-gif/TacoGuard/rel
 
 ## O que o app faz
 
-- **Jornada automática por GPS**: toque em *Iniciar jornada* de manhã. Arrancou, conta condução. Parou, grava as coordenadas, a hora e o tempo parado.
+- **Jornada automática por GPS**: toque em *Iniciar jornada* de manhã e confirme no pop-up. Arrancou, conta condução. Parou, grava as coordenadas, a hora e o tempo parado.
 - **Pop-up a cada parada**: depois de alguns minutos parado (1 a 5, você escolhe; o padrão é 2) aparece a pergunta *Pausa, Martelo ou Carga/Descarga?*, por cima do Google Maps ou de outro app. Sem resposta, a parada fica "a classificar" (conta como pausa até ser corrigida).
 - **Condução contínua**: anel com o tempo que falta para as 4h30 e controle da pausa de 45 min (ou 15 + 30).
 - **Limites**: condução diária (9 h, 10 h duas vezes por semana), semanal (56 h), duas semanas (90 h), amplitude (13 h / 15 h), descansos diários reduzidos (3 entre descansos semanais) e prazo do descanso semanal.
@@ -30,7 +30,7 @@ O APK mais novo fica em [Releases](https://github.com/tecsattv-gif/TacoGuard/rel
 
 ## Como usar
 
-1. Abra o app e toque em **Iniciar jornada**. Aceite as permissões de localização e de "Sobrepor a outros apps".
+1. Abra o app e toque em **Iniciar jornada** e confirme no pop-up. Aceite as permissões de localização e de "Sobrepor a outros apps".
 2. Em **Ajustes**, toque em *Abrir ajustes de bateria* e deixe o TacoGuard "Sem restrições", para o celular não cortar o GPS com a tela apagada.
 3. Dirija normalmente. Quando parar, responda ao pop-up.
 4. No fim do dia, toque em **Encerrar jornada**. Começa a contar o descanso.
@@ -61,6 +61,7 @@ Segredos do repositório (Settings > Secrets and variables > Actions):
 
 ## Versões
 
+- **1.6.5**: **Confirmação ao iniciar a jornada**: ao tocar em *Iniciar jornada* aparece um pop-up perguntando se quer mesmo começar (com a hora), para não abrir a jornada por engano. Se o descanso ainda não chegou às 9 h, o pop-up avisa quanto falta.
 - **1.6.4**: **Cartão do tacógrafo: certo e errado**: novo tema na Lei (obrigações e cuidados) e novo assunto na Consulta (14 perguntas): obrigações do motorista, o que é proibido, cuidados com o cartão, lado certo de meter, um só cartão, pedido e validade, mudança de país ou de empresa, a empresa não pode ficar com o cartão, troca de caminhão a meio do dia, tacógrafo de disco, PIN, cartão encontrado depois de perdido e cartão preso. 149 perguntas offline.
 - **1.6.3**: **Usar o tacógrafo**: dois assuntos novos na Consulta (29 perguntas) e novo tema na Lei, com o passo a passo do tacógrafo (começar e acabar o dia, entrada manual, atividades, pausa, fronteira, carga/descarga, ferry, talões, papel, idioma, avisos, erros, dois motoristas, oficina). **Função OUT e hora do tacógrafo**: novo tema na Lei e novo assunto na Consulta (7 perguntas). OUT explicado (fora do âmbito, quando pode usar, como ligar e desligar, conta como martelo) e passo a passo para mudar a hora local no tacógrafo (verão/inverno, outro país, hora UTC). 135 perguntas offline.
 - **1.6.2**: email de contato (tecsattv@gmail.com) nos créditos da abertura, em Ajustes > Sobre e no README. Textos da tela Hoje (condução contínua e próxima pausa) já não quebram.

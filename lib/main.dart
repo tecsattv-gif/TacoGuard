@@ -398,6 +398,30 @@ class _TodayPageState extends State<TodayPage> {
   }
 
   Future<void> _start() async {
+    final now = DateTime.now();
+    final rest = _t.restSoFar(now);
+    final short = rest != null && rest < Limits.dailyRestReduced;
+    final go = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        icon: Icon(short ? Icons.warning_amber_rounded : Icons.play_arrow_rounded,
+            color: short ? Colors.orange : null, size: 36),
+        title: const Text('Iniciar a jornada?'),
+        content: Text('A jornada começa agora, às ${fmtTime(now)}, e o GPS '
+            'passa a contar a condução e as paradas.'
+            '${short ? '\n\nAtenção: o descanso ainda tem só ${fmtDur(rest)} '
+                '(faltam ${fmtDur(Limits.dailyRestReduced - rest)} para as 9 h).' : ''}'),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text('Cancelar')),
+          FilledButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: const Text('Iniciar')),
+        ],
+      ),
+    );
+    if (go != true || !mounted) return;
     final err = await _t.startShift();
     if (!mounted) return;
     if (err != null) {
