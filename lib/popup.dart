@@ -51,7 +51,7 @@ class StopChoices extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(TG.icon(a), color: c, size: 32),
+              ActIcon(a, color: c, size: 32),
               const SizedBox(height: 8),
               Text(
                 a == Act.load ? 'Carga/\nDescarga' : actLabel(a),
@@ -77,7 +77,7 @@ class StopChoices extends StatelessWidget {
                 padding:
                     const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                 child: Row(children: [
-                  Icon(TG.icon(a), color: c, size: 28),
+                  ActIcon(a, color: c, size: 28),
                   const SizedBox(width: 14),
                   Expanded(
                     child: Column(

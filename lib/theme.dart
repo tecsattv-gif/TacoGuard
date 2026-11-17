@@ -170,3 +170,54 @@ class Fit extends StatelessWidget {
 Widget clampTextScale(BuildContext context, Widget? child) =>
     MediaQuery.withClampedTextScaling(
         maxScaleFactor: 1.3, child: child ?? const SizedBox.shrink());
+
+
+/// 1.8.4: ícone da atividade. Condução é um volante (desenhado aqui, o
+/// Material não tem); as outras usam os ícones de [TG.icon].
+class ActIcon extends StatelessWidget {
+  final Act act;
+  final Color? color;
+  final double size;
+  const ActIcon(this.act, {super.key, this.color, this.size = 24});
+
+  @override
+  Widget build(BuildContext context) {
+    if (act != Act.drive) return Icon(TG.icon(act), color: color, size: size);
+    final c = color ?? IconTheme.of(context).color ?? Colors.white;
+    return SizedBox(
+      width: size,
+      height: size,
+      child: CustomPaint(painter: _WheelPainter(c)),
+    );
+  }
+}
+
+class _WheelPainter extends CustomPainter {
+  final Color color;
+  _WheelPainter(this.color);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final s = size.shortestSide;
+    final c = Offset(size.width / 2, size.height / 2);
+    final r = s * 0.40;
+    final stroke = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round
+      ..strokeWidth = s * 0.10;
+    // Aro.
+    canvas.drawCircle(c, r, stroke);
+    // Raios: esquerda, direita e baixo.
+    final hub = s * 0.11;
+    stroke.strokeWidth = s * 0.09;
+    canvas.drawLine(c.translate(-hub, 0), c.translate(-r, 0), stroke);
+    canvas.drawLine(c.translate(hub, 0), c.translate(r, 0), stroke);
+    canvas.drawLine(c.translate(0, hub), c.translate(0, r), stroke);
+    // Centro.
+    canvas.drawCircle(c, hub * 1.15, Paint()..color = color);
+  }
+
+  @override
+  bool shouldRepaint(_WheelPainter old) => old.color != color;
+}

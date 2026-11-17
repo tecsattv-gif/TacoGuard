@@ -760,7 +760,7 @@ class _TodayPageState extends State<TodayPage> {
         blink: _t.overSpeed, // 1.7.9: acima do limite: vermelho a piscar
         padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
         child: Row(children: [
-          Icon(TG.icon(act), color: TG.act(act), size: 28),
+          ActIcon(act, color: TG.act(act), size: 28),
           const SizedBox(width: 14),
           Expanded(
             child: Column(
@@ -1358,7 +1358,7 @@ class _Total extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Expanded(
         child: Column(children: [
-          Icon(TG.icon(act), color: TG.act(act), size: 22),
+          ActIcon(act, color: TG.act(act), size: 22),
           const SizedBox(height: 4),
           Text(fmtDur(value),
               style:
@@ -1403,7 +1403,7 @@ class _ActPicker extends StatelessWidget {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(TG.icon(a),
+                          ActIcon(a,
                               color: current == a ? TG.act(a) : TG.muted,
                               size: 24),
                           const SizedBox(height: 4),

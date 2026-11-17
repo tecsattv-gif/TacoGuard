@@ -158,7 +158,7 @@ class SegmentList extends StatelessWidget {
                     borderRadius: BorderRadius.circular(3)),
               ),
               const SizedBox(width: 10),
-              Icon(TG.icon(s.act), color: TG.act(s.act), size: 22),
+              ActIcon(s.act, color: TG.act(s.act), size: 22),
               const SizedBox(width: 10),
               Expanded(
                 child: Column(
@@ -243,7 +243,7 @@ class SegmentList extends StatelessWidget {
               Wrap(spacing: 8, runSpacing: 8, children: [
                 for (final a in [Act.drive, Act.pause, Act.work, Act.load])
                   ChoiceChip(
-                    avatar: Icon(TG.icon(a), size: 18, color: TG.act(a)),
+                    avatar: ActIcon(a, size: 18, color: TG.act(a)),
                     label: Text(actLabel(a)),
                     selected: s.act == a,
                     onSelected: (_) async {
@@ -647,6 +647,11 @@ class _ReportsPageState extends State<ReportsPage> {
   @override
   void initState() {
     super.initState();
+    // 1.8.4: a jornada conta no dia em que começou. Abre no dia da jornada
+    // em curso (ou da última), não no dia de hoje: depois da meia-noite o
+    // relatório de hoje ainda estaria vazio.
+    final last = _t.current ?? (_t.shifts.isEmpty ? null : _t.shifts.last);
+    if (last != null) _ref = last.start;
     _t.addListener(_refresh);
   }
 
