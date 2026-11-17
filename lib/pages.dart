@@ -1029,6 +1029,19 @@ class _SettingsPageState extends State<SettingsPage> {
                     : null,
                 onChangeEnd: (_) => _t.saveSettings(),
               ),
+              SwitchListTile(
+                contentPadding: EdgeInsets.zero,
+                title: const Text('Bip'),
+                subtitle: const Text('Desligado: sem som; o cartão vermelho a '
+                    'piscar e o registo da infração continuam'),
+                value: _t.speedBeep,
+                onChanged: _t.speedAlert
+                    ? (v) {
+                        setState(() => _t.speedBeep = v);
+                        _t.saveSettings();
+                      }
+                    : null,
+              ),
               Align(
                 alignment: Alignment.centerRight,
                 child: TextButton.icon(

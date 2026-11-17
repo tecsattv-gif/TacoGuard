@@ -35,6 +35,7 @@ class Tracker extends ChangeNotifier {
   // 1.7.9: aviso de velocidade (bip acima do limite; 1 min acima = infração)
   bool speedAlert = true;
   int speedLimit = 90; // 85 a 100 km/h
+  bool speedBeep = true; // 1.8.3: bip ligado/desligado (o cartão pisca igual)
 
   // ---------- GPS ----------
   StreamSubscription<Position>? _sub;
@@ -155,6 +156,7 @@ class Tracker extends ChangeNotifier {
       plate = p.getString('plate') ?? '';
       speedAlert = p.getBool('speedAlert') ?? true;
       speedLimit = (p.getInt('speedLimit') ?? 90).clamp(85, 100);
+      speedBeep = p.getBool('speedBeep') ?? true;
       carMode = p.getBool('carMode') ?? false;
       _truckLat = p.getDouble('truckLat');
       _truckLon = p.getDouble('truckLon');
@@ -232,6 +234,7 @@ class Tracker extends ChangeNotifier {
       await p.setString('plate', plate);
       await p.setBool('speedAlert', speedAlert);
       await p.setInt('speedLimit', speedLimit);
+      await p.setBool('speedBeep', speedBeep);
     } catch (_) {}
     notifyListeners();
   }
@@ -812,7 +815,7 @@ class Tracker extends ChangeNotifier {
       _overMax = speedKmh;
       // 1.8.1: um bip só, ao passar do limite.
       _lastBeep = now;
-      beep();
+      if (speedBeep) beep();
     }
     if (speedKmh > _overMax) _overMax = speedKmh;
     // 1.8.1: depois de 40 s acima, bip seguido (a cada 1 s) até voltar
@@ -820,7 +823,7 @@ class Tracker extends ChangeNotifier {
     if (now.difference(_overSince!).inSeconds >= 40 &&
         now.difference(_lastBeep).inMilliseconds >= 950) {
       _lastBeep = now;
-      beep();
+      if (speedBeep) beep();
     }
     final ev = _overEvent;
     if (ev == null) {
