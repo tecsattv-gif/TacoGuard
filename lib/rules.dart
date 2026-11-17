@@ -226,10 +226,7 @@ class Status {
     return 'pausa';
   }
 
-  Duration get dayLeft {
-    final d = dayLimit - dayDrive;
-    return d.isNegative ? Duration.zero : d;
-  }
+
 
   /// Pode ir até 15 h hoje? (ainda tem descanso reduzido de 9 h disponível)
   bool get canExtendAmplitude =>
