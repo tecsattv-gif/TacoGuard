@@ -102,6 +102,14 @@ pw.Widget _box(String label, String value) => pw.Expanded(
       ),
     );
 
+/// 1.7.4: "Local / nota" vazio leva as coordenadas do trecho.
+String _noteOr(String note, double? lat, double? lon) {
+  final n = note.trim();
+  if (n.isNotEmpty) return n;
+  final c = _coord(lat, lon);
+  return c == '-' ? '' : c;
+}
+
 String _coord(double? lat, double? lon) => (lat == null || lon == null)
     ? '-'
     : '${lat.toStringAsFixed(5)}, ${lon.toStringAsFixed(5)}';
@@ -231,7 +239,7 @@ Future<File> buildReport(ReportKind kind, DateTime ref, List<Shift> all,
               ? '${pauseLabel(d)} (a classificar)'
               : pauseLabel(d)),
           _cell(_coord(g.lat, g.lon)),
-          _cell(g.note),
+          _cell(_noteOr(g.note, g.lat, g.lon)),
         ]));
       }
       if (s.end == null) continue;
@@ -253,7 +261,7 @@ Future<File> buildReport(ReportKind kind, DateTime ref, List<Shift> all,
               : restLabel(k),
               bold: true, color: bad ? _red : null),
           _cell(_coord(s.endLat, s.endLon), bold: true),
-          _cell(''),
+          _cell(_noteOr('', s.endLat, s.endLon)),
         ],
       ));
     }
@@ -360,7 +368,7 @@ Future<File> buildReport(ReportKind kind, DateTime ref, List<Shift> all,
               _cell(g.act == Act.drive
                   ? (g.km > 0 ? fmtKm(g.km) : '')
                   : _coord(g.lat, g.lon)),
-              _cell(g.note),
+              _cell(_noteOr(g.note, g.lat, g.lon)),
             ]),
         ],
       ));
