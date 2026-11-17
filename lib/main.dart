@@ -399,8 +399,8 @@ class _TodayPageState extends State<TodayPage> {
 
   Future<void> _start() async {
     final now = DateTime.now();
-    final rest = _t.restSoFar(now);
-    final short = rest != null && rest < Limits.dailyRestReduced;
+    final rest = _t.restSoFar(now) ?? Limits.dailyRest;
+    final short = _t.shifts.isNotEmpty && rest < Limits.dailyRestReduced;
     final go = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(

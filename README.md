@@ -22,7 +22,7 @@ O APK mais novo fica em [Releases](https://github.com/tecsattv-gif/TacoGuard/rel
 - **Histórico**: todas as jornadas, com avisos de limite excedido. Cada trecho pode ser corrigido (tipo, nome do local) e aberto no mapa.
 - **Relatórios em PDF**: diário, semanal, bissemanal e mensal. Abrir, salvar no telefone ou compartilhar.
 - **Lei do tacógrafo**: resumo por tema, com o artigo, busca e funcionando sem internet.
-- **Consulta**: 149 perguntas e respostas prontas (offline), agrupadas por assunto e com busca, e IA (Gemini), que responde só com base no resumo da lei que está no app.
+- **Consulta**: 150 perguntas e respostas prontas (offline), agrupadas por assunto e com busca, e IA (Gemini), que responde só com base no resumo da lei que está no app.
 - **Passar do tempo (art. 12.º)**: passo a passo para quando não há vaga no park ou para chegar a casa, com o que escrever atrás do talão.
 - **Usar o tacógrafo**: passo a passo para começar o dia (cartão, entrada manual, país), mudar a atividade, fazer a pausa, fronteira, carga/descarga, ferry, acabar o dia, imprimir talões, trocar o papel, idioma, avisos, erros, dois motoristas e oficina.
 - **Função OUT e hora do tacógrafo**: o que é o OUT (fora do âmbito), quando pode e não pode ser usado e como ligar/desligar; como mudar a hora local (verão/inverno, outro país) e o que é a hora UTC.
@@ -35,6 +35,7 @@ O APK mais novo fica em [Releases](https://github.com/tecsattv-gif/TacoGuard/rel
 3. Dirija normalmente. Quando parar, responda ao pop-up.
 4. No fim do dia, toque em **Encerrar jornada**. Começa a contar o descanso.
 5. Encerrou cedo demais? Toque em **Reabrir a jornada** (disponível até o descanso chegar a 9 h).
+6. Apagou uma jornada sem querer? Toque em **DESFAZER** na barra que aparece (8 segundos).
 
 ## Regras usadas
 
@@ -61,7 +62,7 @@ Segredos do repositório (Settings > Secrets and variables > Actions):
 
 ## Versões
 
-- **1.6.5**: **Confirmação ao iniciar a jornada**: ao tocar em *Iniciar jornada* aparece um pop-up perguntando se quer mesmo começar (com a hora), para não abrir a jornada por engano. Se o descanso ainda não chegou às 9 h, o pop-up avisa quanto falta.
+- **1.6.5**: **Confirmação ao iniciar a jornada**: ao tocar em *Iniciar jornada* aparece um pop-up perguntando se quer mesmo começar (com a hora), para não abrir a jornada por engano. Se o descanso ainda não chegou às 9 h, o pop-up avisa quanto falta. **Proteção contra acidentes nas edições**: trocar o tipo de um trecho ou mudar a nota pede confirmação. **Apagar com Desfazer**: ao apagar uma jornada aparece uma barra com DESFAZER e contagem de 8 segundos para recuperar tudo. Nova pergunta na Consulta sobre recuperar jornada apagada. 150 perguntas offline.
 - **1.6.4**: **Cartão do tacógrafo: certo e errado**: novo tema na Lei (obrigações e cuidados) e novo assunto na Consulta (14 perguntas): obrigações do motorista, o que é proibido, cuidados com o cartão, lado certo de meter, um só cartão, pedido e validade, mudança de país ou de empresa, a empresa não pode ficar com o cartão, troca de caminhão a meio do dia, tacógrafo de disco, PIN, cartão encontrado depois de perdido e cartão preso. 149 perguntas offline.
 - **1.6.3**: **Usar o tacógrafo**: dois assuntos novos na Consulta (29 perguntas) e novo tema na Lei, com o passo a passo do tacógrafo (começar e acabar o dia, entrada manual, atividades, pausa, fronteira, carga/descarga, ferry, talões, papel, idioma, avisos, erros, dois motoristas, oficina). **Função OUT e hora do tacógrafo**: novo tema na Lei e novo assunto na Consulta (7 perguntas). OUT explicado (fora do âmbito, quando pode usar, como ligar e desligar, conta como martelo) e passo a passo para mudar a hora local no tacógrafo (verão/inverno, outro país, hora UTC). 135 perguntas offline.
 - **1.6.2**: email de contato (tecsattv@gmail.com) nos créditos da abertura, em Ajustes > Sobre e no README. Textos da tela Hoje (condução contínua e próxima pausa) já não quebram.

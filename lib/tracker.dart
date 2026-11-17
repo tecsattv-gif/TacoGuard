@@ -375,9 +375,21 @@ class Tracker extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> deleteShift(Shift sh) async {
-    if (sh.open) return;
-    shifts.remove(sh);
+  /// Apaga a jornada e devolve a posição dela na lista (para desfazer).
+  Future<int> deleteShift(Shift sh) async {
+    if (sh.open) return -1;
+    final i = shifts.indexOf(sh);
+    if (i < 0) return -1;
+    shifts.removeAt(i);
+    await save();
+    notifyListeners();
+    return i;
+  }
+
+  /// 1.6.5: desfaz a exclusão (botão Desfazer nos 8 segundos).
+  Future<void> restoreShift(Shift sh, int index) async {
+    if (shifts.contains(sh)) return;
+    shifts.insert(index.clamp(0, shifts.length), sh);
     await save();
     notifyListeners();
   }

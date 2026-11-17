@@ -1147,10 +1147,18 @@ const List<FaqGroup> kFaqGroups = [
     Faq('Como corrijo uma parada marcada errada?',
         'Em Histórico, abra a jornada e toque no trecho. Pode trocar o tipo '
             '(condução, pausa, martelo, carga/descarga) e escrever o nome '
-            'do local.',
+            'do local. Antes de gravar, o app pede confirmação.',
         _app,
         ['corrijo', 'corrigir', 'marcada errada', 'trocar o tipo',
           'editar']),
+    Faq('Apaguei uma jornada sem querer. Dá para recuperar?',
+        'Sim, logo a seguir. Ao apagar, o app pede confirmação e depois '
+            'mostra uma barra com DESFAZER e uma contagem de 8 segundos. '
+            'Toque em DESFAZER antes de acabar a contagem e a jornada volta '
+            'inteira. Passados os 8 segundos, só um backup a recupera.',
+        _app,
+        ['apaguei', 'apagar jornada', 'excluir', 'desfazer', 'recuperar',
+          'sem querer apaguei']),
     Faq('Como faço o relatório em PDF?',
         'Na tela Relatórios escolha Diário, Semanal, Bissemanal ou Mensal, '
             'ande com as setas até a data e toque em Abrir PDF, Salvar ou '

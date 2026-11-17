@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
@@ -21,6 +22,101 @@ import 'update_service.dart';
 
 void _snack(BuildContext context, String text) {
   ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(text)));
+}
+
+/// 1.6.5: pergunta antes de gravar uma edição. Devolve true se confirmou.
+Future<bool> confirmEdit(BuildContext context, String title, String text,
+    {String ok = 'Confirmar'}) async {
+  final r = await showDialog<bool>(
+    context: context,
+    builder: (ctx) => AlertDialog(
+      icon: const Icon(Icons.edit_rounded, size: 32),
+      title: Text(title),
+      content: Text(text),
+      actions: [
+        TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancelar')),
+        FilledButton(
+            onPressed: () => Navigator.pop(ctx, true), child: Text(ok)),
+      ],
+    ),
+  );
+  return r == true;
+}
+
+/// 1.6.5: barra com "Desfazer" e contagem de 8 segundos depois de apagar.
+void showUndo(ScaffoldMessengerState m, String text, VoidCallback onUndo,
+    {int seconds = 8}) {
+  m.hideCurrentSnackBar();
+  var undone = false;
+  final ctl = m.showSnackBar(SnackBar(
+    duration: Duration(seconds: seconds),
+    behavior: SnackBarBehavior.floating,
+    content: _Countdown(text: text, seconds: seconds),
+    action: SnackBarAction(
+      label: 'DESFAZER',
+      onPressed: () {
+        if (undone) return;
+        undone = true;
+        onUndo();
+      },
+    ),
+  ));
+  // Garante que some aos 8 s mesmo quando o Android mantém barras com ação.
+  final t = Timer(Duration(seconds: seconds), ctl.close);
+  ctl.closed.then((_) => t.cancel());
+}
+
+class _Countdown extends StatefulWidget {
+  final String text;
+  final int seconds;
+  const _Countdown({required this.text, required this.seconds});
+  @override
+  State<_Countdown> createState() => _CountdownState();
+}
+
+class _CountdownState extends State<_Countdown> {
+  late int _left = widget.seconds;
+  Timer? _t;
+
+  @override
+  void initState() {
+    super.initState();
+    _t = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (!mounted) return;
+      setState(() => _left = (_left - 1).clamp(0, widget.seconds));
+    });
+  }
+
+  @override
+  void dispose() {
+    _t?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(children: [
+      SizedBox(
+        width: 26,
+        height: 26,
+        child: Stack(alignment: Alignment.center, children: [
+          CircularProgressIndicator(
+              value: _left / widget.seconds,
+              strokeWidth: 3,
+              color: Colors.white),
+          Text('$_left',
+              style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w800,
+                  color: Colors.white)),
+        ]),
+      ),
+      const SizedBox(width: 12),
+      Expanded(child: Text(widget.text)),
+    ]);
+  }
 }
 
 Future<void> openMap(BuildContext context, double lat, double lon) async {
@@ -107,7 +203,24 @@ class SegmentList extends StatelessWidget {
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
-      builder: (ctx) => Padding(
+      builder: (ctx) {
+       Future<void> saveNote(String v) async {
+        if (v.trim() == s.note) {
+          Navigator.pop(ctx);
+          return;
+        }
+        final ok = await confirmEdit(
+            ctx,
+            'Salvar a alteração?',
+            v.trim().isEmpty
+                ? 'A nota "${s.note}" deste trecho vai ser apagada.'
+                : 'A nota deste trecho passa a ser "${v.trim()}".',
+            ok: 'Salvar');
+        if (!ok || !ctx.mounted) return;
+        Tracker.I.setNote(s, v);
+        Navigator.pop(ctx);
+       }
+       return Padding(
         padding: EdgeInsets.only(
             left: 16,
             right: 16,
@@ -133,7 +246,16 @@ class SegmentList extends StatelessWidget {
                     avatar: Icon(TG.icon(a), size: 18, color: TG.act(a)),
                     label: Text(actLabel(a)),
                     selected: s.act == a,
-                    onSelected: (_) {
+                    onSelected: (_) async {
+                      if (s.act == a) return;
+                      final ok = await confirmEdit(
+                          ctx,
+                          'Mudar a atividade?',
+                          'O trecho das ${fmtTime(s.start)} passa de '
+                              '${actLabel(s.act)} para ${actLabel(a)}. '
+                              'Os tempos do dia e da semana são recalculados.',
+                          ok: 'Mudar');
+                      if (!ok || !ctx.mounted) return;
                       Tracker.I.reclassify(s, a);
                       Navigator.pop(ctx);
                     },
@@ -144,10 +266,7 @@ class SegmentList extends StatelessWidget {
                 controller: note,
                 decoration: const InputDecoration(
                     hintText: 'Nome do local ou nota (opcional)'),
-                onSubmitted: (v) {
-                  Tracker.I.setNote(s, v);
-                  Navigator.pop(ctx);
-                },
+                onSubmitted: (v) => saveNote(v),
               ),
               const SizedBox(height: 12),
               Row(children: [
@@ -165,10 +284,7 @@ class SegmentList extends StatelessWidget {
                 if (s.hasCoords) const SizedBox(width: 10),
                 Expanded(
                   child: FilledButton(
-                    onPressed: () {
-                      Tracker.I.setNote(s, note.text);
-                      Navigator.pop(ctx);
-                    },
+                    onPressed: () => saveNote(note.text),
                     child: const Text('Salvar'),
                   ),
                 ),
@@ -176,7 +292,8 @@ class SegmentList extends StatelessWidget {
             ],
           ),
         ),
-      ),
+      );
+      },
     );
   }
 }
@@ -363,7 +480,7 @@ class _ShiftDetailPageState extends State<ShiftDetailPage> {
       builder: (ctx) => AlertDialog(
         title: const Text('Apagar esta jornada?'),
         content: const Text('Ela sai do histórico e dos relatórios. '
-            'Não dá para desfazer.'),
+            'Depois de apagar, tem 8 segundos para desfazer.'),
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(ctx, false),
@@ -374,9 +491,19 @@ class _ShiftDetailPageState extends State<ShiftDetailPage> {
         ],
       ),
     );
-    if (ok != true) return;
-    await _t.deleteShift(widget.shift);
+    if (ok != true || !mounted) return;
+    final m = ScaffoldMessenger.of(context);
+    final sh = widget.shift;
+    final day = '${weekdayShort(sh.start)} ${fmtDate(sh.start)}';
+    final i = await _t.deleteShift(sh);
     if (mounted) Navigator.pop(context);
+    if (i < 0) return;
+    showUndo(m, 'Jornada de $day apagada', () async {
+      await _t.restoreShift(sh, i);
+      m.showSnackBar(SnackBar(
+          content: Text('Jornada de $day restaurada'),
+          duration: const Duration(seconds: 2)));
+    });
   }
 
   /// Descanso feito depois desta jornada, com o local (onde ela acabou).
