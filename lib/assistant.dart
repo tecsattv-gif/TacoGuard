@@ -1118,9 +1118,10 @@ const List<FaqGroup> kFaqGroups = [
           'comecar o dia']),
     Faq('Como o TacoGuard sabe que parei?',
         'Pelo GPS. Depois de alguns minutos parado (você escolhe o tempo em '
-            'Ajustes) ele grava o local e pergunta: Pausa, Martelo ou '
-            'Carga/Descarga. Sem resposta, a parada fica "a classificar" e '
-            'conta como pausa até você corrigir.',
+            'Ajustes) ele grava o local e põe a parada em Martelo, como o '
+            'tacógrafo faz quando o caminhão para. Aos 15 minutos parado o '
+            'pop-up pergunta se é pausa. Se escolher Pausa ou Carga/Descarga, '
+            'muda desde a hora em que parou. Sem resposta, continua Martelo.',
         _app,
         ['sabe que parei', 'gps', 'classificar', 'detecta']),
     Faq('O pop-up da parada não aparece. O que faço?',

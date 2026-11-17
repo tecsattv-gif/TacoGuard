@@ -223,8 +223,7 @@ class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
           final v = m['stop'];
           if (v is! String) return;
           StopPopup.shown = false;
-          if (v == 'later') return;
-          if (_t.currentAct == Act.unknown) _t.setAct(actFromName(v));
+          _t.applyPopupAnswer(v);
         } catch (_) {}
       });
     } catch (_) {}
@@ -250,7 +249,9 @@ class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
     if (_inFront) {
       StopPopup.close();
       final s = _t.currentSegment;
-      if (s != null && s.act == Act.unknown && !identical(s, _asked)) {
+      final pending = s != null &&
+          (s.act == Act.unknown || (_t.isAutoStop && _t.autoAsked));
+      if (pending && !identical(s, _asked)) {
         _ask(s);
       }
       if (mounted) UpdateService.autoCheck(context, resumed: true);
@@ -287,10 +288,18 @@ class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const Text('O que é esta parada?',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800)),
+              Text(
+                  seg.act == Act.work
+                      ? 'Parado há 15 min. É pausa?'
+                      : 'O que é esta parada?',
+                  style: const TextStyle(
+                      fontSize: 20, fontWeight: FontWeight.w800)),
               const SizedBox(height: 2),
-              Text('Parado desde ${fmtTime(seg.start)}',
+              Text(
+                  seg.act == Act.work
+                      ? 'Em martelo desde ${fmtTime(seg.start)}, como o '
+                          'tacógrafo. Escolha para mudar desde essa hora:'
+                      : 'Parado desde ${fmtTime(seg.start)}',
                   style: const TextStyle(color: TG.muted, fontSize: 13)),
               const SizedBox(height: 16),
               StopChoices(onPick: (a) => Navigator.pop(ctx, a)),
@@ -308,6 +317,7 @@ class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
     );
     _sheetOpen = false;
     if (a != null && identical(_t.currentSegment, seg)) _t.setAct(a);
+    // "Responder depois" no martelo automático: fica martelo, como o tacógrafo.
   }
 
   @override
@@ -765,8 +775,8 @@ class _TodayPageState extends State<TodayPage> {
                 style:
                     const TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
             Text(
-                'Com ${_t.stopMinutes} min parado vira parada e o pop-up '
-                'aparece. Já pode responder:',
+                'Com ${_t.stopMinutes} min parado vira martelo, como o '
+                'tacógrafo. Já pode escolher:',
                 textAlign: TextAlign.center,
                 style: const TextStyle(color: TG.muted, fontSize: 12.5)),
             const SizedBox(height: 10),
@@ -796,6 +806,24 @@ class _TodayPageState extends State<TodayPage> {
             icon: const Icon(Icons.directions_car_rounded),
             label: const Fit('Vou sair de carro'),
           ),
+        ),
+      ],
+      if (_t.isAutoStop) ...[
+        const SizedBox(height: 10),
+        TCard(
+          child: Column(children: [
+            Text('Martelo automático desde ${fmtTime(_t.autoStop!.start)}',
+                textAlign: TextAlign.center,
+                style:
+                    const TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
+            const Text(
+                'Como no tacógrafo, a parada fica em martelo. Se for pausa '
+                'ou carga/descarga, toque para mudar desde essa hora:',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: TG.muted, fontSize: 12.5)),
+            const SizedBox(height: 10),
+            StopChoices(onPick: (a) => _t.setAct(a)),
+          ]),
         ),
       ],
       if (act == Act.unknown) ...[

@@ -35,33 +35,45 @@ class StopChoices extends StatelessWidget {
 
   Widget _tile(Act a) {
     final c = TG.act(a);
+    if (compact) {
+      // 1.7.6: no pop-up por cima dos outros apps, responde logo no toque
+      // (onTapDown). Com o caminhão a vibrar, o dedo mexe e o toque normal
+      // (que espera soltar sem arrastar) às vezes não era aceito.
+      return GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTapDown: (_) => onPick(a),
+        child: Container(
+          height: 96,
+          decoration: BoxDecoration(
+            color: c.withValues(alpha: 0.16),
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(TG.icon(a), color: c, size: 32),
+              const SizedBox(height: 8),
+              Text(
+                a == Act.load ? 'Carga/\nDescarga' : actLabel(a),
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                    color: c,
+                    fontSize: 13,
+                    height: 1.1,
+                    fontWeight: FontWeight.w700),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
     return Material(
       color: c.withValues(alpha: 0.16),
       borderRadius: BorderRadius.circular(16),
       child: InkWell(
         borderRadius: BorderRadius.circular(16),
         onTap: () => onPick(a),
-        child: compact
-            ? SizedBox(
-                height: 96,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(TG.icon(a), color: c, size: 32),
-                    const SizedBox(height: 8),
-                    Text(
-                      a == Act.load ? 'Carga/\nDescarga' : actLabel(a),
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                          color: c,
-                          fontSize: 13,
-                          height: 1.1,
-                          fontWeight: FontWeight.w700),
-                    ),
-                  ],
-                ),
-              )
-            : Padding(
+        child: Padding(
                 padding:
                     const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                 child: Row(children: [
@@ -138,6 +150,8 @@ class StopPopup {
       if (!await hasPermission()) return;
       final p = await SharedPreferences.getInstance();
       await p.setString('popup_since', fmtTime(seg.start));
+      await p.setBool('popup_auto', seg.act == Act.work);
+      await p.remove('popup_answer');
       if (shown) await close();
       final dpr = WidgetsBinding
           .instance.platformDispatcher.views.first.devicePixelRatio;
@@ -145,11 +159,13 @@ class StopPopup {
         height: (kPopH * dpr).round(),
         width: (kPopW * dpr).round(),
         alignment: OverlayAlignment.topLeft,
-        enableDrag: true,
+        // 1.7.6: sem arrastar. Com arrastar ligado, o toque nos botões
+        // podia ser tomado como arrasto e a escolha não era aceita.
+        enableDrag: false,
         positionGravity: PositionGravity.none,
         startPosition: OverlayPosition((screenWidthDp - kPopW) / 2, 80),
         overlayTitle: 'TacoGuard',
-        overlayContent: 'Parada detectada: toque para classificar',
+        overlayContent: 'Parado há 15 min: é pausa?',
       );
       shown = true;
     } catch (_) {}
@@ -173,6 +189,8 @@ class StopPopupWindow extends StatefulWidget {
 
 class _StopPopupWindowState extends State<StopPopupWindow> {
   String _since = '';
+  bool _auto = false;
+  bool _busy = false;
 
   @override
   void initState() {
@@ -184,18 +202,33 @@ class _StopPopupWindowState extends State<StopPopupWindow> {
     try {
       final p = await SharedPreferences.getInstance();
       await p.reload();
-      if (mounted) setState(() => _since = p.getString('popup_since') ?? '');
+      if (mounted) {
+        setState(() {
+          _since = p.getString('popup_since') ?? '';
+          _auto = p.getBool('popup_auto') ?? false;
+        });
+      }
     } catch (_) {}
   }
 
   Future<void> _pick(String name) async {
+    if (_busy) return;
+    setState(() => _busy = true);
+    // 1.7.6: grava a resposta também nas preferências. O app lê a cada 5 s,
+    // mesmo que a mensagem direta (shareData) não chegue.
     try {
-      await FlutterOverlayWindow.shareData(jsonEncode({'stop': name}));
+      final p = await SharedPreferences.getInstance();
+      await p.setString('popup_answer', name);
+    } catch (_) {}
+    try {
+      await FlutterOverlayWindow.shareData(jsonEncode({'stop': name}))
+          .timeout(const Duration(seconds: 1));
     } catch (_) {}
     // Dá tempo de a resposta chegar ao app antes de fechar a janela.
     await Future.delayed(const Duration(milliseconds: 250));
     try {
-      await FlutterOverlayWindow.closeOverlay();
+      await FlutterOverlayWindow.closeOverlay()
+          .timeout(const Duration(seconds: 2));
     } catch (_) {}
   }
 
@@ -226,29 +259,44 @@ class _StopPopupWindowState extends State<StopPopupWindow> {
                       Text(
                         _since.isEmpty
                             ? 'Parada detectada'
-                            : 'Parado desde $_since',
+                            : _auto
+                                ? 'Martelo desde $_since'
+                                : 'Parado desde $_since',
                         style: const TextStyle(
                             color: TG.text,
                             fontSize: 16,
                             fontWeight: FontWeight.w800),
                       ),
-                      const Text('O que é esta parada?',
-                          style: TextStyle(color: TG.muted, fontSize: 13)),
+                      Text(
+                          _busy
+                              ? 'Registado ✓'
+                              : _auto
+                                  ? 'Parado há 15 min. É pausa?'
+                                  : 'O que é esta parada?',
+                          style: const TextStyle(
+                              color: TG.muted, fontSize: 13)),
                     ],
                   ),
                 ),
-                IconButton(
-                  onPressed: () => _pick('later'),
-                  icon: const Icon(Icons.close_rounded, color: TG.muted),
-                  tooltip: 'Depois',
+                GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTapDown: (_) => _pick('later'),
+                  child: const Padding(
+                    padding: EdgeInsets.all(10),
+                    child: Icon(Icons.close_rounded,
+                        color: TG.muted, size: 28),
+                  ),
                 ),
               ],
             ),
             const SizedBox(height: 10),
             StopChoices(compact: true, onPick: (a) => _pick(a.name)),
             const SizedBox(height: 8),
-            const Text('Sem resposta, fica "a classificar".',
-                style: TextStyle(color: TG.muted, fontSize: 11)),
+            Text(
+                _auto
+                    ? 'Sem resposta, continua martelo (como o tacógrafo).'
+                    : 'Sem resposta, fica "a classificar".',
+                style: const TextStyle(color: TG.muted, fontSize: 11)),
           ],
         ),
       ),

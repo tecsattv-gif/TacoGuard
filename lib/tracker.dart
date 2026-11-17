@@ -107,6 +107,21 @@ class Tracker extends ChangeNotifier {
   /// Chamado quando o caminhão arranca: fecha o pop-up, se ainda aberto.
   void Function()? onAskCancel;
 
+  /// 1.7.6: parada que virou martelo sozinha (como o tacógrafo, que fica
+  /// em martelo quando o caminhão para). Enquanto for esta, escolher Pausa
+  /// ou Carga/Descarga troca desde o início da parada, sem criar trecho novo.
+  Segment? autoStop;
+
+  /// Já perguntou (aos 15 min parado) se a parada automática é pausa.
+  bool autoAsked = false;
+
+  /// A parada atual é martelo automático, à espera de confirmação.
+  bool get isAutoStop =>
+      autoStop != null && identical(currentSegment, autoStop);
+
+  /// Parada atual que pode ser trocada pelo pop-up / cartão.
+  bool get canClassify => currentAct == Act.unknown || isAutoStop;
+
   /// Último aviso (aparece na tela "Hoje").
   String? lastAlert;
   DateTime? lastAlertAt;
@@ -316,6 +331,17 @@ class Tracker extends ChangeNotifier {
       _saveCar();
     }
     final s = currentSegment;
+    // 1.7.6: martelo automático: a escolha vale desde o início da parada.
+    if (s != null && identical(s, autoStop)) {
+      autoStop = null;
+      autoAsked = false;
+      if (a != Act.drive) {
+        s.act = a;
+        save();
+        notifyListeners();
+        return;
+      }
+    }
     if (s != null) {
       if (s.act == a) return;
       // Parada "a classificar": só muda o tipo, mantém o início e o local.
@@ -597,25 +623,58 @@ class Tracker extends ChangeNotifier {
   }
 
   /// O caminhão parou há [stopMinutes]: fecha a condução no instante em
-  /// que parou e abre uma parada "a classificar", com as coordenadas.
+  /// que parou e abre a parada, com as coordenadas.
+  /// 1.7.6: como no tacógrafo, a parada começa em MARTELO, sem pergunta.
+  /// Só aos 15 min parado (quando já pode contar como pausa) o app pergunta
+  /// se é pausa. Sem resposta, continua martelo, igual ao tacógrafo.
   void _beginStop(DateTime since) {
     final c = current;
     final s = currentSegment;
     if (c == null || s == null) return;
     s.end = since;
     final seg = Segment(
-        act: Act.unknown,
+        act: Act.work,
         start: since,
         lat: _stopLat ?? lat,
         lon: _stopLon ?? lon);
     c.segments.add(seg);
+    autoStop = seg;
+    autoAsked = false;
     _stopSince = null;
     save();
     notifyListeners();
+  }
+
+  /// 1.7.6: martelo automático há 15 min: pergunta se é pausa.
+  void _checkAutoAsk(DateTime now) {
+    final seg = autoStop;
+    if (seg == null || autoAsked || !identical(currentSegment, seg)) return;
+    if (now.difference(seg.start) < Limits.breakFirst) return;
+    autoAsked = true;
     if (voice) {
-      _say('Parada detectada. Pausa, martelo ou carga e descarga?');
+      _say('Parado há 15 minutos, em martelo. Se for pausa, mude para pausa.');
     }
     if (popup) onAsk?.call(seg);
+  }
+
+  /// 1.7.6: resposta do pop-up guardada também nas preferências, para não
+  /// se perder se a mensagem direta do pop-up não chegar ao app.
+  Future<void> _checkPopupAnswer() async {
+    try {
+      final p = await SharedPreferences.getInstance();
+      await p.reload();
+      final v = p.getString('popup_answer');
+      if (v == null) return;
+      await p.remove('popup_answer');
+      applyPopupAnswer(v);
+    } catch (_) {}
+  }
+
+  /// Aplica a resposta do pop-up ('pause', 'work', 'load' ou 'later').
+  void applyPopupAnswer(String v) {
+    if (v == 'later') return;
+    if (!canClassify) return;
+    setAct(actFromName(v));
   }
 
   void _tick() {
@@ -628,6 +687,8 @@ class Tracker extends ChangeNotifier {
       speedKmh = 0;
       _motion(true, 0, now);
     }
+    _checkAutoAsk(now);
+    _checkPopupAnswer();
     _alerts(c, now);
     if (now.difference(_lastSave).inSeconds >= 60) save();
     notifyListeners();
