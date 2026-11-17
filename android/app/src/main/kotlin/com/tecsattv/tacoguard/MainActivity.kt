@@ -1,26 +1,48 @@
 package com.tecsattv.tacoguard
 
+import android.media.AudioAttributes
 import android.media.AudioManager
+import android.media.SoundPool
 import android.media.ToneGenerator
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
 
-// 1.7.9: bip do aviso de velocidade (canal de alarme, toca mesmo com o
-// volume de mídia baixo).
+// Bip do aviso de velocidade.
+// 1.8.0: som próprio (res/raw/bip.wav), tocado como alarme (ouve-se mesmo
+// com o volume de mídia baixo). Se o som não carregar, usa o tom do sistema.
 class MainActivity : FlutterActivity() {
+    private var pool: SoundPool? = null
+    private var bipId = 0
+    private var loaded = false
     private var tone: ToneGenerator? = null
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
+        try {
+            val attrs = AudioAttributes.Builder()
+                .setUsage(AudioAttributes.USAGE_ALARM)
+                .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                .build()
+            pool = SoundPool.Builder().setMaxStreams(2).setAudioAttributes(attrs).build()
+            pool?.setOnLoadCompleteListener { _, _, status -> loaded = status == 0 }
+            bipId = pool?.load(this, R.raw.bip, 1) ?: 0
+        } catch (e: Exception) {
+            pool = null
+        }
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "tacoguard/beep")
             .setMethodCallHandler { call, result ->
                 if (call.method == "beep") {
                     try {
-                        if (tone == null) {
-                            tone = ToneGenerator(AudioManager.STREAM_ALARM, 100)
+                        val p = pool
+                        if (p != null && loaded && bipId != 0) {
+                            p.play(bipId, 1f, 1f, 1, 0, 1f)
+                        } else {
+                            if (tone == null) {
+                                tone = ToneGenerator(AudioManager.STREAM_ALARM, 100)
+                            }
+                            tone?.startTone(ToneGenerator.TONE_PROP_BEEP2, 400)
                         }
-                        tone?.startTone(ToneGenerator.TONE_PROP_BEEP2, 400)
                         result.success(true)
                     } catch (e: Exception) {
                         result.error("beep", e.message, null)
@@ -32,6 +54,8 @@ class MainActivity : FlutterActivity() {
     }
 
     override fun onDestroy() {
+        pool?.release()
+        pool = null
         tone?.release()
         tone = null
         super.onDestroy()
