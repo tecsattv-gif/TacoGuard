@@ -836,7 +836,7 @@ const List<FaqGroup> kFaqGroups = [
             'colega, em dupla, na ranhura 2. Empurre até o tacógrafo o '
             'puxar; nunca force.',
         'Manual do tacógrafo',
-        ['lado certo', 'meter o cartao', 'ranhura', 'posicao do cartao',
+        ['lado certo', 'ranhura', 'posicao do cartao',
           'chip para cima', 'como inserir']),
     Faq('Posso ter dois cartões, de dois países?',
         'Não. Cada motorista só pode ter um cartão válido, emitido pelo país '
@@ -849,7 +849,7 @@ const List<FaqGroup> kFaqGroups = [
             'vão normalmente a carta de condução, documento de identificação e '
             'foto. O cartão é emitido em até 1 mês e vale 5 anos.',
         '$_r165, art. 26.º',
-        ['pedir o cartao', 'tirar o cartao', 'imt', 'primeiro cartao',
+        ['pedir o cartao', 'imt', 'primeiro cartao',
           'onde peco', 'quanto tempo demora']),
     Faq('Mudei de morada ou de país. E o cartão?',
         'O cartão continua válido. Se mudou a residência habitual para outro '
