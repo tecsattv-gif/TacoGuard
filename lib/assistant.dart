@@ -894,13 +894,6 @@ const List<FaqGroup> kFaqGroups = [
             'oficina e o da polícia é que pedem PIN.',
         'Manual do tacógrafo',
         ['pin', 'codigo', 'senha do cartao']),
-    Faq('Quantos dias o cartão guarda?',
-        'Pelo menos 28 dias de atividades (os mais novos guardam mais). '
-            'Depois os dias mais antigos são escritos por cima, por isso a '
-            'empresa tem de o descarregar a cada 28 dias no máximo.',
-        '$_r165, anexo IC',
-        ['quantos dias guarda', 'memoria do cartao', 'cartao cheio',
-          'capacidade', 'guarda quantos dias']),
     Faq('Encontrei o cartão que dei como perdido. Posso usar?',
         'Não. Depois de declarado perdido ou roubado o cartão fica anulado. '
             'Entregue-o à entidade que o emitiu e use só o cartão novo.',
