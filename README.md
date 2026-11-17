@@ -23,7 +23,7 @@ O APK mais novo fica em [Releases](https://github.com/tecsattv-gif/TacoGuard/rel
 - **Avisos por voz**: 30 e 15 minutos antes da pausa, pausa completa, limites do dia, da semana e da amplitude.
 - **Descanso**: com a jornada encerrada, mostra o tempo de descanso e quando chega às 9 h e às 11 h.
 - **Histórico**: todas as jornadas, com avisos de limite excedido. Cada trecho pode ser corrigido (tipo, nome do local) e aberto no mapa.
-- **Relatórios em PDF**: diário, semanal, bissemanal e mensal. Abrir, salvar no telefone ou compartilhar. Cada jornada conta no dia em que começou (uma jornada que passa da meia-noite fica no relatório do dia anterior); a tela abre já no dia da jornada atual.
+- **Relatórios em PDF**: diário, semanal, bissemanal e mensal, em versão **simples** ou **completa** (com o detalhe de cada atividade). Abrir, salvar no telefone ou compartilhar. Cada jornada conta no dia em que começou (uma jornada que passa da meia-noite fica no relatório do dia anterior); a tela abre já no dia da jornada atual.
 - **Lei do tacógrafo**: resumo por tema, com o artigo, busca e funcionando sem internet.
 - **Consulta**: 150 perguntas e respostas prontas (offline), agrupadas por assunto e com busca, e IA (Gemini), que responde só com base no resumo da lei que está no app.
 - **Passar do tempo (art. 12.º)**: passo a passo para quando não há vaga no park ou para chegar a casa, com o que escrever atrás do talão.
@@ -65,6 +65,7 @@ Segredos do repositório (Settings > Secrets and variables > Actions):
 
 ## Versões
 
+- **1.8.6**: **Relatório simples ou completo**: na tela Relatórios escolha **Simples** (resumo, jornadas, pausas e descansos com o local, avisos e infrações) ou **Completo** (tudo isso mais o "Detalhe das atividades", cada trecho com hora e coordenadas). O padrão é Completo.
 - **1.8.5**: **Tablet e telefone deitado**: com a tela larga (a partir de 640 px de largura), o menu passa para a lateral esquerda; a tela Hoje fica em **duas colunas** (à esquerda o estado, a velocidade e o anel da pausa; à direita a faixa do dia, os limites, a linha do tempo e os botões) e as outras telas ficam centradas com largura de leitura. Virando o aparelho, o layout muda na hora, sem perder nada. Telefone deitado mostra só os ícones no menu lateral.
 - **1.8.4**: Condução passa a ter o ícone de um **volante** (no lugar do caminhão) na tela Hoje, nos trechos, no Histórico e no pop-up. **Relatórios** abre no dia em que começou a jornada em curso (ou a última): a jornada conta no dia em que começou, e depois da meia-noite o relatório "de hoje" aparecia vazio.
 - **1.8.3**: Botão **Bip** em Ajustes → Velocidade para desligar o bip do aviso de velocidade. Desligado, o cartão continua vermelho a piscar com a contagem e o excesso continua registado aos 60 s; só o som sai.

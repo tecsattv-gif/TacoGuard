@@ -115,8 +115,10 @@ String _coord(double? lat, double? lon) => (lat == null || lon == null)
     : '${lat.toStringAsFixed(5)}, ${lon.toStringAsFixed(5)}';
 
 /// Monta o PDF e devolve o arquivo (um por tipo: o novo substitui o antigo).
+/// 1.8.6: [full] = completo (com o detalhe de cada trecho); simples = só
+/// o resumo, as jornadas, as pausas/descansos e os avisos.
 Future<File> buildReport(ReportKind kind, DateTime ref, List<Shift> all,
-    {String driver = '', String plate = ''}) async {
+    {String driver = '', String plate = '', bool full = true}) async {
   final now = DateTime.now();
   final (from, to) = reportRange(kind, ref);
   final list = shiftsIn(all, from, to);
@@ -320,7 +322,8 @@ Future<File> buildReport(ReportKind kind, DateTime ref, List<Shift> all,
     }
     content.add(pw.SizedBox(height: 14));
 
-    // Detalhe: cada trecho, com hora e local.
+    // Detalhe: cada trecho, com hora e local (só no relatório completo).
+    if (full) {
     content.add(pw.Text('Detalhe das atividades',
         style: pw.TextStyle(
             fontSize: 12, fontWeight: pw.FontWeight.bold, color: _blue)));
@@ -372,6 +375,7 @@ Future<File> buildReport(ReportKind kind, DateTime ref, List<Shift> all,
             ]),
         ],
       ));
+    }
     }
   }
 
@@ -431,7 +435,8 @@ Future<File> buildReport(ReportKind kind, DateTime ref, List<Shift> all,
   ));
 
   final dir = await getApplicationDocumentsDirectory();
-  final f = File('${dir.path}/TacoGuard-Relatorio-${reportName(kind)}.pdf'
+  final f = File('${dir.path}/TacoGuard-Relatorio-${reportName(kind)}'
+          '${full ? '' : '-simples'}.pdf'
       .replaceAll('á', 'a'));
   await f.writeAsBytes(await doc.save(), flush: true);
   return f;

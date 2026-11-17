@@ -641,6 +641,7 @@ class ReportsPage extends StatefulWidget {
 class _ReportsPageState extends State<ReportsPage> {
   final _t = Tracker.I;
   ReportKind _kind = ReportKind.day;
+  bool _full = true; // 1.8.6: relatório completo ou simples
   DateTime _ref = DateTime.now();
   bool _busy = false;
 
@@ -688,7 +689,8 @@ class _ReportsPageState extends State<ReportsPage> {
     if (_busy) return null;
     setState(() => _busy = true);
     try {
-      return await buildReport(_kind, _ref, _t.shifts, driver: _t.driver, plate: _t.plate);
+      return await buildReport(_kind, _ref, _t.shifts,
+          driver: _t.driver, plate: _t.plate, full: _full);
     } catch (e) {
       if (mounted) _snack(context, 'Não foi possível gerar o PDF: $e');
       return null;
@@ -768,6 +770,16 @@ class _ReportsPageState extends State<ReportsPage> {
           selected: {_kind},
           onSelectionChanged: (s) => setState(() => _kind = s.first),
         ),
+        const SizedBox(height: 8),
+        SegmentedButton<bool>(
+          showSelectedIcon: false,
+          segments: const [
+            ButtonSegment(value: false, label: Text('Simples')),
+            ButtonSegment(value: true, label: Text('Completo')),
+          ],
+          selected: {_full},
+          onSelectionChanged: (s) => setState(() => _full = s.first),
+        ),
         const SizedBox(height: 12),
         TCard(
           padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
@@ -840,9 +852,12 @@ class _ReportsPageState extends State<ReportsPage> {
           ),
         ]),
         const SizedBox(height: 14),
-        const Text(
-            'O PDF traz o resumo, cada jornada, os descansos, os avisos e '
-            'todas as paradas com hora e coordenadas.',
+        Text(
+            _full
+                ? 'Completo: o resumo, cada jornada, as pausas e descansos, os '
+                    'avisos e todas as atividades com hora e coordenadas.'
+                : 'Simples: o resumo, cada jornada, as pausas e descansos com '
+                    'o local, e os avisos e infrações.',
             textAlign: TextAlign.center,
             style: TextStyle(color: TG.muted, fontSize: 12.5)),
       ],
