@@ -100,6 +100,8 @@ class Tracker extends ChangeNotifier {
   final List<(DateTime, double, double)> _hist = [];
   double? _prevLat, _prevLon; // leitura anterior (para somar os km)
   DateTime? _prevAt;
+  DateTime _lastRaw = DateTime.fromMillisecondsSinceEpoch(0); // qualquer leitura
+  DateTime _lastRestart = DateTime.fromMillisecondsSinceEpoch(0);
 
   /// Chamado quando uma parada é detectada: a tela mostra o pop-up.
   void Function(Segment seg)? onAsk;
@@ -251,6 +253,8 @@ class Tracker extends ChangeNotifier {
     sh.segments.add(Segment(act: Act.work, start: now, lat: lat, lon: lon));
     shifts.add(sh);
     _fired.clear();
+    lastAlert = null; // 1.7.7: aviso da jornada anterior não fica na tela
+    lastAlertAt = null;
     _lastDriven = Duration.zero;
     _stopSince = null;
     _moveSince = null;
@@ -325,6 +329,11 @@ class Tracker extends ChangeNotifier {
     final c = current;
     if (c == null) return;
     final now = at ?? DateTime.now();
+    // 1.7.7: arrancou: o aviso da parada ("Pausa completa"…) sai da tela.
+    if (a == Act.drive && currentAct != Act.drive) {
+      lastAlert = null;
+      lastAlertAt = null;
+    }
     if (a == Act.drive && carMode) {
       carMode = false;
       _carAway = false;
@@ -448,10 +457,23 @@ class Tracker extends ChangeNotifier {
       notifyListeners();
       return gpsError;
     }
+    _listen();
+    gpsOn = true;
+    notifyListeners();
+    return null;
+  }
+
+  /// 1.7.7: abre (ou reabre) a leitura do GPS.
+  /// GPS puro do celular (não a localização "fundida" do Google, que no
+  /// Xiaomi às vezes manda velocidade 0 com o caminhão a andar), a cada 1 s.
+  void _listen() {
+    _sub?.cancel();
+    _lastRaw = DateTime.now();
     final settings = AndroidSettings(
-      accuracy: LocationAccuracy.high,
+      accuracy: LocationAccuracy.bestForNavigation,
       distanceFilter: 0,
-      intervalDuration: const Duration(seconds: 2),
+      forceLocationManager: true,
+      intervalDuration: const Duration(seconds: 1),
       foregroundNotificationConfig: ForegroundNotificationConfig(
         notificationTitle: 'TacoGuard ativo',
         notificationText: 'Controlando a jornada pelo GPS',
@@ -460,14 +482,28 @@ class Tracker extends ChangeNotifier {
     );
     _sub = Geolocator.getPositionStream(locationSettings: settings).listen(
       _onPosition,
+      // 1.7.7: erro ou fim da leitura: o vigia do _tick religa sozinho.
       onError: (e) {
-        gpsError = 'Erro no GPS: $e';
+        _lastRaw = DateTime.fromMillisecondsSinceEpoch(0);
         notifyListeners();
       },
+      onDone: () {
+        _lastRaw = DateTime.fromMillisecondsSinceEpoch(0);
+      },
+      cancelOnError: false,
     );
-    gpsOn = true;
-    notifyListeners();
-    return null;
+  }
+
+  /// 1.7.7: vigia do GPS. Sem nenhuma leitura há 15 s, fecha e reabre o
+  /// GPS (no máximo a cada 20 s). Antes, se a leitura caía, nunca voltava
+  /// e a velocidade ficava congelada.
+  void _watchdog(DateTime now) {
+    if (!gpsOn) return;
+    if (now.difference(_lastRaw).inSeconds < 15) return;
+    if (now.difference(_lastRestart).inSeconds < 20) return;
+    _lastRestart = now;
+    _hist.clear();
+    _listen();
   }
 
   Future<void> stopGps() async {
@@ -483,36 +519,50 @@ class Tracker extends ChangeNotifier {
     _prevAt = null;
   }
 
-  /// Parado de verdade? O GPS do celular "anda" sozinho quando parado.
-  bool _isStill(Position p, DateTime now) {
+  /// Velocidade (km/h) e se está parado de verdade.
+  ///
+  /// 1.7.7: a velocidade vem do GPS e, quando ele manda 0 ou inválida com o
+  /// caminhão a andar (acontecia no Xiaomi), é calculada pela distância
+  /// percorrida nos últimos segundos. Parado, o GPS "anda" sozinho uns
+  /// metros: só conta como movimento o que passar da margem de erro.
+  (bool, double) _speedOf(Position p, DateTime now) {
     _hist.add((now, p.latitude, p.longitude));
-    _hist.removeWhere((h) => now.difference(h.$1).inSeconds > 10);
-    if (p.speed * 3.6 < 4) return true;
+    _hist.removeWhere((h) => now.difference(h.$1).inSeconds > 12);
+    final gpsKmh = p.speed > 0 ? p.speed * 3.6 : 0.0;
+    double calcKmh = 0;
+    double? moved;
     final old = _hist.first;
     final secs = now.difference(old.$1).inMilliseconds / 1000;
-    if (secs >= 6) {
-      final moved = Geolocator.distanceBetween(
+    if (secs >= 4) {
+      moved = Geolocator.distanceBetween(
           old.$2, old.$3, p.latitude, p.longitude);
-      if (moved < 8) return true;
+      final margin = p.accuracy * 1.5 < 25 ? 25.0 : p.accuracy * 1.5;
+      if (moved > margin) calcKmh = moved / secs * 3.6;
     }
-    return false;
+    // O GPS marca velocidade mas o caminhão não saiu do lugar: é pulo.
+    final jitter = secs >= 6 && moved != null && moved < 8;
+    final kmh = jitter ? 0.0 : (gpsKmh > calcKmh ? gpsKmh : calcKmh);
+    return (kmh < 4, kmh < 4 ? 0.0 : kmh);
   }
 
   void _onPosition(Position p) {
-    // Leitura de antena/Wi-Fi (imprecisa): ignora.
-    if (p.accuracy > 60) return;
     final now = DateTime.now();
+    _lastRaw = now;
+    // Leitura muito imprecisa (dentro da cabine, antena): ignora.
+    // 1.7.7: o limite passou de 60 para 100 m; para somar km continua 60.
+    if (p.accuracy > 100) return;
     lastFix = now;
     lat = p.latitude;
     lon = p.longitude;
     gpsError = null;
-    final still = _isStill(p, now);
-    speedKmh = still ? 0 : p.speed * 3.6;
+    final (still, kmh) = _speedOf(p, now);
+    speedKmh = kmh;
     // 1.2.0: quilômetros. Soma a distância entre as leituras enquanto a
     // atividade é condução e o caminhão anda (parado, o GPS "pula" e
     // somaria metros falsos). De carro não soma (a atividade não é condução).
     final seg = currentSegment;
     if (!still &&
+        p.accuracy <= 60 &&
         seg != null &&
         seg.act == Act.drive &&
         _prevLat != null &&
@@ -681,6 +731,7 @@ class Tracker extends ChangeNotifier {
     final now = DateTime.now();
     final c = current;
     if (c == null) return;
+    _watchdog(now);
     // Sem leitura há 20 s (garagem, túnel): se vinha devagar, está parado.
     // 1.0.1: vale também quando o GPS ainda não deu nenhuma leitura boa.
     if (gpsStale && speedKmh < 15) {

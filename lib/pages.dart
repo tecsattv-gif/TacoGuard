@@ -889,6 +889,17 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   Future<void> _battery() async {
+    // 1.7.7: pede direto ao Android para tirar o TacoGuard da economia de
+    // bateria (uma janela com Permitir). Se o celular não aceitar, abre a
+    // lista geral, como antes.
+    try {
+      await AndroidIntent(
+        action: 'android.settings.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS',
+        data: 'package:com.tecsattv.tacoguard',
+        flags: const [Flag.FLAG_ACTIVITY_NEW_TASK],
+      ).launch();
+      return;
+    } catch (_) {}
     try {
       await AndroidIntent(
         action: 'android.settings.IGNORE_BATTERY_OPTIMIZATION_SETTINGS',

@@ -32,7 +32,7 @@ O APK mais novo fica em [Releases](https://github.com/tecsattv-gif/TacoGuard/rel
 ## Como usar
 
 1. Abra o app e toque em **Iniciar jornada** e confirme no pop-up. Aceite as permissões de localização e de "Sobrepor a outros apps".
-2. Em **Ajustes**, toque em *Abrir ajustes de bateria* e deixe o TacoGuard "Sem restrições", para o celular não cortar o GPS com a tela apagada.
+2. Em **Ajustes**, toque em *Abrir ajustes de bateria* e toque em **Permitir** (o TacoGuard fica fora da economia de bateria, para o celular não cortar o GPS com a tela apagada). No Xiaomi, ligue também *Início automático* do TacoGuard, deixe a localização em *Permitir o tempo todo* com *Localização precisa*, e tranque o app nos recentes (cadeado).
 3. Dirija normalmente. Quando parar, a parada fica em martelo (como no tacógrafo). Se for pausa, mude no cartão da tela Hoje ou no pop-up que aparece aos 15 min parado.
 4. No fim do dia, toque em **Encerrar jornada**. Começa a contar o descanso.
 5. Encerrou cedo demais? Toque em **Reabrir a jornada** (disponível até o descanso chegar a 9 h).
@@ -63,6 +63,7 @@ Segredos do repositório (Settings > Secrets and variables > Actions):
 
 ## Versões
 
+- **1.7.7**: **GPS mais firme**: o app usa o GPS puro do celular (antes a localização "fundida" do Google, que no Xiaomi às vezes mandava velocidade 0 com o caminhão a 60 km/h e o app achava que tinha parado), com leitura a cada 1 s. Quando o GPS manda velocidade 0 ou inválida, a velocidade é calculada pela distância percorrida. **Vigia do GPS**: 15 s sem nenhuma leitura, o app religa o GPS sozinho (antes, se caía, não voltava e a velocidade ficava congelada); sem sinal, a velocidade aparece como "--". Leituras um pouco menos precisas (até 100 m) passam a contar para a velocidade; para somar os km continua o limite de 60 m. O botão de bateria dos Ajustes pede direto ao Android para tirar o TacoGuard da economia de bateria. O aviso da jornada anterior (ex.: "Pausa de 45 minutos completa") sai da tela ao iniciar a jornada e quando o caminhão arranca.
 - **1.7.6**: **Parada em martelo automático, como o tacógrafo**: no trânsito ou numa parada curta, o tacógrafo fica em martelo até o motorista mudar. Agora o app faz igual: a parada começa em Martelo, sem pop-up. Só aos **15 min parado** o pop-up pergunta se é pausa; escolhendo Pausa ou Carga/Descarga, muda desde a hora em que parou. Sem resposta, continua martelo. Novo cartão "Martelo automático desde HH:MM" na tela Hoje para mudar na hora. **Toque no pop-up corrigido**: os botões respondem logo ao encostar o dedo (o caminhão a vibrar fazia o toque falhar), o pop-up não é mais arrastável (o arrasto "roubava" o toque), mostra "Registado ✓" e a resposta também fica gravada para o app ler mesmo que a mensagem do pop-up se perca.
 - **1.7.5**: Painel da tela Hoje mostra quanto ainda pode conduzir no dia, nas 9 h e nas 10 h. Ex.: com 4h + 3h feitas, "Ainda pode conduzir: 2h00 (9h) ou 3h00 (10h)". Sem dias de 10 h disponíveis na semana, mostra só até às 9h.
 - **1.7.4**: Nos relatórios PDF, a coluna "Local / nota" sem nota escrita pelo motorista mostra as coordenadas do local automaticamente (também nas linhas de condução e de descanso).

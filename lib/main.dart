@@ -726,7 +726,7 @@ class _TodayPageState extends State<TodayPage> {
             ),
           ),
           Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
-            Text('${_t.speedKmh.round()}',
+            Text(_t.gpsStale ? '--' : '${_t.speedKmh.round()}',
                 style: const TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.w800,
