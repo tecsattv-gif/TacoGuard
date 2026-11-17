@@ -97,7 +97,9 @@ class Tracker extends ChangeNotifier {
   bool get gpsStale =>
       lastFix == null || DateTime.now().difference(lastFix!).inSeconds > 20;
   DateTime? _moveSince; // andando desde (candidato a arranque)
-  final List<(DateTime, double, double)> _hist = [];
+  // (hora, lat, lon, precisão em m)
+  final List<(DateTime, double, double, double)> _hist = [];
+  final List<double> _lastKmh = []; // últimas velocidades (mediana)
   double? _prevLat, _prevLon; // leitura anterior (para somar os km)
   DateTime? _prevAt;
   DateTime _lastRaw = DateTime.fromMillisecondsSinceEpoch(0); // qualquer leitura
@@ -503,6 +505,7 @@ class Tracker extends ChangeNotifier {
     if (now.difference(_lastRestart).inSeconds < 20) return;
     _lastRestart = now;
     _hist.clear();
+    _lastKmh.clear();
     _listen();
   }
 
@@ -514,6 +517,7 @@ class Tracker extends ChangeNotifier {
     gpsOn = false;
     speedKmh = 0;
     _hist.clear();
+    _lastKmh.clear();
     _prevLat = null;
     _prevLon = null;
     _prevAt = null;
@@ -521,28 +525,37 @@ class Tracker extends ChangeNotifier {
 
   /// Velocidade (km/h) e se está parado de verdade.
   ///
-  /// 1.7.7: a velocidade vem do GPS e, quando ele manda 0 ou inválida com o
-  /// caminhão a andar (acontecia no Xiaomi), é calculada pela distância
-  /// percorrida nos últimos segundos. Parado, o GPS "anda" sozinho uns
-  /// metros: só conta como movimento o que passar da margem de erro.
+  /// 1.7.8: a velocidade do GPS (efeito Doppler) é a mais certa e vale
+  /// sempre que vier. Só quando ela vem 0 ou inválida (o Xiaomi às vezes
+  /// manda 0 com o caminhão a andar) é calculada pela distância, e só com
+  /// leituras precisas (até 30 m), para um pulo de posição não virar
+  /// 100 km/h. No fim, mediana das 3 últimas para tirar picos.
   (bool, double) _speedOf(Position p, DateTime now) {
-    _hist.add((now, p.latitude, p.longitude));
+    _hist.add((now, p.latitude, p.longitude, p.accuracy));
     _hist.removeWhere((h) => now.difference(h.$1).inSeconds > 12);
-    final gpsKmh = p.speed > 0 ? p.speed * 3.6 : 0.0;
-    double calcKmh = 0;
-    double? moved;
+    final sa = p.speedAccuracy; // m/s; 0 = não informada
+    final gpsOk = p.speed > 0 && (sa <= 0 || sa < 4);
+    double kmh = gpsOk ? p.speed * 3.6 : 0;
+    // Distância nos últimos segundos (para o pulo parado e para o cálculo).
     final old = _hist.first;
     final secs = now.difference(old.$1).inMilliseconds / 1000;
+    double? moved;
     if (secs >= 4) {
       moved = Geolocator.distanceBetween(
           old.$2, old.$3, p.latitude, p.longitude);
-      final margin = p.accuracy * 1.5 < 25 ? 25.0 : p.accuracy * 1.5;
-      if (moved > margin) calcKmh = moved / secs * 3.6;
+    }
+    if (!gpsOk && moved != null && p.accuracy <= 30 && old.$4 <= 30) {
+      final margin = p.accuracy + old.$4 < 25 ? 25.0 : p.accuracy + old.$4;
+      if (moved > margin) kmh = moved / secs * 3.6;
     }
     // O GPS marca velocidade mas o caminhão não saiu do lugar: é pulo.
-    final jitter = secs >= 6 && moved != null && moved < 8;
-    final kmh = jitter ? 0.0 : (gpsKmh > calcKmh ? gpsKmh : calcKmh);
-    return (kmh < 4, kmh < 4 ? 0.0 : kmh);
+    if (secs >= 6 && moved != null && moved < 8) kmh = 0;
+    if (kmh > 140) kmh = 140; // caminhão não passa disto: é leitura errada
+    _lastKmh.add(kmh);
+    if (_lastKmh.length > 3) _lastKmh.removeAt(0);
+    final sorted = [..._lastKmh]..sort();
+    final med = sorted[sorted.length ~/ 2];
+    return (med < 4, med < 4 ? 0.0 : med);
   }
 
   void _onPosition(Position p) {
