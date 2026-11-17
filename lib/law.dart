@@ -286,6 +286,10 @@ const List<LawTopic> kLaw = [
     'A condução começa sozinha quando o caminhão arranca. A parada é '
         'detectada sozinha quando ele fica parado o tempo escolhido em '
         'Ajustes; aí aparece a pergunta: pausa, martelo ou carga/descarga.',
+    'Se arrancar antes de 15 minutos sem ter respondido, a parada vira '
+        'martelo, porque menos de 15 minutos não conta como pausa. Com 15 '
+        'minutos ou mais fica "a classificar" e conta como pausa até você '
+        'corrigir no Histórico.',
     'Cada parada, pausa e descanso fica gravado com o local (coordenadas).',
     'Se for sair de carro numa parada, toque em "Vou sair de carro": o '
         'movimento não conta como condução e a parada continua.',

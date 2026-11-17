@@ -565,6 +565,14 @@ class Tracker extends ChangeNotifier {
             (d == null || d > 30)) {
           final at = _moveSince!;
           onAskCancel?.call();
+          // 1.7.1: parada curta (menos de 15 min) sem resposta vira martelo.
+          // Menos de 15 min não conta como pausa pela lei; as de 15 min ou
+          // mais continuam "a classificar" (contam como pausa até corrigir).
+          if (seg != null &&
+              seg.act == Act.unknown &&
+              at.difference(seg.start) < Limits.breakFirst) {
+            seg.act = Act.work;
+          }
           setAct(Act.drive, at: at);
         }
       } else if (still) {
