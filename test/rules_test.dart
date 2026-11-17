@@ -204,6 +204,59 @@ void main() {
     expect(pauseLabel(const Duration(minutes: 45)), 'Pausa 45 min');
   });
 
+  test('1.7.2: pausa partida em pedaços seguidos soma e zera as 4h30', () {
+    final sh = mk(mon, [
+      (Act.drive, 120),
+      (Act.unknown, 14),
+      (Act.pause, 45),
+      (Act.drive, 4),
+    ]);
+    expect(breakState(sh, sh.end!).driven, const Duration(minutes: 4));
+  });
+
+  test('1.7.2: pulo do GPS (condução de segundos) não corta a pausa', () {
+    final sh = Shift(start: mon);
+    var t = mon;
+    void add(Act a, Duration d) {
+      sh.segments.add(Segment(act: a, start: t, end: t.add(d)));
+      t = t.add(d);
+    }
+
+    add(Act.drive, const Duration(hours: 2));
+    add(Act.pause, const Duration(minutes: 30));
+    add(Act.drive, const Duration(seconds: 20));
+    add(Act.pause, const Duration(minutes: 29));
+    add(Act.drive, const Duration(minutes: 10));
+    sh.end = t;
+    expect(breakState(sh, t).driven, const Duration(minutes: 10));
+  });
+
+  test('1.7.2: martelo no meio corta a pausa (não é seguida)', () {
+    final sh = mk(mon, [
+      (Act.drive, 120),
+      (Act.pause, 20),
+      (Act.work, 5),
+      (Act.pause, 20),
+      (Act.drive, 10),
+    ]);
+    // 20 vale como 1ª parte (15), mas a 2ª de 20 não chega a 30.
+    expect(breakState(sh, sh.end!).driven, const Duration(minutes: 130));
+  });
+
+  test('1.7.2: depois da pausa mostra o que sobra do dia, se for menos', () {
+    final sh = mk(mon, [
+      (Act.drive, 270),
+      (Act.pause, 45),
+      (Act.drive, 270),
+      (Act.pause, 45),
+    ], close: false);
+    final st = computeStatus([sh], sh, sh.segments.last.end!);
+    expect(st.brk.left, const Duration(hours: 4, minutes: 30));
+    expect(st.dayLimit, const Duration(hours: 10));
+    expect(st.driveLeft, const Duration(hours: 1));
+    expect(st.nextLimit, 'dia');
+  });
+
   test('formatos', () {
     expect(fmtDur(const Duration(hours: 4, minutes: 5)), '4h05');
     expect(fmtDur(const Duration(minutes: 45)), '0h45');

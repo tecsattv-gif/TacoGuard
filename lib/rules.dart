@@ -73,50 +73,67 @@ class BreakState {
       firstPartDone ? Limits.breakSecond : Limits.breakFull;
 }
 
-/// Art. 7.º: depois de 4h30 de condução, pausa de 45 min seguidos, ou
-/// 15 min + 30 min (nesta ordem). Martelo e carga/descarga não contam como
-/// pausa. Parada "a classificar" conta como pausa, provisoriamente.
-BreakState breakState(Shift sh, DateTime now) {
+/// Trecho de condução tão curto que é "pulo" do GPS, não arranque de
+/// verdade (menos de 1 min e menos de 100 m). Não interrompe a pausa.
+bool _isBlip(Segment s, DateTime ref) =>
+    s.act == Act.drive && s.dur(ref) < const Duration(minutes: 1) && s.km < 0.1;
+
+bool _isRest(Act a) => a == Act.pause || a == Act.unknown;
+
+/// Percorre a jornada contando a condução contínua.
+///
+/// 1.7.2: trechos de pausa seguidos (ex.: "a classificar" + pausa, ou a
+/// pausa partida em dois por um toque na tela ou um pulo do GPS) somam
+/// como UMA pausa só. Antes cada pedaço era avaliado sozinho e uma pausa
+/// de 59 min partida em 30 + 29 não zerava as 4h30.
+/// [onDrive] recebe a condução acumulada depois de cada trecho de condução.
+BreakState _walk(Shift sh, DateTime now, [void Function(Duration)? onDrive]) {
+  final ref = sh.end ?? now;
   var acc = Duration.zero;
   var first = false;
+  var rest = Duration.zero; // pausa em curso (trechos seguidos somados)
+
+  void closeRest() {
+    if (rest >= Limits.breakFull || (first && rest >= Limits.breakSecond)) {
+      acc = Duration.zero;
+      first = false;
+    } else if (!first && rest >= Limits.breakFirst) {
+      first = true;
+    }
+    rest = Duration.zero;
+  }
+
   for (final s in sh.segments) {
-    final d = s.dur(sh.end ?? now);
-    if (s.act == Act.drive) {
-      acc += d;
-    } else if (s.act == Act.pause || s.act == Act.unknown) {
-      if (d >= Limits.breakFull) {
-        acc = Duration.zero;
-        first = false;
-      } else if (first && d >= Limits.breakSecond) {
-        acc = Duration.zero;
-        first = false;
-      } else if (!first && d >= Limits.breakFirst) {
-        first = true;
+    final d = s.dur(ref);
+    if (_isRest(s.act)) {
+      rest += d;
+    } else if (rest > Duration.zero && _isBlip(s, ref)) {
+      // Pulo do GPS no meio da pausa: a pausa continua.
+      rest += d;
+    } else {
+      if (rest > Duration.zero) closeRest();
+      if (s.act == Act.drive) {
+        acc += d;
+        onDrive?.call(acc);
       }
     }
   }
+  if (rest > Duration.zero) closeRest();
   return BreakState(acc, first);
 }
 
+/// Art. 7.º: depois de 4h30 de condução, pausa de 45 min seguidos, ou
+/// 15 min + 30 min (nesta ordem). Martelo e carga/descarga não contam como
+/// pausa. Parada "a classificar" conta como pausa, provisoriamente.
+/// Depois de uma pausa completa a contagem recomeça das 4h30.
+BreakState breakState(Shift sh, DateTime now) => _walk(sh, now);
+
 /// Maior condução contínua da jornada (para relatório / infrações).
 Duration maxContinuousDrive(Shift sh, DateTime now) {
-  var acc = Duration.zero;
   var best = Duration.zero;
-  var first = false;
-  for (final s in sh.segments) {
-    final d = s.dur(sh.end ?? now);
-    if (s.act == Act.drive) {
-      acc += d;
-      if (acc > best) best = acc;
-    } else if (s.act == Act.pause || s.act == Act.unknown) {
-      if (d >= Limits.breakFull || (first && d >= Limits.breakSecond)) {
-        acc = Duration.zero;
-        first = false;
-      } else if (!first && d >= Limits.breakFirst) {
-        first = true;
-      }
-    }
-  }
+  _walk(sh, now, (acc) {
+    if (acc > best) best = acc;
+  });
   return best;
 }
 
@@ -186,6 +203,28 @@ class Status {
   });
 
   Duration get fortnightDrive => weekDrive + prevWeekDrive;
+
+  /// Condução que ainda cabe hoje (até 9 h ou 10 h).
+  Duration get dayLeft {
+    final d = dayLimit - dayDrive;
+    return d.isNegative ? Duration.zero : d;
+  }
+
+  /// 1.7.2: quanto ainda pode conduzir agora, pelo limite que chega
+  /// primeiro: a pausa (4h30), o fim das 9 h/10 h do dia ou a semana.
+  Duration get driveLeft {
+    var l = brk.left;
+    if (dayLeft < l) l = dayLeft;
+    if (weekLeft < l) l = weekLeft;
+    return l;
+  }
+
+  /// O que vem primeiro: 'pausa', 'dia' ou 'semana'.
+  String get nextLimit {
+    if (weekLeft < brk.left && weekLeft < dayLeft) return 'semana';
+    if (dayLeft <= brk.left) return 'dia';
+    return 'pausa';
+  }
 
   Duration get dayLeft {
     final d = dayLimit - dayDrive;

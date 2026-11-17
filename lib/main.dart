@@ -655,8 +655,15 @@ class _TodayPageState extends State<TodayPage> {
     final act = _t.currentAct ?? Act.unknown;
     final seg = _t.currentSegment;
     final b = st.brk;
-    final usedCd =
-        b.driven.inSeconds / Limits.continuousDrive.inSeconds.toDouble();
+    // 1.7.2: o anel mostra o que falta pelo limite que chega primeiro
+    // (pausa das 4h30, fim das 9 h/10 h do dia ou a semana). Depois de
+    // uma pausa completa volta às 4h30, ou ao que sobra do dia, se for menos.
+    final left = st.driveLeft;
+    final next = st.nextLimit;
+    final usedCd = b.exceeded
+        ? b.driven.inSeconds / Limits.continuousDrive.inSeconds.toDouble()
+        : 1 - left.inSeconds / Limits.continuousDrive.inSeconds.toDouble();
+    final stopNow = !b.exceeded && left == Duration.zero;
     final issues = shiftIssues(_t.shifts, c, now);
     final alertFresh = _t.lastAlert != null &&
         _t.lastAlertAt != null &&
@@ -800,15 +807,20 @@ class _TodayPageState extends State<TodayPage> {
                   used: usedCd.clamp(0.0, 1.0).toDouble(), color: TG.level(usedCd)),
               child: Center(
                 child: Column(mainAxisSize: MainAxisSize.min, children: [
-                  Text(b.exceeded ? 'PAUSA JÁ' : 'Faltam',
+                  Text(
+                      b.exceeded
+                          ? 'PAUSA JÁ'
+                          : stopNow
+                              ? 'PARAR'
+                              : 'Faltam',
                       style: TextStyle(
-                          color: b.exceeded ? TG.danger : TG.muted,
+                          color: b.exceeded || stopNow ? TG.danger : TG.muted,
                           fontSize: 14,
                           fontWeight: FontWeight.w700)),
                   Text(
                       b.exceeded
                           ? '+${fmtDur(b.driven - Limits.continuousDrive)}'
-                          : fmtDur(b.left),
+                          : fmtDur(left),
                       style: TextStyle(
                           fontSize: 54,
                           height: 1.1,
@@ -816,8 +828,13 @@ class _TodayPageState extends State<TodayPage> {
                           fontWeight: FontWeight.w800,
                           fontFeatures: const [FontFeature.tabularFigures()],
                           color: TG.level(usedCd))),
-                  const Text('para a pausa',
-                      style: TextStyle(color: TG.muted, fontSize: 14)),
+                  Text(
+                      b.exceeded || next == 'pausa'
+                          ? 'para a pausa'
+                          : next == 'dia'
+                              ? 'para as ${st.dayLimit.inHours}h do dia'
+                              : 'para o limite da semana',
+                      style: const TextStyle(color: TG.muted, fontSize: 14)),
                 ]),
               ),
             ),
@@ -825,6 +842,11 @@ class _TodayPageState extends State<TodayPage> {
           const SizedBox(height: 12),
           Fit('Condução contínua: ${fmtDur(b.driven)} de 4h30',
               style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700)),
+          const SizedBox(height: 2),
+          Fit(
+              'Condução do dia: ${fmtDur(st.dayDrive)} de '
+              '${st.dayLimit.inHours}h • faltam ${fmtDur(st.dayLeft)}',
+              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
           const SizedBox(height: 2),
           Fit(
               b.firstPartDone
