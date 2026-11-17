@@ -10,52 +10,109 @@ import 'theme.dart';
 /// Tamanho do pop-up, em dp.
 const double kPopW = 330, kPopH = 250;
 
+/// O que cada resposta quer dizer (linha pequena embaixo do nome).
+String stopHint(Act a) {
+  switch (a) {
+    case Act.pause:
+      return 'conta para a pausa de 45 min';
+    case Act.work:
+      return 'outros trabalhos';
+    case Act.load:
+      return 'conta como trabalho';
+    default:
+      return '';
+  }
+}
+
 /// Os três botões da pergunta "o que é esta parada?".
+/// [compact]: lado a lado, para o pop-up por cima dos outros apps, que
+/// tem tamanho fixo. Sem ele: um embaixo do outro, grandes, com a
+/// explicação de cada um.
 class StopChoices extends StatelessWidget {
   final void Function(Act) onPick;
-  const StopChoices({super.key, required this.onPick});
+  final bool compact;
+  const StopChoices({super.key, required this.onPick, this.compact = false});
 
-  Widget _btn(Act a) => Expanded(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 4),
-          child: Material(
-            color: TG.act(a).withValues(alpha: 0.16),
-            borderRadius: BorderRadius.circular(16),
-            child: InkWell(
-              borderRadius: BorderRadius.circular(16),
-              onTap: () => onPick(a),
-              child: Container(
+  Widget _tile(Act a) {
+    final c = TG.act(a);
+    return Material(
+      color: c.withValues(alpha: 0.16),
+      borderRadius: BorderRadius.circular(16),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(16),
+        onTap: () => onPick(a),
+        child: compact
+            ? SizedBox(
                 height: 96,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: TG.act(a), width: 1.5),
-                ),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(TG.icon(a), color: TG.act(a), size: 32),
+                    Icon(TG.icon(a), color: c, size: 32),
                     const SizedBox(height: 8),
                     Text(
                       a == Act.load ? 'Carga/\nDescarga' : actLabel(a),
                       textAlign: TextAlign.center,
-                      style: const TextStyle(
-                          color: TG.text,
+                      style: TextStyle(
+                          color: c,
                           fontSize: 13,
                           height: 1.1,
                           fontWeight: FontWeight.w700),
                     ),
                   ],
                 ),
+              )
+            : Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                child: Row(children: [
+                  Icon(TG.icon(a), color: c, size: 28),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(actLabel(a),
+                            style: TextStyle(
+                                color: c,
+                                fontSize: 17,
+                                fontWeight: FontWeight.w800)),
+                        Text(stopHint(a),
+                            style: const TextStyle(
+                                color: TG.muted, fontSize: 12.5)),
+                      ],
+                    ),
+                  ),
+                ]),
               ),
-            ),
-          ),
-        ),
-      );
+      ),
+    );
+  }
 
   @override
-  Widget build(BuildContext context) => Row(
-        children: [_btn(Act.pause), _btn(Act.work), _btn(Act.load)],
-      );
+  Widget build(BuildContext context) {
+    const acts = [Act.pause, Act.work, Act.load];
+    if (compact) {
+      return Row(children: [
+        for (final a in acts)
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 4),
+              child: _tile(a),
+            ),
+          ),
+      ]);
+    }
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        for (final a in acts)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: _tile(a),
+          ),
+      ],
+    );
+  }
 }
 
 /// Abre e fecha o pop-up por cima dos outros apps (Google Maps etc.).
@@ -188,7 +245,7 @@ class _StopPopupWindowState extends State<StopPopupWindow> {
               ],
             ),
             const SizedBox(height: 10),
-            StopChoices(onPick: (a) => _pick(a.name)),
+            StopChoices(compact: true, onPick: (a) => _pick(a.name)),
             const SizedBox(height: 8),
             const Text('Sem resposta, fica "a classificar".',
                 style: TextStyle(color: TG.muted, fontSize: 11)),

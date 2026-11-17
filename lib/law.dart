@@ -279,6 +279,22 @@ const List<LawTopic> kLaw = [
     'No TacoGuard não precisa mudar nada: usa a hora do telefone e conta '
         'a semana em UTC, como o tacógrafo.',
   ]),
+  LawTopic('Como o TacoGuard conta os tempos', 'Uso do app',
+      Icons.speed_rounded, [
+    'A jornada começa só quando você toca em "Iniciar jornada". Depois o '
+        'GPS faz o resto.',
+    'A condução começa sozinha quando o caminhão arranca. A parada é '
+        'detectada sozinha quando ele fica parado o tempo escolhido em '
+        'Ajustes; aí aparece a pergunta: pausa, martelo ou carga/descarga.',
+    'Cada parada, pausa e descanso fica gravado com o local (coordenadas).',
+    'Se for sair de carro numa parada, toque em "Vou sair de carro": o '
+        'movimento não conta como condução e a parada continua.',
+    'Se encerrou a jornada e surgiu viagem de última hora, use "Reabrir a '
+        'jornada": a contagem continua de onde parou.',
+    'Na tela Hoje, a faixa colorida mostra o dia: azul condução, verde '
+        'pausa, amarelo martelo, laranja carga/descarga e cinza o que ainda '
+        'não foi classificado.',
+  ]),
 ];
 
 /// Tela "Lei do tacógrafo": temas com busca.

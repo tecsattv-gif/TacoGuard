@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:math' as math;
+import 'dart:ui' show FontFeature;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -278,24 +279,28 @@ class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
     _sheetOpen = true;
     final a = await showModalBottomSheet<Act>(
       context: context,
+      showDragHandle: true,
       builder: (ctx) => SafeArea(
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 18, 16, 16),
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
           child: Column(
             mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Text('Parado desde ${fmtTime(seg.start)}',
-                  style: const TextStyle(
-                      fontSize: 20, fontWeight: FontWeight.w800)),
-              const SizedBox(height: 4),
               const Text('O que é esta parada?',
-                  style: TextStyle(color: TG.muted)),
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800)),
+              const SizedBox(height: 2),
+              Text('Parado desde ${fmtTime(seg.start)}',
+                  style: const TextStyle(color: TG.muted, fontSize: 13)),
               const SizedBox(height: 16),
               StopChoices(onPick: (a) => Navigator.pop(ctx, a)),
-              const SizedBox(height: 10),
-              TextButton(
-                  onPressed: () => Navigator.pop(ctx),
-                  child: const Text('Responder depois')),
+              const SizedBox(height: 4),
+              SizedBox(
+                height: 48,
+                child: TextButton(
+                    onPressed: () => Navigator.pop(ctx),
+                    child: const Text('Responder depois')),
+              ),
             ],
           ),
         ),
@@ -526,22 +531,31 @@ class _TodayPageState extends State<TodayPage> {
     final prev =
         driveBetween(_t.shifts, ws.subtract(const Duration(days: 7)), ws, now);
     return [
-      TCard(
-        padding: const EdgeInsets.fromLTRB(20, 24, 20, 22),
+      _Hero(
+        padding: const EdgeInsets.fromLTRB(20, 22, 20, 20),
         child: Column(children: [
-          const Icon(Icons.hotel_rounded, color: TG.pause, size: 44),
-          const SizedBox(height: 10),
-          Text(rest == null ? 'Pronto para começar' : 'Em descanso',
-              style:
-                  const TextStyle(fontSize: 22, fontWeight: FontWeight.w800)),
+          if (rest == null) ...[
+            const Icon(Icons.hotel_rounded, color: TG.pause, size: 40),
+            const SizedBox(height: 8),
+            const Text('Pronto para começar',
+                style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800)),
+          ],
           if (rest != null) ...[
-            const SizedBox(height: 6),
+            Text(
+                ref?.end == null
+                    ? 'Em descanso'
+                    : 'Em descanso desde ${fmtTime(ref!.end!)}',
+                style: const TextStyle(color: TG.muted, fontSize: 14)),
+            const SizedBox(height: 2),
             Text(fmtDur(rest),
                 style: const TextStyle(
-                    fontSize: 54,
-                    fontWeight: FontWeight.w900,
+                    fontSize: 56,
+                    fontWeight: FontWeight.w800,
                     color: TG.pause,
+                    letterSpacing: -1,
+                    fontFeatures: [FontFeature.tabularFigures()],
                     height: 1.05)),
+            const SizedBox(height: 4),
             Text(_restText(rest),
                 textAlign: TextAlign.center,
                 style: const TextStyle(color: TG.muted, fontSize: 14)),
@@ -581,36 +595,21 @@ class _TodayPageState extends State<TodayPage> {
                         fontSize: 15, fontWeight: FontWeight.w700)),
               ),
             ),
-            const SizedBox(height: 4),
+          ],
+          if (rest == null) ...[
+            const SizedBox(height: 10),
             const Text(
-                'Surgiu uma viagem de última hora? Reabra: a contagem '
-                'continua de onde parou.',
+                'Depois de iniciar, o GPS faz o resto: detecta as paradas, '
+                'grava o local e conta os tempos.',
                 textAlign: TextAlign.center,
                 style: TextStyle(color: TG.muted, fontSize: 12.5)),
           ],
-          const SizedBox(height: 8),
-          const Text(
-              'Depois de iniciar, o GPS faz o resto: detecta as paradas, '
-              'grava o local e conta os tempos.',
-              textAlign: TextAlign.center,
-              style: TextStyle(color: TG.muted, fontSize: 12.5)),
         ]),
       ),
       const SizedBox(height: 12),
-      Row(children: [
-        Expanded(
-            child: _Metric(
-                title: 'Semana',
-                value: week,
-                limit: Limits.weeklyDrive,
-                icon: Icons.date_range_rounded)),
-        const SizedBox(width: 12),
-        Expanded(
-            child: _Metric(
-                title: 'Duas semanas',
-                value: week + prev,
-                limit: Limits.fortnightDrive,
-                icon: Icons.calendar_month_rounded)),
+      _LimitList(rows: [
+        _Limit('Semana', week, Limits.weeklyDrive),
+        _Limit('2 semanas', week + prev, Limits.fortnightDrive),
       ]),
       if (ref != null) ...[
         const SizedBox(height: 12),
@@ -663,19 +662,13 @@ class _TodayPageState extends State<TodayPage> {
         _t.lastAlertAt != null &&
         now.difference(_t.lastAlertAt!).inMinutes < 10;
     return [
-      // Estado atual.
-      TCard(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      // Estado atual: faixa na cor da atividade.
+      _Tonal(
+        color: TG.act(act),
+        padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
         child: Row(children: [
-          Container(
-            width: 46,
-            height: 46,
-            decoration: BoxDecoration(
-                color: TG.act(act).withValues(alpha: 0.18),
-                borderRadius: BorderRadius.circular(14)),
-            child: Icon(TG.icon(act), color: TG.act(act), size: 26),
-          ),
-          const SizedBox(width: 12),
+          Icon(TG.icon(act), color: TG.act(act), size: 28),
+          const SizedBox(width: 14),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -695,8 +688,10 @@ class _TodayPageState extends State<TodayPage> {
           ),
           Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
             Text('${_t.speedKmh.round()}',
-                style:
-                    const TextStyle(fontSize: 24, fontWeight: FontWeight.w800)),
+                style: const TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.w800,
+                    fontFeatures: [FontFeature.tabularFigures()])),
             Row(mainAxisSize: MainAxisSize.min, children: [
               Icon(
                   _t.gpsOn && _t.gpsError == null
@@ -793,13 +788,13 @@ class _TodayPageState extends State<TodayPage> {
             text: _t.lastAlert!),
       ],
       const SizedBox(height: 12),
-      // Anel: condução contínua.
-      TCard(
-        padding: const EdgeInsets.fromLTRB(16, 20, 16, 18),
+      // Anel: condução contínua. É o número principal da tela.
+      _Hero(
+        padding: const EdgeInsets.fromLTRB(16, 18, 16, 16),
         child: Column(children: [
           SizedBox(
-            width: 230,
-            height: 230,
+            width: 220,
+            height: 220,
             child: CustomPaint(
               painter: _RingPainter(
                   used: usedCd.clamp(0.0, 1.0).toDouble(), color: TG.level(usedCd)),
@@ -815,9 +810,11 @@ class _TodayPageState extends State<TodayPage> {
                           ? '+${fmtDur(b.driven - Limits.continuousDrive)}'
                           : fmtDur(b.left),
                       style: TextStyle(
-                          fontSize: 52,
+                          fontSize: 54,
                           height: 1.1,
-                          fontWeight: FontWeight.w900,
+                          letterSpacing: -1,
+                          fontWeight: FontWeight.w800,
+                          fontFeatures: const [FontFeature.tabularFigures()],
                           color: TG.level(usedCd))),
                   const Text('para a pausa',
                       style: TextStyle(color: TG.muted, fontSize: 14)),
@@ -837,65 +834,34 @@ class _TodayPageState extends State<TodayPage> {
         ]),
       ),
       const SizedBox(height: 12),
-      _Pair(children: [
-        Expanded(
-            child: _Metric(
-                title: 'Condução hoje',
-                value: st.dayDrive,
-                limit: st.dayLimit,
-                mark: st.dayLimit > Limits.dailyDrive ? Limits.dailyDrive : null,
-                note: st.dayLimit > Limits.dailyDrive
-                    ? 'dias de 10 h: ${st.extUsed + (st.extToday ? 1 : 0)}/2'
-                    : 'limite 9 h (já usou 2 dias de 10 h)',
-                icon: Icons.local_shipping_rounded)),
-        const SizedBox(width: 12),
-        Expanded(
-            child: _Metric(
-                title: 'Amplitude',
-                value: st.amplitude,
-                limit: st.amplitudeLimit,
-                mark: st.canExtendAmplitude ? Limits.amplitude : null,
-                note: st.canExtendAmplitude
-                    ? 'descansos 9 h: ${st.reducedRestsUsed}/3'
-                    : 'limite 13 h (sem descanso reduzido)',
-                icon: Icons.timelapse_rounded)),
-      ]),
+      // O dia numa faixa colorida, como o disco do tacógrafo.
+      _DayStrip(shift: c, now: now),
       const SizedBox(height: 12),
-      _Pair(children: [
-        Expanded(
-            child: _Metric(
-                title: 'Semana',
-                value: st.weekDrive,
-                limit: Limits.weeklyDrive,
-                note: 'pode conduzir ${fmtDur(st.weekLeft)}',
-                icon: Icons.date_range_rounded)),
-        const SizedBox(width: 12),
-        Expanded(
-            child: _Metric(
-                title: 'Duas semanas',
-                value: st.fortnightDrive,
-                limit: Limits.fortnightDrive,
-                note: 'semana anterior ${fmtDur(st.prevWeekDrive)}',
-                icon: Icons.calendar_month_rounded)),
+      // Todos os limites numa lista só.
+      _LimitList(rows: [
+        _Limit('Condução hoje', st.dayDrive, st.dayLimit,
+            mark: st.dayLimit > Limits.dailyDrive ? Limits.dailyDrive : null,
+            note: st.dayLimit > Limits.dailyDrive
+                ? 'dias de 10 h: ${st.extUsed + (st.extToday ? 1 : 0)}/2'
+                : 'limite 9 h (já usou 2 dias de 10 h)'),
+        _Limit('Amplitude', st.amplitude, st.amplitudeLimit,
+            mark: st.canExtendAmplitude ? Limits.amplitude : null,
+            note: st.canExtendAmplitude
+                ? 'descansos de 9 h: ${st.reducedRestsUsed}/3'
+                : 'limite 13 h (sem descanso reduzido)'),
+        _Limit('Semana', st.weekDrive, Limits.weeklyDrive,
+            note: 'pode conduzir ${fmtDur(st.weekLeft)}'),
+        _Limit('2 semanas', st.fortnightDrive, Limits.fortnightDrive,
+            note: 'semana anterior ${fmtDur(st.prevWeekDrive)}'),
       ]),
       const SizedBox(height: 12),
       // Totais do dia.
       TCard(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 14),
         child: Row(children: [
           _Total(Act.pause, st.pauseToday),
           _Total(Act.work, st.workToday),
           _Total(Act.load, st.loadToday),
-          Expanded(
-            child: Column(children: [
-              const Icon(Icons.route_rounded, color: TG.drive, size: 22),
-              const SizedBox(height: 4),
-              Text(fmtKm(c.km),
-                  style: const TextStyle(
-                      fontSize: 18, fontWeight: FontWeight.w800)),
-              const Text('Km hoje',
-                  style: TextStyle(color: TG.muted, fontSize: 11.5)),
-            ]),
-          ),
         ]),
       ),
       if (st.weeklyRestDeadline != null) ...[
@@ -917,23 +883,8 @@ class _TodayPageState extends State<TodayPage> {
       ],
       const SizedBox(height: 16),
       // Trocar atividade à mão.
-      const _Section('Atividade (manual)'),
-      Row(children: [
-        for (final a in [Act.drive, Act.pause, Act.work, Act.load])
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 3),
-              child: _ActButton(
-                  act: a, selected: act == a, onTap: () => _t.setAct(a)),
-            ),
-          ),
-      ]),
-      const SizedBox(height: 4),
-      const Text(
-          'A condução começa sozinha quando o caminhão arranca; a parada é '
-          'detectada sozinha quando ele para.',
-          textAlign: TextAlign.center,
-          style: TextStyle(color: TG.muted, fontSize: 12)),
+      const _Section('Trocar a atividade à mão'),
+      _ActPicker(current: act, onPick: (a) => _t.setAct(a)),
       if (issues.isNotEmpty) ...[
         const SizedBox(height: 16),
         const _Section('Avisos'),
@@ -966,18 +917,6 @@ class _TodayPageState extends State<TodayPage> {
       ),
     ];
   }
-}
-
-/// Dois cartões lado a lado, da mesma altura.
-class _Pair extends StatelessWidget {
-  final List<Widget> children;
-  const _Pair({required this.children});
-  @override
-  Widget build(BuildContext context) => IntrinsicHeight(
-        child: Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: children),
-      );
 }
 
 class _Section extends StatelessWidget {
@@ -1024,100 +963,207 @@ class _Banner extends StatelessWidget {
       );
 }
 
-/// Cartão com valor, limite e barra (verde, amarelo, vermelho).
-class _Metric extends StatelessWidget {
+/// Cartão principal da tela (sem contorno, um tom acima do fundo).
+class _Hero extends StatelessWidget {
+  final Widget child;
+  final EdgeInsetsGeometry padding;
+  const _Hero({required this.child, required this.padding});
+  @override
+  Widget build(BuildContext context) => Container(
+        padding: padding,
+        decoration: BoxDecoration(
+            color: TG.surface, borderRadius: BorderRadius.circular(24)),
+        child: child,
+      );
+}
+
+/// Faixa tingida com a cor da atividade atual.
+class _Tonal extends StatelessWidget {
+  final Color color;
+  final Widget child;
+  final EdgeInsetsGeometry padding;
+  const _Tonal(
+      {required this.color, required this.child, required this.padding});
+  @override
+  Widget build(BuildContext context) => Container(
+        padding: padding,
+        decoration: BoxDecoration(
+            color: color.withValues(alpha: 0.14),
+            borderRadius: BorderRadius.circular(18)),
+        child: child,
+      );
+}
+
+/// Um limite da lei: quanto já usou de quanto pode.
+class _Limit {
   final String title;
   final Duration value;
   final Duration limit;
   final Duration? mark; // risco intermediário (9 h dentro de 10 h, 13 em 15)
   final String? note;
-  final IconData icon;
-  const _Metric(
-      {required this.title,
-      required this.value,
-      required this.limit,
-      required this.icon,
-      this.mark,
-      this.note});
+  const _Limit(this.title, this.value, this.limit, {this.mark, this.note});
+}
+
+/// Os limites numa lista só: nome, barra (verde, amarelo, vermelho) e valor.
+class _LimitList extends StatelessWidget {
+  final List<_Limit> rows;
+  const _LimitList({required this.rows});
+
+  Widget _row(_Limit l) {
+    final used = l.limit.inSeconds == 0
+        ? 0.0
+        : l.value.inSeconds / l.limit.inSeconds.toDouble();
+    final color = TG.level(used);
+    return Semantics(
+      label: '${l.title}: ${fmtDur(l.value)} de ${l.limit.inHours} horas',
+      excludeSemantics: true,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        child: Row(children: [
+          Expanded(
+            flex: 5,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(l.title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                        fontSize: 14, fontWeight: FontWeight.w700)),
+                if (l.note != null)
+                  Text(l.note!,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(color: TG.muted, fontSize: 11.5)),
+              ],
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            flex: 4,
+            child: SizedBox(
+              height: 8,
+              child: Stack(children: [
+                Positioned.fill(
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                        color: TG.surfaceHigh,
+                        borderRadius: BorderRadius.circular(4)),
+                  ),
+                ),
+                Positioned.fill(
+                  child: FractionallySizedBox(
+                    alignment: Alignment.centerLeft,
+                    widthFactor: used.clamp(0.0, 1.0).toDouble(),
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                          color: color, borderRadius: BorderRadius.circular(4)),
+                    ),
+                  ),
+                ),
+                if (l.mark != null)
+                  Positioned.fill(
+                    child: Align(
+                      alignment: Alignment(
+                          -1 + 2 * (l.mark!.inSeconds / l.limit.inSeconds), 0),
+                      child: Container(width: 2, height: 8, color: TG.text),
+                    ),
+                  ),
+              ]),
+            ),
+          ),
+          const SizedBox(width: 10),
+          SizedBox(
+            width: 92,
+            child: Fit('${fmtDur(l.value)} / ${l.limit.inHours}h',
+                alignment: Alignment.centerRight,
+                style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w800,
+                    fontFeatures: const [FontFeature.tabularFigures()],
+                    color: used >= 0.85 ? color : TG.text)),
+          ),
+        ]),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) => TCard(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+        child: Column(children: [for (final r in rows) _row(r)]),
+      );
+}
+
+/// O dia numa faixa colorida, como o disco do tacógrafo: cada trecho da
+/// jornada na cor da atividade, do início até agora.
+class _DayStrip extends StatelessWidget {
+  final Shift shift;
+  final DateTime now;
+  const _DayStrip({required this.shift, required this.now});
 
   @override
   Widget build(BuildContext context) {
-    final used = limit.inSeconds == 0
-        ? 0.0
-        : value.inSeconds / limit.inSeconds.toDouble();
-    final color = TG.level(used);
+    final segs = shift.segments.where((s) => s.dur(now).inSeconds > 0).toList();
+    final hasUnknown = segs.any((s) => s.act == Act.unknown);
+    Widget key(Act a) => Row(mainAxisSize: MainAxisSize.min, children: [
+          Container(
+            width: 9,
+            height: 9,
+            decoration: BoxDecoration(
+                color: TG.act(a), borderRadius: BorderRadius.circular(2)),
+          ),
+          const SizedBox(width: 4),
+          Text(a == Act.load ? 'Carga' : actLabel(a),
+              style: const TextStyle(color: TG.muted, fontSize: 11.5)),
+        ]);
     return TCard(
-      padding: const EdgeInsets.all(14),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(children: [
-            Icon(icon, size: 16, color: TG.muted),
-            const SizedBox(width: 6),
-            Expanded(
-              child: FittedBox(
-                fit: BoxFit.scaleDown,
-                alignment: Alignment.centerLeft,
-                child: Text(title,
-                    maxLines: 1,
-                    style: const TextStyle(
-                        color: TG.muted,
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600)),
-              ),
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Row(children: [
+          Expanded(
+            child: Text('Dia  •  ${fmtTime(shift.start)} até agora',
+                style: const TextStyle(
+                    fontSize: 14, fontWeight: FontWeight.w700)),
+          ),
+          const Icon(Icons.route_rounded, color: TG.drive, size: 16),
+          const SizedBox(width: 4),
+          Text(fmtKm(shift.km),
+              style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w800,
+                  fontFeatures: [FontFeature.tabularFigures()])),
+        ]),
+        const SizedBox(height: 10),
+        Semantics(
+          label: 'Linha do tempo do dia',
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(5),
+            child: SizedBox(
+              height: 16,
+              child: segs.isEmpty
+                  ? const ColoredBox(color: TG.surfaceHigh)
+                  : Row(children: [
+                      for (var i = 0; i < segs.length; i++) ...[
+                        if (i > 0) const SizedBox(width: 1),
+                        Expanded(
+                          flex: math.max(1, segs[i].dur(now).inMinutes),
+                          child: ColoredBox(color: TG.act(segs[i].act)),
+                        ),
+                      ],
+                    ]),
             ),
-          ]),
-          const SizedBox(height: 6),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.baseline,
-            textBaseline: TextBaseline.alphabetic,
-            children: [
-              Text(fmtDur(value),
-                  style: TextStyle(
-                      fontSize: 26, fontWeight: FontWeight.w900, color: color)),
-              const SizedBox(width: 4),
-              Text('/ ${limit.inHours}h',
-                  style: const TextStyle(color: TG.muted, fontSize: 14)),
-            ],
           ),
-          const SizedBox(height: 8),
-          SizedBox(
-            height: 10,
-            child: Stack(children: [
-              Positioned.fill(
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                      color: TG.surfaceHigh,
-                      borderRadius: BorderRadius.circular(6)),
-                ),
-              ),
-              Positioned.fill(
-                child: FractionallySizedBox(
-                  alignment: Alignment.centerLeft,
-                  widthFactor: used.clamp(0.0, 1.0).toDouble(),
-                  child: DecoratedBox(
-                    decoration: BoxDecoration(
-                        color: color, borderRadius: BorderRadius.circular(6)),
-                  ),
-                ),
-              ),
-              if (mark != null)
-                Positioned.fill(
-                  child: Align(
-                    alignment: Alignment(
-                        -1 + 2 * (mark!.inSeconds / limit.inSeconds), 0),
-                    child: Container(width: 2, height: 10, color: TG.text),
-                  ),
-                ),
-            ]),
-          ),
-          if (note != null) ...[
-            const SizedBox(height: 6),
-            Text(note!,
-                style: const TextStyle(color: TG.muted, fontSize: 11.5)),
-          ],
-        ],
-      ),
+        ),
+        const SizedBox(height: 8),
+        Wrap(spacing: 12, runSpacing: 4, children: [
+          key(Act.drive),
+          key(Act.pause),
+          key(Act.work),
+          key(Act.load),
+          if (hasUnknown) key(Act.unknown),
+        ]),
+      ]),
     );
   }
 }
@@ -1140,38 +1186,62 @@ class _Total extends StatelessWidget {
       );
 }
 
-class _ActButton extends StatelessWidget {
-  final Act act;
-  final bool selected;
-  final VoidCallback onTap;
-  const _ActButton(
-      {required this.act, required this.selected, required this.onTap});
+/// Escolha da atividade à mão: quatro opções num bloco só, a atual
+/// pintada com a cor dela.
+class _ActPicker extends StatelessWidget {
+  final Act current;
+  final void Function(Act) onPick;
+  const _ActPicker({required this.current, required this.onPick});
+
   @override
-  Widget build(BuildContext context) {
-    final c = TG.act(act);
-    return Material(
-      color: selected ? c.withValues(alpha: 0.22) : TG.surface,
-      borderRadius: BorderRadius.circular(16),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(16),
-        onTap: onTap,
-        child: Container(
-          height: 74,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: selected ? c : TG.line, width: 1.5),
-          ),
-          child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-            Icon(TG.icon(act), color: c, size: 26),
-            const SizedBox(height: 4),
-            Text(act == Act.load ? 'Carga/Desc.' : actLabel(act),
-                style:
-                    const TextStyle(fontSize: 11.5, fontWeight: FontWeight.w700)),
-          ]),
-        ),
-      ),
-    );
-  }
+  Widget build(BuildContext context) => Container(
+        padding: const EdgeInsets.all(4),
+        decoration: BoxDecoration(
+            color: TG.surface, borderRadius: BorderRadius.circular(18)),
+        child: Row(children: [
+          for (final a in [Act.drive, Act.pause, Act.work, Act.load])
+            Expanded(
+              child: Semantics(
+                button: true,
+                selected: current == a,
+                label: actLabel(a),
+                onTap: () => onPick(a),
+                excludeSemantics: true,
+                child: Material(
+                  color: current == a
+                      ? TG.act(a).withValues(alpha: 0.2)
+                      : Colors.transparent,
+                  borderRadius: BorderRadius.circular(14),
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(14),
+                    onTap: () => onPick(a),
+                    child: SizedBox(
+                      height: 64,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(TG.icon(a),
+                              color: current == a ? TG.act(a) : TG.muted,
+                              size: 24),
+                          const SizedBox(height: 4),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 2),
+                            child: Fit(a == Act.load ? 'Carga' : actLabel(a),
+                                style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w700,
+                                    color:
+                                        current == a ? TG.act(a) : TG.muted)),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+        ]),
+      );
 }
 
 /// Barra do descanso com as marcas de 9 h e 11 h.
