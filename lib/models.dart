@@ -1,3 +1,5 @@
+import 'i18n.dart';
+
 /// Tipos de atividade, como no tacógrafo.
 enum Act {
   drive, // condução (volante)
@@ -17,15 +19,15 @@ Act actFromName(String? s) {
 String actLabel(Act a) {
   switch (a) {
     case Act.drive:
-      return 'Condução';
+      return tr('Condução');
     case Act.pause:
-      return 'Pausa';
+      return tr('Pausa');
     case Act.work:
-      return 'Martelo';
+      return tr('Martelo');
     case Act.load:
-      return 'Carga/Descarga';
+      return tr('Carga/Descarga');
     case Act.unknown:
-      return 'A classificar';
+      return tr('A classificar');
   }
 }
 
@@ -231,5 +233,5 @@ String fmtTime(DateTime t) => '${two(t.hour)}:${two(t.minute)}';
 String fmtDate(DateTime t) => '${two(t.day)}/${two(t.month)}/${t.year}';
 String fmtDateTime(DateTime t) => '${fmtDate(t)} ${fmtTime(t)}';
 
-const _dias = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'];
+List<String> get _dias => [tr('Seg'), tr('Ter'), tr('Qua'), tr('Qui'), tr('Sex'), tr('Sáb'), tr('Dom')];
 String weekdayShort(DateTime t) => _dias[t.weekday - 1];

@@ -9,6 +9,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'i18n.dart';
 import 'models.dart';
 import 'rules.dart';
 
@@ -94,7 +95,7 @@ class Tracker extends ChangeNotifier {
     _carAway = false;
     _moveSince = null;
     _saveCar();
-    if (spoken && voice) _say('De volta ao caminhão.');
+    if (spoken && voice) _say(tr('De volta ao caminhão.'));
     notifyListeners();
   }
 
@@ -169,7 +170,7 @@ class Tracker extends ChangeNotifier {
       }
     } catch (_) {}
     try {
-      await _tts.setLanguage('pt-BR');
+      await _tts.setLanguage(ttsLang);
       await _tts.setSpeechRate(0.5);
     } catch (_) {}
     notifyListeners();
@@ -450,7 +451,7 @@ class Tracker extends ChangeNotifier {
     gpsError = null;
     try {
       if (!await Geolocator.isLocationServiceEnabled()) {
-        gpsError = 'Ative o GPS do celular.';
+        gpsError = tr('Ative o GPS do celular.');
       } else {
         var perm = await Geolocator.checkPermission();
         if (perm == LocationPermission.denied) {
@@ -458,12 +459,11 @@ class Tracker extends ChangeNotifier {
         }
         if (perm == LocationPermission.denied ||
             perm == LocationPermission.deniedForever) {
-          gpsError = 'Permissão de localização negada. Libere nas '
-              'configurações do celular.';
+          gpsError = tr('Permissão de localização negada. Libere nas configurações do celular.');
         }
       }
     } catch (e) {
-      gpsError = 'Erro no GPS: $e';
+      gpsError = tr('Erro no GPS: {0}', [e]);
     }
     _timer?.cancel();
     _timer = Timer.periodic(const Duration(seconds: 5), (_) => _tick());
@@ -489,8 +489,8 @@ class Tracker extends ChangeNotifier {
       forceLocationManager: true,
       intervalDuration: const Duration(seconds: 1),
       foregroundNotificationConfig: ForegroundNotificationConfig(
-        notificationTitle: 'TacoGuard ativo',
-        notificationText: 'Controlando a jornada pelo GPS',
+        notificationTitle: tr('TacoGuard ativo'),
+        notificationText: tr('Controlando a jornada pelo GPS'),
         enableWakeLock: true,
       ),
     );
@@ -728,7 +728,7 @@ class Tracker extends ChangeNotifier {
     if (now.difference(seg.start) < Limits.breakFirst) return;
     autoAsked = true;
     if (voice) {
-      _say('Parado há 15 minutos, em martelo. Se for pausa, mude para pausa.');
+      _say(tr('Parado há 15 minutos, em martelo. Se for pausa, mude para pausa.'));
     }
     if (popup) onAsk?.call(seg);
   }
@@ -837,10 +837,9 @@ class Tracker extends ChangeNotifier {
             lon: lon);
         c!.speeding.add(e);
         _overEvent = e;
-        lastAlert = 'Excesso de velocidade registado: mais de 1 minuto '
-            'acima de $speedLimit km/h.';
+        lastAlert = tr('Excesso de velocidade registado: mais de 1 minuto acima de {0} km/h.', [speedLimit]);
         lastAlertAt = now;
-        if (voice) _say('Atenção. Excesso de velocidade registado.');
+        if (voice) _say(tr('Atenção. Excesso de velocidade registado.'));
         save();
       }
     } else {
@@ -863,6 +862,13 @@ class Tracker extends ChangeNotifier {
   }
 
   // ---------- Avisos ----------
+  /// 1.9.0: voz no idioma escolhido (chamado ao trocar o idioma).
+  Future<void> setVoiceLang() async {
+    try {
+      await _tts.setLanguage(ttsLang);
+    } catch (_) {}
+  }
+
   void _say(String text) {
     try {
       _tts.speak(text);
@@ -890,30 +896,26 @@ class Tracker extends ChangeNotifier {
       final left = Limits.continuousDrive - b.driven;
       final need = b.breakNeeded.inMinutes;
       if (left.inSeconds <= 0) {
-        _alert('cd0', 'Atenção. Quatro horas e meia de condução. '
-            'Faça a pausa de $need minutos agora.');
+        _alert('cd0', tr('Atenção. Quatro horas e meia de condução. Faça a pausa de {0} minutos agora.', [need]));
       } else if (left.inMinutes < 15) {
-        _alert('cd15', 'Faltam 15 minutos para a pausa de $need minutos.');
+        _alert('cd15', tr('Faltam 15 minutos para a pausa de {0} minutos.', [need]));
       } else if (left.inMinutes < 30) {
-        _alert('cd30', 'Faltam 30 minutos para a pausa de $need minutos.');
+        _alert('cd30', tr('Faltam 30 minutos para a pausa de {0} minutos.', [need]));
       }
       final dl = st.dayLimit - st.dayDrive;
       final lim = st.dayLimit.inHours;
       if (dl.inSeconds <= 0) {
-        _alert('dd0', 'Atenção. Limite de $lim horas de condução do dia '
-            'atingido.');
+        _alert('dd0', tr('Atenção. Limite de {0} horas de condução do dia atingido.', [lim]));
       } else if (dl.inMinutes < 30) {
-        _alert('dd30', 'Faltam 30 minutos para o limite de $lim horas de '
-            'condução do dia.');
+        _alert('dd30', tr('Faltam 30 minutos para o limite de {0} horas de condução do dia.', [lim]));
       }
       if (st.dayDrive >= Limits.dailyDrive && st.dayLimit > Limits.dailyDrive) {
-        _alert('dd9', 'Nove horas de condução. A partir de agora conta como '
-            'dia de dez horas.');
+        _alert('dd9', tr('Nove horas de condução. A partir de agora conta como dia de dez horas.'));
       }
       if (st.weekLeft.inSeconds <= 0) {
-        _alert('wk0', 'Atenção. Limite de condução da semana atingido.');
+        _alert('wk0', tr('Atenção. Limite de condução da semana atingido.'));
       } else if (st.weekLeft.inMinutes < 60) {
-        _alert('wk60', 'Falta menos de uma hora de condução nesta semana.');
+        _alert('wk60', tr('Falta menos de uma hora de condução nesta semana.'));
       }
     }
     // Pausa em curso: avisa quando completa.
@@ -922,36 +924,31 @@ class Tracker extends ChangeNotifier {
       final d = seg.dur(now);
       final id = seg.start.millisecondsSinceEpoch;
       if (d >= Limits.breakFull) {
-        _alert('p45-$id', 'Pausa de 45 minutos completa.');
+        _alert('p45-$id', tr('Pausa de 45 minutos completa.'));
       } else if (b.firstPartDone && d >= Limits.breakSecond) {
         // firstPartDone já inclui esta pausa se ela passou de 15 min:
         // só vale como 2ª parte se houve uma 1ª parte antes.
         if (_hadFirstPartBefore(c, seg)) {
-          _alert('p30-$id', 'Pausa de 30 minutos completa. '
-              'Pausa de 45 minutos cumprida.');
+          _alert('p30-$id', tr('Pausa de 30 minutos completa. Pausa de 45 minutos cumprida.'));
         }
       } else if (d >= Limits.breakFirst && !_hadFirstPartBefore(c, seg)) {
-        _alert('p15-$id', 'Pausa de 15 minutos completa. '
-            'Falta uma de 30 minutos.');
+        _alert('p15-$id', tr('Pausa de 15 minutos completa. Falta uma de 30 minutos.'));
       }
     }
     // Amplitude.
     final amp = st.amplitude;
     if (amp >= Limits.amplitudeExt) {
-      _alert('a15', 'Atenção. Quinze horas de amplitude. '
-          'Encerre a jornada.');
+      _alert('a15', tr('Atenção. Quinze horas de amplitude. Encerre a jornada.'));
     } else if (amp >= Limits.amplitudeExt - const Duration(minutes: 30)) {
-      _alert('a1430', 'Faltam 30 minutos para as quinze horas de amplitude.');
+      _alert('a1430', tr('Faltam 30 minutos para as quinze horas de amplitude.'));
     } else if (amp >= Limits.amplitude) {
       _alert(
           'a13',
           st.canExtendAmplitude
-              ? 'Treze horas de amplitude. A partir de agora o descanso '
-                  'desta noite será reduzido, de nove horas.'
-              : 'Atenção. Treze horas de amplitude e já não há descanso '
-                  'reduzido disponível. Encerre a jornada.');
+              ? tr('Treze horas de amplitude. A partir de agora o descanso desta noite será reduzido, de nove horas.')
+              : tr('Atenção. Treze horas de amplitude e já não há descanso reduzido disponível. Encerre a jornada.'));
     } else if (amp >= Limits.amplitude - const Duration(minutes: 30)) {
-      _alert('a1230', 'Faltam 30 minutos para as treze horas de amplitude.');
+      _alert('a1230', tr('Faltam 30 minutos para as treze horas de amplitude.'));
     }
   }
 

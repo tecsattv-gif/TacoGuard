@@ -1,3 +1,4 @@
+import 'i18n.dart';
 import 'models.dart';
 
 /// Regras do Regulamento (CE) n.º 561/2006 (com as alterações do
@@ -139,10 +140,10 @@ Duration maxContinuousDrive(Shift sh, DateTime now) {
 
 /// Nome da pausa pelo tempo que durou: 15, 30 ou 45 minutos.
 String pauseLabel(Duration d) {
-  if (d >= Limits.breakFull) return 'Pausa 45 min';
-  if (d >= Limits.breakSecond) return 'Pausa 30 min';
-  if (d >= Limits.breakFirst) return 'Pausa 15 min';
-  return 'Pausa curta';
+  if (d >= Limits.breakFull) return tr('Pausa 45 min');
+  if (d >= Limits.breakSecond) return tr('Pausa 30 min');
+  if (d >= Limits.breakFirst) return tr('Pausa 15 min');
+  return tr('Pausa curta');
 }
 
 /// Tipo do descanso entre duas jornadas.
@@ -159,15 +160,15 @@ RestKind restKind(Duration gap) {
 String restLabel(RestKind k) {
   switch (k) {
     case RestKind.weekly:
-      return 'Descanso semanal (45 h)';
+      return tr('Descanso semanal (45 h)');
     case RestKind.weeklyReduced:
-      return 'Descanso semanal reduzido (24 h)';
+      return tr('Descanso semanal reduzido (24 h)');
     case RestKind.daily:
-      return 'Descanso diário (11 h)';
+      return tr('Descanso diário (11 h)');
     case RestKind.dailyReduced:
-      return 'Descanso diário reduzido (9 h)';
+      return tr('Descanso diário reduzido (9 h)');
     case RestKind.tooShort:
-      return 'Descanso insuficiente (menos de 9 h)';
+      return tr('Descanso insuficiente (menos de 9 h)');
   }
 }
 
@@ -324,28 +325,25 @@ List<String> shiftIssues(List<Shift> all, Shift sh, DateTime now) {
   final out = <String>[];
   final mc = maxContinuousDrive(sh, now);
   if (mc > Limits.continuousDrive) {
-    out.add('Condução contínua de ${fmtDur(mc)} sem a pausa de 45 min '
-        '(limite 4h30).');
+    out.add(tr('Condução contínua de {0} sem a pausa de 45 min (limite 4h30).', [fmtDur(mc)]));
   }
   final dd = sh.total(Act.drive, now);
   final ext = extendedDaysInWeek(all, sh.end ?? now, now, except: sh);
   if (dd > Limits.dailyDriveExt) {
-    out.add('Condução diária de ${fmtDur(dd)} (limite 10h).');
+    out.add(tr('Condução diária de {0} (limite 10h).', [fmtDur(dd)]));
   } else if (dd > Limits.dailyDrive && ext >= Limits.extPerWeek) {
-    out.add('Condução diária de ${fmtDur(dd)}: já havia 2 dias de 10h '
-        'nesta semana (limite 9h).');
+    out.add(tr('Condução diária de {0}: já havia 2 dias de 10h nesta semana (limite 9h).', [fmtDur(dd)]));
   }
   final amp = sh.amplitude(now);
   if (amp > Limits.amplitudeExt) {
-    out.add('Amplitude de ${fmtDur(amp)} (limite 15h).');
+    out.add(tr('Amplitude de {0} (limite 15h).', [fmtDur(amp)]));
   }
   final l = sorted(all);
   final i = l.indexWhere((s) => identical(s, sh));
   if (i > 0 && l[i - 1].end != null) {
     final gap = sh.start.difference(l[i - 1].end!);
     if (restKind(gap) == RestKind.tooShort) {
-      out.add('Descanso antes desta jornada de ${fmtDur(gap)} '
-          '(mínimo 9h).');
+      out.add(tr('Descanso antes desta jornada de {0} (mínimo 9h).', [fmtDur(gap)]));
     }
   }
   // 1.7.9: excessos de velocidade (mais de 1 min acima do limite escolhido).
@@ -353,15 +351,13 @@ List<String> shiftIssues(List<Shift> all, Shift sh, DateTime now) {
     final d = v.dur(now);
     final m = d.inMinutes, sec = d.inSeconds % 60;
     final where = v.lat != null && v.lon != null
-        ? ', em ${v.lat!.toStringAsFixed(5)}, ${v.lon!.toStringAsFixed(5)}'
+        ? tr(', em {0}, {1}', [v.lat!.toStringAsFixed(5), v.lon!.toStringAsFixed(5)])
         : '';
-    out.add('Excesso de velocidade às ${fmtTime(v.start)}: '
-        '${m}min${sec.toString().padLeft(2, '0')}s acima de ${v.limit} km/h '
-        '(máx. ${v.maxKmh.round()} km/h)$where.');
+    out.add(tr('Excesso de velocidade às {0}: {1}min{2}s acima de {3} km/h (máx. {4} km/h){5}.', [fmtTime(v.start), m, sec.toString().padLeft(2, '0'), v.limit, v.maxKmh.round(), where]));
   }
   for (final s in sh.segments) {
     if (s.act == Act.unknown) {
-      out.add('Há paradas ainda não classificadas (contadas como pausa).');
+      out.add(tr('Há paradas ainda não classificadas (contadas como pausa).'));
       break;
     }
   }

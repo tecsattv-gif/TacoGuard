@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_overlay_window/flutter_overlay_window.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'i18n.dart';
 import 'models.dart';
 import 'theme.dart';
 
@@ -14,11 +15,11 @@ const double kPopW = 330, kPopH = 250;
 String stopHint(Act a) {
   switch (a) {
     case Act.pause:
-      return 'conta para a pausa de 45 min';
+      return tr('conta para a pausa de 45 min');
     case Act.work:
-      return 'outros trabalhos';
+      return tr('outros trabalhos');
     case Act.load:
-      return 'conta como trabalho';
+      return tr('conta como trabalho');
     default:
       return '';
   }
@@ -54,7 +55,7 @@ class StopChoices extends StatelessWidget {
               ActIcon(a, color: c, size: 32),
               const SizedBox(height: 8),
               Text(
-                a == Act.load ? 'Carga/\nDescarga' : actLabel(a),
+                a == Act.load ? tr('Carga/\nDescarga') : actLabel(a),
                 textAlign: TextAlign.center,
                 style: TextStyle(
                     color: c,
@@ -165,7 +166,7 @@ class StopPopup {
         positionGravity: PositionGravity.none,
         startPosition: OverlayPosition((screenWidthDp - kPopW) / 2, 80),
         overlayTitle: 'TacoGuard',
-        overlayContent: 'Parado há 15 min: é pausa?',
+        overlayContent: tr('Parado há 15 min: é pausa?'),
       );
       shown = true;
     } catch (_) {}
@@ -258,10 +259,10 @@ class _StopPopupWindowState extends State<StopPopupWindow> {
                     children: [
                       Text(
                         _since.isEmpty
-                            ? 'Parada detectada'
+                            ? tr('Parada detectada')
                             : _auto
-                                ? 'Martelo desde $_since'
-                                : 'Parado desde $_since',
+                                ? tr('Martelo desde {0}', [_since])
+                                : tr('Parado desde {0}', [_since]),
                         style: const TextStyle(
                             color: TG.text,
                             fontSize: 16,
@@ -269,10 +270,10 @@ class _StopPopupWindowState extends State<StopPopupWindow> {
                       ),
                       Text(
                           _busy
-                              ? 'Registado ✓'
+                              ? tr('Registado ✓')
                               : _auto
-                                  ? 'Parado há 15 min. É pausa?'
-                                  : 'O que é esta parada?',
+                                  ? tr('Parado há 15 min. É pausa?')
+                                  : tr('O que é esta parada?'),
                           style: const TextStyle(
                               color: TG.muted, fontSize: 13)),
                     ],
@@ -294,8 +295,8 @@ class _StopPopupWindowState extends State<StopPopupWindow> {
             const SizedBox(height: 8),
             Text(
                 _auto
-                    ? 'Sem resposta, continua martelo (como o tacógrafo).'
-                    : 'Sem resposta, fica "a classificar".',
+                    ? tr('Sem resposta, continua martelo (como o tacógrafo).')
+                    : tr('Sem resposta, fica "a classificar".'),
                 style: const TextStyle(color: TG.muted, fontSize: 11)),
           ],
         ),

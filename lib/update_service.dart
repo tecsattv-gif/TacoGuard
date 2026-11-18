@@ -7,6 +7,7 @@ import 'package:open_filex/open_filex.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path_provider/path_provider.dart';
 
+import 'i18n.dart';
 import 'theme.dart';
 
 /// Atualização do app pelo próprio app.
@@ -16,12 +17,6 @@ import 'theme.dart';
 /// houver uma nova, pergunta ao usuário. Com "Atualizar", baixa o APK e abre
 /// o instalador do Android, que pede a confirmação final. Como o APK sai
 /// sempre com a mesma chave, instala por cima sem perder nada.
-String tr(String s, [List<Object?> a = const []]) {
-  for (var i = 0; i < a.length; i++) {
-    s = s.replaceAll('{$i}', '${a[i]}');
-  }
-  return s;
-}
 
 class UpdateInfo {
   final String version;

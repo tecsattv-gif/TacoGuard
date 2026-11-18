@@ -9,6 +9,7 @@ import 'package:android_intent_plus/android_intent.dart';
 import 'package:flutter_overlay_window/flutter_overlay_window.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
+import 'i18n.dart';
 import 'assistant.dart';
 import 'law.dart';
 import 'models.dart';
@@ -22,8 +23,9 @@ import 'update_service.dart';
 /// Ponto de entrada do pop-up por cima dos outros apps (roda separado).
 /// ATENÇÃO: o @pragma tem de ficar colado na função.
 @pragma('vm:entry-point')
-void overlayMain() {
+Future<void> overlayMain() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await loadLang();
   runApp(MaterialApp(
     debugShowCheckedModeBanner: false,
     theme: TG.theme(),
@@ -39,6 +41,7 @@ Future<void> main() async {
     statusBarIconBrightness: Brightness.light,
     systemNavigationBarColor: TG.surface,
   ));
+  await loadLang();
   await Tracker.I.load();
   runApp(const TacoApp());
 }
@@ -46,12 +49,16 @@ Future<void> main() async {
 class TacoApp extends StatelessWidget {
   const TacoApp({super.key});
   @override
-  Widget build(BuildContext context) => MaterialApp(
-        title: 'TacoGuard',
-        debugShowCheckedModeBanner: false,
-        theme: TG.theme(),
-        builder: clampTextScale,
-        home: const SplashScreen(next: HomeShell()),
+  // 1.9.0: troca de idioma redesenha o app inteiro.
+  Widget build(BuildContext context) => ValueListenableBuilder<String>(
+        valueListenable: langNotifier,
+        builder: (context, lang, _) => MaterialApp(
+          title: 'TacoGuard',
+          debugShowCheckedModeBanner: false,
+          theme: TG.theme(),
+          builder: clampTextScale,
+          home: const SplashScreen(next: HomeShell()),
+        ),
       );
 }
 
@@ -137,7 +144,7 @@ class _SplashScreenState extends State<SplashScreen> {
                             Shadow(color: Colors.black, blurRadius: 18)
                           ])),
                   const SizedBox(height: 6),
-                  const Text('Sua jornada dentro da lei do tacógrafo',
+                  Text(tr('Sua jornada dentro da lei do tacógrafo'),
                       textAlign: TextAlign.center,
                       style: TextStyle(
                           color: Colors.white,
@@ -158,7 +165,7 @@ class _SplashScreenState extends State<SplashScreen> {
                       border: Border.all(color: const Color(0x55FFFFFF)),
                     ),
                     child: Column(children: [
-                      const Text('DESENVOLVIDO POR',
+                      Text(tr('DESENVOLVIDO POR'),
                           style: TextStyle(
                               color: Colors.white70,
                               fontSize: 12,
@@ -179,7 +186,7 @@ class _SplashScreenState extends State<SplashScreen> {
                               color: Colors.white, fontSize: 14)),
                       if (_version.isNotEmpty) ...[
                         const SizedBox(height: 4),
-                        Text('Versão $_version',
+                        Text(tr('Versão {0}', [_version]),
                             style: const TextStyle(
                                 color: Colors.white70, fontSize: 12)),
                       ],
@@ -291,16 +298,15 @@ class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
             children: [
               Text(
                   seg.act == Act.work
-                      ? 'Parado há 15 min. É pausa?'
-                      : 'O que é esta parada?',
+                      ? tr('Parado há 15 min. É pausa?')
+                      : tr('O que é esta parada?'),
                   style: const TextStyle(
                       fontSize: 20, fontWeight: FontWeight.w800)),
               const SizedBox(height: 2),
               Text(
                   seg.act == Act.work
-                      ? 'Em martelo desde ${fmtTime(seg.start)}, como o '
-                          'tacógrafo. Escolha para mudar desde essa hora:'
-                      : 'Parado desde ${fmtTime(seg.start)}',
+                      ? tr('Em martelo desde {0}, como o tacógrafo. Escolha para mudar desde essa hora:', [fmtTime(seg.start)])
+                      : tr('Parado desde {0}', [fmtTime(seg.start)]),
                   style: const TextStyle(color: TG.muted, fontSize: 13)),
               const SizedBox(height: 16),
               StopChoices(onPick: (a) => Navigator.pop(ctx, a)),
@@ -309,7 +315,7 @@ class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
                 height: 48,
                 child: TextButton(
                     onPressed: () => Navigator.pop(ctx),
-                    child: const Text('Responder depois')),
+                    child: Text(tr('Responder depois'))),
               ),
             ],
           ),
@@ -323,7 +329,7 @@ class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
-    const titles = ['TacoGuard', 'Histórico', 'Relatórios', 'Lei', 'Ajustes'];
+    final titles = ['TacoGuard', tr('Histórico'), tr('Relatórios'), tr('Lei'), tr('Ajustes')];
     final pages = <Widget>[
       const TodayPage(),
       const HistoryPage(),
@@ -331,12 +337,12 @@ class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
       const _LawTabs(),
       const SettingsPage(),
     ];
-    const dests = [
-      (Icons.speed_rounded, 'Hoje'),
-      (Icons.history_rounded, 'Histórico'),
-      (Icons.picture_as_pdf_rounded, 'Relatórios'),
-      (Icons.gavel_rounded, 'Lei'),
-      (Icons.settings_rounded, 'Ajustes'),
+    final dests = [
+      (Icons.speed_rounded, tr('Hoje')),
+      (Icons.history_rounded, tr('Histórico')),
+      (Icons.picture_as_pdf_rounded, tr('Relatórios')),
+      (Icons.gavel_rounded, tr('Lei')),
+      (Icons.settings_rounded, tr('Ajustes')),
     ];
     final size = MediaQuery.sizeOf(context);
     // 1.8.5: tablet ou telefone deitado: menu na lateral (sobra altura para
@@ -412,12 +418,12 @@ class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
 class _LawTabs extends StatelessWidget {
   const _LawTabs();
   @override
-  Widget build(BuildContext context) => const DefaultTabController(
+  Widget build(BuildContext context) => DefaultTabController(
         length: 2,
         child: Column(children: [
           TabBar(
             dividerColor: TG.line,
-            tabs: [Tab(text: 'Lei do tacógrafo'), Tab(text: 'Consulta')],
+            tabs: [Tab(text: tr('Lei do tacógrafo')), Tab(text: tr('Consulta'))],
           ),
           Expanded(
             child: TabBarView(children: [LawPage(), AssistantPage()]),
@@ -465,18 +471,18 @@ class _TodayPageState extends State<TodayPage> {
       builder: (ctx) => AlertDialog(
         icon: Icon(short ? Icons.warning_amber_rounded : Icons.play_arrow_rounded,
             color: short ? Colors.orange : null, size: 36),
-        title: const Text('Iniciar a jornada?'),
-        content: Text('A jornada começa agora, às ${fmtTime(now)}, e o GPS '
-            'passa a contar a condução e as paradas.'
-            '${short ? '\n\nAtenção: o descanso ainda tem só ${fmtDur(rest)} '
-                '(faltam ${fmtDur(Limits.dailyRestReduced - rest)} para as 9 h).' : ''}'),
+        title: Text(tr('Iniciar a jornada?')),
+        content: Text(tr('A jornada começa agora, às {0}, e o GPS passa a contar a condução e as paradas.', [fmtTime(now)]) +
+            (short
+                ? '\n\n${tr('Atenção: o descanso ainda tem só {0} (faltam {1} para as 9 h).', [fmtDur(rest), fmtDur(Limits.dailyRestReduced - rest)])}'
+                : '')),
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('Cancelar')),
+              child: Text(tr('Cancelar'))),
           FilledButton(
               onPressed: () => Navigator.pop(ctx, true),
-              child: const Text('Iniciar')),
+              child: Text(tr('Iniciar'))),
         ],
       ),
     );
@@ -485,25 +491,22 @@ class _TodayPageState extends State<TodayPage> {
     if (!mounted) return;
     if (err != null) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text('$err A jornada foi aberta, mas sem GPS as paradas '
-              'não são detectadas sozinhas.')));
+          content: Text(tr('{0} A jornada foi aberta, mas sem GPS as paradas não são detectadas sozinhas.', [err]))));
     }
     if (_t.popup && !await StopPopup.hasPermission() && mounted) {
       final ok = await showDialog<bool>(
         context: context,
         builder: (ctx) => AlertDialog(
-          title: const Text('Pop-up das paradas'),
-          content: const Text(
-              'Para o TacoGuard perguntar "Pausa, Martelo ou '
-              'Carga/Descarga?" por cima do Google Maps e de outros apps, '
-              'libere a permissão "Sobrepor a outros apps".'),
+          title: Text(tr('Pop-up das paradas')),
+          content: Text(
+              tr('Para o TacoGuard perguntar "Pausa, Martelo ou Carga/Descarga?" por cima do Google Maps e de outros apps, libere a permissão "Sobrepor a outros apps".')),
           actions: [
             TextButton(
                 onPressed: () => Navigator.pop(ctx, false),
-                child: const Text('Agora não')),
+                child: Text(tr('Agora não'))),
             FilledButton(
                 onPressed: () => Navigator.pop(ctx, true),
-                child: const Text('Liberar')),
+                child: Text(tr('Liberar'))),
           ],
         ),
       );
@@ -516,25 +519,22 @@ class _TodayPageState extends State<TodayPage> {
     final a = await showDialog<Act>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Reabrir a jornada?'),
+        title: Text(tr('Reabrir a jornada?')),
         content: Text(
-            'A jornada iniciada às ${fmtTime(sh.start)} continua: a '
-            'amplitude e os tempos seguem contando desde o início.\n\n'
-            'Como contar o tempo desde que encerrou '
-            '(${fmtDur(gap)})?'),
+            tr('A jornada iniciada às {0} continua: a amplitude e os tempos seguem contando desde o início.\n\nComo contar o tempo desde que encerrou ({1})?', [fmtTime(sh.start), fmtDur(gap)])),
         actionsAlignment: MainAxisAlignment.spaceBetween,
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(ctx),
-              child: const Text('Cancelar')),
+              child: Text(tr('Cancelar'))),
           Row(mainAxisSize: MainAxisSize.min, children: [
             OutlinedButton(
                 onPressed: () => Navigator.pop(ctx, Act.work),
-                child: const Text('Martelo')),
+                child: Text(tr('Martelo'))),
             const SizedBox(width: 8),
             FilledButton(
                 onPressed: () => Navigator.pop(ctx, Act.pause),
-                child: const Text('Pausa')),
+                child: Text(tr('Pausa'))),
           ]),
         ],
       ),
@@ -551,15 +551,15 @@ class _TodayPageState extends State<TodayPage> {
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Encerrar a jornada?'),
-        content: const Text('A partir de agora começa a contar o descanso.'),
+        title: Text(tr('Encerrar a jornada?')),
+        content: Text(tr('A partir de agora começa a contar o descanso.')),
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('Cancelar')),
+              child: Text(tr('Cancelar'))),
           FilledButton(
               onPressed: () => Navigator.pop(ctx, true),
-              child: const Text('Encerrar')),
+              child: Text(tr('Encerrar'))),
         ],
       ),
     );
@@ -576,13 +576,13 @@ class _TodayPageState extends State<TodayPage> {
     final h = await showDialog<int>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Acertar o despertador?'),
-        content: const Text(
-            'O despertador do telefone toca no fim do descanso.'),
+        title: Text(tr('Acertar o despertador?')),
+        content: Text(
+            tr('O despertador do telefone toca no fim do descanso.')),
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(ctx, 0),
-              child: const Text('Não')),
+              child: Text(tr('Não'))),
           FilledButton(
               onPressed: () => Navigator.pop(ctx, 9),
               child: Text('9 h  (${fmtTime(end.add(const Duration(hours: 9)))})')),
@@ -600,20 +600,18 @@ class _TodayPageState extends State<TodayPage> {
         arguments: <String, dynamic>{
           'android.intent.extra.alarm.HOUR': at.hour,
           'android.intent.extra.alarm.MINUTES': at.minute,
-          'android.intent.extra.alarm.MESSAGE': 'TacoGuard: fim do descanso de $h h',
+          'android.intent.extra.alarm.MESSAGE': tr('TacoGuard: fim do descanso de {0} h', [h]),
           'android.intent.extra.alarm.SKIP_UI': true,
         },
       ).launch();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content: Text('Despertador acertado para ${fmtTime(at)} '
-                '(descanso de $h h).')));
+            content: Text(tr('Despertador acertado para {0} (descanso de {1} h).', [fmtTime(at), h]))));
       }
     } catch (_) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content: Text('Não deu para acertar o despertador. Acerte '
-                'à mão para ${fmtTime(at)}.')));
+            content: Text(tr('Não deu para acertar o despertador. Acerte à mão para {0}.', [fmtTime(at)]))));
       }
     }
   }
@@ -723,14 +721,14 @@ class _TodayPageState extends State<TodayPage> {
           if (rest == null) ...[
             const Icon(Icons.hotel_rounded, color: TG.pause, size: 40),
             const SizedBox(height: 8),
-            const Text('Pronto para começar',
+            Text(tr('Pronto para começar'),
                 style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800)),
           ],
           if (rest != null) ...[
             Text(
                 ref?.end == null
-                    ? 'Em descanso'
-                    : 'Em descanso desde ${fmtTime(ref!.end!)}',
+                    ? tr('Em descanso')
+                    : tr('Em descanso desde {0}', [fmtTime(ref!.end!)]),
                 style: const TextStyle(color: TG.muted, fontSize: 14)),
             const SizedBox(height: 2),
             Text(fmtDur(rest),
@@ -749,9 +747,7 @@ class _TodayPageState extends State<TodayPage> {
               TextButton.icon(
                 onPressed: () => openMap(context, ref.endLat!, ref.endLon!),
                 icon: const Icon(Icons.place_rounded, size: 18),
-                label: Text('Local do descanso: '
-                    '${ref.endLat!.toStringAsFixed(5)}, '
-                    '${ref.endLon!.toStringAsFixed(5)}'),
+                label: Text(tr('Local do descanso: {0}, {1}', [ref.endLat!.toStringAsFixed(5), ref.endLon!.toStringAsFixed(5)])),
               ),
             const SizedBox(height: 12),
             _RestBar(rest: rest),
@@ -763,7 +759,7 @@ class _TodayPageState extends State<TodayPage> {
             child: FilledButton.icon(
               onPressed: _start,
               icon: const Icon(Icons.play_arrow_rounded, size: 30),
-              label: const Fit('Iniciar jornada',
+              label: Fit(tr('Iniciar jornada'),
                   style: TextStyle(fontSize: 19, fontWeight: FontWeight.w800)),
             ),
           ),
@@ -776,7 +772,7 @@ class _TodayPageState extends State<TodayPage> {
                 onPressed: () => _reopen(_t.reopenable!),
                 icon: const Icon(Icons.replay_rounded),
                 label: Fit(
-                    'Reabrir a jornada das ${fmtTime(_t.reopenable!.start)}',
+                    tr('Reabrir a jornada das {0}', [fmtTime(_t.reopenable!.start)]),
                     style: const TextStyle(
                         fontSize: 15, fontWeight: FontWeight.w700)),
               ),
@@ -784,9 +780,8 @@ class _TodayPageState extends State<TodayPage> {
           ],
           if (rest == null) ...[
             const SizedBox(height: 10),
-            const Text(
-                'Depois de iniciar, o GPS faz o resto: detecta as paradas, '
-                'grava o local e conta os tempos.',
+            Text(
+                tr('Depois de iniciar, o GPS faz o resto: detecta as paradas, grava o local e conta os tempos.'),
                 textAlign: TextAlign.center,
                 style: TextStyle(color: TG.muted, fontSize: 12.5)),
           ],
@@ -794,8 +789,8 @@ class _TodayPageState extends State<TodayPage> {
       ),
       const _ColBreak(),
       _LimitList(rows: [
-        _Limit('Semana', week, Limits.weeklyDrive),
-        _Limit('2 semanas', week + prev, Limits.fortnightDrive),
+        _Limit(tr('Semana'), week, Limits.weeklyDrive),
+        _Limit(tr('2 semanas'), week + prev, Limits.fortnightDrive),
       ]),
       if (ref != null) ...[
         const SizedBox(height: 12),
@@ -805,11 +800,7 @@ class _TodayPageState extends State<TodayPage> {
             const SizedBox(width: 12),
             Expanded(
               child: Text(
-                  'Última jornada: ${weekdayShort(ref.start)} '
-                  '${fmtDate(ref.start)}, ${fmtTime(ref.start)} às '
-                  '${ref.end == null ? '-' : fmtTime(ref.end!)}  •  '
-                  'condução ${fmtDur(ref.total(Act.drive, now))}  •  '
-                  '${fmtKm(ref.km)}',
+                  tr('Última jornada: {0} {1}, {2} às {3}  •  condução {4}  •  {5}', [weekdayShort(ref.start), fmtDate(ref.start), fmtTime(ref.start), ref.end == null ? '-' : fmtTime(ref.end!), fmtDur(ref.total(Act.drive, now)), fmtKm(ref.km)]),
                   style: const TextStyle(fontSize: 14)),
             ),
           ]),
@@ -819,17 +810,15 @@ class _TodayPageState extends State<TodayPage> {
   }
 
   String _restText(Duration rest) {
-    if (rest >= Limits.weeklyRest) return 'Descanso semanal de 45 h cumprido';
+    if (rest >= Limits.weeklyRest) return tr('Descanso semanal de 45 h cumprido');
     if (rest >= Limits.weeklyRestReduced) {
-      return 'Descanso semanal reduzido (24 h) cumprido';
+      return tr('Descanso semanal reduzido (24 h) cumprido');
     }
-    if (rest >= Limits.dailyRest) return 'Descanso diário de 11 h cumprido';
+    if (rest >= Limits.dailyRest) return tr('Descanso diário de 11 h cumprido');
     if (rest >= Limits.dailyRestReduced) {
-      return 'Descanso reduzido de 9 h cumprido • faltam '
-          '${fmtDur(Limits.dailyRest - rest)} para as 11 h';
+      return tr('Descanso reduzido de 9 h cumprido • faltam {0} para as 11 h', [fmtDur(Limits.dailyRest - rest)]);
     }
-    return 'Faltam ${fmtDur(Limits.dailyRestReduced - rest)} para 9 h e '
-        '${fmtDur(Limits.dailyRest - rest)} para 11 h';
+    return tr('Faltam {0} para 9 h e {1} para 11 h', [fmtDur(Limits.dailyRestReduced - rest), fmtDur(Limits.dailyRest - rest)]);
   }
 
   String _mmss(Duration d) =>
@@ -847,14 +836,14 @@ class _TodayPageState extends State<TodayPage> {
     final r10 = rest(Limits.dailyDriveExt);
     if (st.dayLimit < Limits.dailyDriveExt) {
       return r9 == Duration.zero
-          ? 'Limite de 9h do dia atingido'
-          : 'Ainda pode conduzir: ${fmtDur(r9)} (até 9h)';
+          ? tr('Limite de 9h do dia atingido')
+          : tr('Ainda pode conduzir: {0} (até 9h)', [fmtDur(r9)]);
     }
-    if (r10 == Duration.zero) return 'Limite de 10h do dia atingido';
+    if (r10 == Duration.zero) return tr('Limite de 10h do dia atingido');
     if (r9 == Duration.zero) {
-      return 'Ainda pode conduzir: ${fmtDur(r10)} (até 10h)';
+      return tr('Ainda pode conduzir: {0} (até 10h)', [fmtDur(r10)]);
     }
-    return 'Ainda pode conduzir: ${fmtDur(r9)} (9h) ou ${fmtDur(r10)} (10h)';
+    return tr('Ainda pode conduzir: {0} (9h) ou {1} (10h)', [fmtDur(r9), fmtDur(r10)]);
   }
 
   // ---------- Jornada aberta ----------
@@ -889,7 +878,7 @@ class _TodayPageState extends State<TodayPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(_t.carMode ? '${actLabel(act)} • de carro' : actLabel(act),
+                Text(_t.carMode ? tr('{0} • de carro', [actLabel(act)]) : actLabel(act),
                     style: TextStyle(
                         fontSize: 19,
                         fontWeight: FontWeight.w800,
@@ -897,7 +886,7 @@ class _TodayPageState extends State<TodayPage> {
                 Text(
                     seg == null
                         ? ''
-                        : 'desde ${fmtTime(seg.start)}  •  ${fmtDur(seg.dur(now))}',
+                        : tr('desde {0}  •  {1}', [fmtTime(seg.start), fmtDur(seg.dur(now))]),
                     style: const TextStyle(color: TG.muted, fontSize: 13)),
               ],
             ),
@@ -932,18 +921,15 @@ class _TodayPageState extends State<TodayPage> {
             icon: Icons.speed_rounded,
             color: TG.danger,
             text: _t.overSecondsLeft != null
-                ? 'Acima de ${_t.speedLimit} km/h. Reduza: em '
-                    '${_t.overSecondsLeft} s vira infração.'
-                : 'Excesso de velocidade a ser registado. Reduza para '
-                    '${_t.speedLimit} km/h.'),
+                ? tr('Acima de {0} km/h. Reduza: em {1} s vira infração.', [_t.speedLimit, _t.overSecondsLeft])
+                : tr('Excesso de velocidade a ser registado. Reduza para {0} km/h.', [_t.speedLimit])),
       ],
       if (_t.gpsError == null && _t.gpsOn && _t.gpsStale) ...[
         const SizedBox(height: 10),
-        const _Banner(
+        _Banner(
             icon: Icons.gps_not_fixed_rounded,
             color: TG.warn,
-            text: 'Sem sinal de GPS no momento. Perto da janela ou do '
-                'para-brisa o sinal volta.'),
+            text: tr('Sem sinal de GPS no momento. Perto da janela ou do para-brisa o sinal volta.')),
       ],
       if (_t.gpsError != null) ...[
         const SizedBox(height: 10),
@@ -951,7 +937,7 @@ class _TodayPageState extends State<TodayPage> {
             icon: Icons.gps_off_rounded,
             color: TG.danger,
             text: _t.gpsError!,
-            action: 'Tentar',
+            action: tr('Tentar'),
             onAction: () => _t.startGps()),
       ],
       if (_t.stoppedSince != null &&
@@ -959,12 +945,11 @@ class _TodayPageState extends State<TodayPage> {
         const SizedBox(height: 10),
         TCard(
           child: Column(children: [
-            Text('Parado há ${_mmss(now.difference(_t.stoppedSince!))}',
+            Text(tr('Parado há {0}', [_mmss(now.difference(_t.stoppedSince!))]),
                 style:
                     const TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
             Text(
-                'Com ${_t.stopMinutes} min parado vira martelo, como o '
-                'tacógrafo. Já pode escolher:',
+                tr('Com {0} min parado vira martelo, como o tacógrafo. Já pode escolher:', [_t.stopMinutes]),
                 textAlign: TextAlign.center,
                 style: const TextStyle(color: TG.muted, fontSize: 12.5)),
             const SizedBox(height: 10),
@@ -977,10 +962,8 @@ class _TodayPageState extends State<TodayPage> {
         _Banner(
             icon: Icons.directions_car_rounded,
             color: TG.accent,
-            text: 'De carro: o movimento não conta como condução e a '
-                'parada continua. Volta ao normal sozinho quando você '
-                'chegar ao caminhão.',
-            action: 'Voltei',
+            text: tr('De carro: o movimento não conta como condução e a parada continua. Volta ao normal sozinho quando você chegar ao caminhão.'),
+            action: tr('Voltei'),
             onAction: () => _t.endCar()),
       ] else if (act != Act.drive) ...[
         const SizedBox(height: 10),
@@ -992,7 +975,7 @@ class _TodayPageState extends State<TodayPage> {
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16))),
             icon: const Icon(Icons.directions_car_rounded),
-            label: const Fit('Vou sair de carro'),
+            label: Fit(tr('Vou sair de carro')),
           ),
         ),
       ],
@@ -1000,13 +983,12 @@ class _TodayPageState extends State<TodayPage> {
         const SizedBox(height: 10),
         TCard(
           child: Column(children: [
-            Text('Martelo automático desde ${fmtTime(_t.autoStop!.start)}',
+            Text(tr('Martelo automático desde {0}', [fmtTime(_t.autoStop!.start)]),
                 textAlign: TextAlign.center,
                 style:
                     const TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
-            const Text(
-                'Como no tacógrafo, a parada fica em martelo. Se for pausa '
-                'ou carga/descarga, toque para mudar desde essa hora:',
+            Text(
+                tr('Como no tacógrafo, a parada fica em martelo. Se for pausa ou carga/descarga, toque para mudar desde essa hora:'),
                 textAlign: TextAlign.center,
                 style: TextStyle(color: TG.muted, fontSize: 12.5)),
             const SizedBox(height: 10),
@@ -1018,7 +1000,7 @@ class _TodayPageState extends State<TodayPage> {
         const SizedBox(height: 10),
         TCard(
           child: Column(children: [
-            const Text('O que é esta parada?',
+            Text(tr('O que é esta parada?'),
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
             const SizedBox(height: 10),
             StopChoices(onPick: (a) => _t.setAct(a)),
@@ -1047,10 +1029,10 @@ class _TodayPageState extends State<TodayPage> {
                 child: Column(mainAxisSize: MainAxisSize.min, children: [
                   Text(
                       b.exceeded
-                          ? 'PAUSA JÁ'
+                          ? tr('PAUSA JÁ')
                           : stopNow
-                              ? 'PARAR'
-                              : 'Faltam',
+                              ? tr('PARAR')
+                              : tr('Faltam'),
                       style: TextStyle(
                           color: b.exceeded || stopNow ? TG.danger : TG.muted,
                           fontSize: 14,
@@ -1068,20 +1050,20 @@ class _TodayPageState extends State<TodayPage> {
                           color: TG.level(usedCd))),
                   Text(
                       b.exceeded || next == 'pausa'
-                          ? 'para a pausa'
+                          ? tr('para a pausa')
                           : next == 'dia'
-                              ? 'para as ${st.dayLimit.inHours}h do dia'
-                              : 'para o limite da semana',
+                              ? tr('para as {0}h do dia', [st.dayLimit.inHours])
+                              : tr('para o limite da semana'),
                       style: const TextStyle(color: TG.muted, fontSize: 14)),
                 ]),
               ),
             ),
           ),
           const SizedBox(height: 12),
-          Fit('Condução contínua: ${fmtDur(b.driven)} de 4h30',
+          Fit(tr('Condução contínua: {0} de 4h30', [fmtDur(b.driven)]),
               style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700)),
           const SizedBox(height: 2),
-          Fit('Condução do dia: ${fmtDur(st.dayDrive)}',
+          Fit(tr('Condução do dia: {0}', [fmtDur(st.dayDrive)]),
               style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
           const SizedBox(height: 2),
           // 1.7.5: quanto ainda pode conduzir hoje, nas 9 h e nas 10 h.
@@ -1091,8 +1073,8 @@ class _TodayPageState extends State<TodayPage> {
           const SizedBox(height: 2),
           Fit(
               b.firstPartDone
-                  ? '1ª parte (15 min) feita • falta a de 30 min'
-                  : 'Próxima pausa: 45 min (ou 15 + 30)',
+                  ? tr('1ª parte (15 min) feita • falta a de 30 min')
+                  : tr('Próxima pausa: 45 min (ou 15 + 30)'),
               style: const TextStyle(color: TG.muted, fontSize: 13)),
         ]),
       ),
@@ -1102,20 +1084,20 @@ class _TodayPageState extends State<TodayPage> {
       const SizedBox(height: 12),
       // Todos os limites numa lista só.
       _LimitList(rows: [
-        _Limit('Condução hoje', st.dayDrive, st.dayLimit,
+        _Limit(tr('Condução hoje'), st.dayDrive, st.dayLimit,
             mark: st.dayLimit > Limits.dailyDrive ? Limits.dailyDrive : null,
             note: st.dayLimit > Limits.dailyDrive
-                ? 'dias de 10 h: ${st.extUsed + (st.extToday ? 1 : 0)}/2'
-                : 'limite 9 h (já usou 2 dias de 10 h)'),
-        _Limit('Amplitude', st.amplitude, st.amplitudeLimit,
+                ? tr('dias de 10 h: {0}/2', [st.extUsed + (st.extToday ? 1 : 0)])
+                : tr('limite 9 h (já usou 2 dias de 10 h)')),
+        _Limit(tr('Amplitude'), st.amplitude, st.amplitudeLimit,
             mark: st.canExtendAmplitude ? Limits.amplitude : null,
             note: st.canExtendAmplitude
-                ? 'descansos de 9 h: ${st.reducedRestsUsed}/3'
-                : 'limite 13 h (sem descanso reduzido)'),
-        _Limit('Semana', st.weekDrive, Limits.weeklyDrive,
-            note: 'pode conduzir ${fmtDur(st.weekLeft)}'),
-        _Limit('2 semanas', st.fortnightDrive, Limits.fortnightDrive,
-            note: 'semana anterior ${fmtDur(st.prevWeekDrive)}'),
+                ? tr('descansos de 9 h: {0}/3', [st.reducedRestsUsed])
+                : tr('limite 13 h (sem descanso reduzido)')),
+        _Limit(tr('Semana'), st.weekDrive, Limits.weeklyDrive,
+            note: tr('pode conduzir {0}', [fmtDur(st.weekLeft)])),
+        _Limit(tr('2 semanas'), st.fortnightDrive, Limits.fortnightDrive,
+            note: tr('semana anterior {0}', [fmtDur(st.prevWeekDrive)])),
       ]),
       const SizedBox(height: 12),
       // Totais do dia.
@@ -1136,9 +1118,7 @@ class _TodayPageState extends State<TodayPage> {
             const SizedBox(width: 12),
             Expanded(
               child: Text(
-                  'Descanso semanal: começar até '
-                  '${weekdayShort(st.weeklyRestDeadline!)} '
-                  '${fmtDateTime(st.weeklyRestDeadline!)}',
+                  tr('Descanso semanal: começar até {0} {1}', [weekdayShort(st.weeklyRestDeadline!), fmtDateTime(st.weeklyRestDeadline!)]),
                   style: const TextStyle(fontSize: 14)),
             ),
           ]),
@@ -1146,22 +1126,22 @@ class _TodayPageState extends State<TodayPage> {
       ],
       const SizedBox(height: 16),
       // Trocar atividade à mão.
-      const _Section('Trocar a atividade à mão'),
+      _Section(tr('Trocar a atividade à mão')),
       _ActPicker(current: act, onPick: (a) => _t.setAct(a)),
       if (issues.isNotEmpty) ...[
         const SizedBox(height: 16),
-        const _Section('Avisos'),
+        _Section(tr('Avisos')),
         for (final i in issues)
           Padding(
             padding: const EdgeInsets.only(bottom: 8),
             child: _Banner(
                 icon: Icons.warning_amber_rounded,
-                color: i.contains('classificadas') ? TG.warn : TG.danger,
+                color: i == tr('Há paradas ainda não classificadas (contadas como pausa).') ? TG.warn : TG.danger,
                 text: i),
           ),
       ],
       const SizedBox(height: 16),
-      _Section('Linha do tempo  •  início ${fmtTime(c.start)}'),
+      _Section(tr('Linha do tempo  •  início {0}', [fmtTime(c.start)])),
       SegmentList(shift: c),
       const SizedBox(height: 18),
       SizedBox(
@@ -1174,7 +1154,7 @@ class _TodayPageState extends State<TodayPage> {
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(18))),
           icon: const Icon(Icons.stop_rounded),
-          label: const Fit('Encerrar jornada',
+          label: Fit(tr('Encerrar jornada'),
               style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800)),
         ),
       ),
@@ -1329,7 +1309,7 @@ class _LimitList extends StatelessWidget {
         : l.value.inSeconds / l.limit.inSeconds.toDouble();
     final color = TG.level(used);
     return Semantics(
-      label: '${l.title}: ${fmtDur(l.value)} de ${l.limit.inHours} horas',
+      label: tr('{0}: {1} de {2} horas', [l.title, fmtDur(l.value), l.limit.inHours]),
       excludeSemantics: true,
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 8),
@@ -1428,7 +1408,7 @@ class _DayStrip extends StatelessWidget {
                 color: TG.act(a), borderRadius: BorderRadius.circular(2)),
           ),
           const SizedBox(width: 4),
-          Text(a == Act.load ? 'Carga' : actLabel(a),
+          Text(a == Act.load ? tr('Carga') : actLabel(a),
               style: const TextStyle(color: TG.muted, fontSize: 11.5)),
         ]);
     return TCard(
@@ -1436,7 +1416,7 @@ class _DayStrip extends StatelessWidget {
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Row(children: [
           Expanded(
-            child: Text('Dia  •  ${fmtTime(shift.start)} até agora',
+            child: Text(tr('Dia  •  {0} até agora', [fmtTime(shift.start)]),
                 style: const TextStyle(
                     fontSize: 14, fontWeight: FontWeight.w700)),
           ),
@@ -1450,7 +1430,7 @@ class _DayStrip extends StatelessWidget {
         ]),
         const SizedBox(height: 10),
         Semantics(
-          label: 'Linha do tempo do dia',
+          label: tr('Linha do tempo do dia'),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(5),
             child: SizedBox(
@@ -1540,7 +1520,7 @@ class _ActPicker extends StatelessWidget {
                           const SizedBox(height: 4),
                           Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 2),
-                            child: Fit(a == Act.load ? 'Carga' : actLabel(a),
+                            child: Fit(a == Act.load ? tr('Carga') : actLabel(a),
                                 style: TextStyle(
                                     fontSize: 12,
                                     fontWeight: FontWeight.w700,

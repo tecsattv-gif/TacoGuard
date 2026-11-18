@@ -4,6 +4,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 
+import 'i18n.dart';
 import 'models.dart';
 import 'rules.dart';
 
@@ -12,13 +13,13 @@ enum ReportKind { day, week, twoWeeks, month }
 String reportName(ReportKind k) {
   switch (k) {
     case ReportKind.day:
-      return 'Diário';
+      return tr('Diário');
     case ReportKind.week:
-      return 'Semanal';
+      return tr('Semanal');
     case ReportKind.twoWeeks:
-      return 'Bissemanal';
+      return tr('Bissemanal');
     case ReportKind.month:
-      return 'Mensal';
+      return tr('Mensal');
   }
 }
 
@@ -46,7 +47,7 @@ String rangeLabel(DateTime from, DateTime to) {
       last.day == from.day) {
     return '${weekdayShort(from)} ${fmtDate(from)}';
   }
-  return '${fmtDate(from)} a ${fmtDate(last)}';
+  return tr('{0} a {1}', [fmtDate(from), fmtDate(last)]);
 }
 
 /// Jornadas que começaram dentro do período.
@@ -143,23 +144,23 @@ Future<File> buildReport(ReportKind kind, DateTime ref, List<Shift> all,
   }
   // Limites da semana e das duas semanas (pela condução no período).
   if (kind == ReportKind.week && drive > Limits.weeklyDrive) {
-    issues.add('Condução na semana de ${fmtDur(drive)} (limite 56h).');
+    issues.add(tr('Condução na semana de {0} (limite 56h).', [fmtDur(drive)]));
   }
   if (kind == ReportKind.twoWeeks && drive > Limits.fortnightDrive) {
-    issues.add('Condução em duas semanas de ${fmtDur(drive)} (limite 90h).');
+    issues.add(tr('Condução em duas semanas de {0} (limite 90h).', [fmtDur(drive)]));
   }
 
   final doc = pw.Document(
-      title: 'TacoGuard - Relatório ${reportName(kind)}', author: 'TacoGuard');
+      title: tr('TacoGuard - Relatório {0}', [reportName(kind)]), author: 'TacoGuard');
 
   final content = <pw.Widget>[
     pw.Row(children: [
-      _box('Condução', fmtDur(drive)),
-      _box('Pausa', fmtDur(pause)),
-      _box('Martelo', fmtDur(work)),
-      _box('Carga/Descarga', fmtDur(load)),
-      _box('Amplitude', fmtDur(amp)),
-      _box('Km', fmtKm(km)),
+      _box(tr('Condução'), fmtDur(drive)),
+      _box(tr('Pausa'), fmtDur(pause)),
+      _box(tr('Martelo'), fmtDur(work)),
+      _box(tr('Carga/Descarga'), fmtDur(load)),
+      _box(tr('Amplitude'), fmtDur(amp)),
+      _box(tr('Km'), fmtKm(km)),
     ]),
     pw.SizedBox(height: 12),
   ];
@@ -167,12 +168,12 @@ Future<File> buildReport(ReportKind kind, DateTime ref, List<Shift> all,
   if (list.isEmpty) {
     content.add(pw.Padding(
       padding: const pw.EdgeInsets.all(20),
-      child: pw.Text(_t('Nenhuma jornada registrada neste período.'),
+      child: pw.Text(_t(tr('Nenhuma jornada registrada neste período.')),
           style: const pw.TextStyle(color: _grey)),
     ));
   } else {
     // Resumo por jornada.
-    content.add(pw.Text('Jornadas',
+    content.add(pw.Text(tr('Jornadas'),
         style: pw.TextStyle(
             fontSize: 12, fontWeight: pw.FontWeight.bold, color: _blue)));
     content.add(pw.SizedBox(height: 4));
@@ -194,15 +195,15 @@ Future<File> buildReport(ReportKind kind, DateTime ref, List<Shift> all,
           decoration: const pw.BoxDecoration(color: _blue),
           children: [
             for (final h in [
-              'Dia',
-              'Início',
-              'Fim',
-              'Amplitude',
-              'Condução',
-              'Pausa',
-              'Martelo',
-              'Carga/Desc.',
-              'Km'
+              tr('Dia'),
+              tr('Início'),
+              tr('Fim'),
+              tr('Amplitude'),
+              tr('Condução'),
+              tr('Pausa'),
+              tr('Martelo'),
+              tr('Carga/Desc.'),
+              tr('Km')
             ])
               _cell(h, bold: true, color: PdfColors.white),
           ],
@@ -211,7 +212,7 @@ Future<File> buildReport(ReportKind kind, DateTime ref, List<Shift> all,
           pw.TableRow(children: [
             _cell('${weekdayShort(s.start)} ${fmtDate(s.start)}'),
             _cell(fmtTime(s.start)),
-            _cell(s.end == null ? 'aberta' : fmtTime(s.end!)),
+            _cell(s.end == null ? tr('aberta') : fmtTime(s.end!)),
             _cell(fmtDur(s.amplitude(now))),
             _cell(fmtDur(s.total(Act.drive, now))),
             _cell(fmtDur(s.total(Act.pause, now) + s.total(Act.unknown, now))),
@@ -235,10 +236,10 @@ Future<File> buildReport(ReportKind kind, DateTime ref, List<Shift> all,
         if (d < Limits.breakFirst) continue;
         rows.add(pw.TableRow(children: [
           _cell(fmtDateTime(g.start)),
-          _cell(g.end == null ? 'em curso' : fmtTime(g.end!)),
+          _cell(g.end == null ? tr('em curso') : fmtTime(g.end!)),
           _cell(fmtDur(d)),
           _cell(g.act == Act.unknown
-              ? '${pauseLabel(d)} (a classificar)'
+              ? tr('{0} (a classificar)', [pauseLabel(d)])
               : pauseLabel(d)),
           _cell(_coord(g.lat, g.lon)),
           _cell(_noteOr(g.note, g.lat, g.lon)),
@@ -255,11 +256,11 @@ Future<File> buildReport(ReportKind kind, DateTime ref, List<Shift> all,
         decoration: const pw.BoxDecoration(color: _light),
         children: [
           _cell(fmtDateTime(s.end!), bold: true),
-          _cell(next == null ? 'em curso' : fmtDateTime(next.start),
+          _cell(next == null ? tr('em curso') : fmtDateTime(next.start),
               bold: true),
           _cell(fmtDur(gap), bold: true),
           _cell(next == null && k == RestKind.tooShort
-              ? 'Descanso em curso'
+              ? tr('Descanso em curso')
               : restLabel(k),
               bold: true, color: bad ? _red : null),
           _cell(_coord(s.endLat, s.endLon), bold: true),
@@ -268,7 +269,7 @@ Future<File> buildReport(ReportKind kind, DateTime ref, List<Shift> all,
       ));
     }
     if (rows.isNotEmpty) {
-      content.add(pw.Text('Pausas e descansos, com o local',
+      content.add(pw.Text(tr('Pausas e descansos, com o local'),
           style: pw.TextStyle(
               fontSize: 12, fontWeight: pw.FontWeight.bold, color: _blue)));
       content.add(pw.SizedBox(height: 4));
@@ -287,12 +288,12 @@ Future<File> buildReport(ReportKind kind, DateTime ref, List<Shift> all,
             decoration: const pw.BoxDecoration(color: _blue),
             children: [
               for (final h in [
-                'Início',
-                'Fim',
-                'Duração',
-                'Tipo',
-                'Coordenadas',
-                'Local / nota'
+                tr('Início'),
+                tr('Fim'),
+                tr('Duração'),
+                tr('Tipo'),
+                tr('Coordenadas'),
+                tr('Local / nota')
               ])
                 _cell(h, bold: true, color: PdfColors.white),
             ],
@@ -304,12 +305,12 @@ Future<File> buildReport(ReportKind kind, DateTime ref, List<Shift> all,
     }
 
     // Avisos.
-    content.add(pw.Text('Avisos e infrações',
+    content.add(pw.Text(tr('Avisos e infrações'),
         style: pw.TextStyle(
             fontSize: 12, fontWeight: pw.FontWeight.bold, color: _blue)));
     content.add(pw.SizedBox(height: 4));
     if (issues.isEmpty) {
-      content.add(pw.Text(_t('Nenhum limite excedido neste período.'),
+      content.add(pw.Text(_t(tr('Nenhum limite excedido neste período.')),
           style: const pw.TextStyle(fontSize: 10, color: _teal)));
     } else {
       for (final i in issues) {
@@ -324,7 +325,7 @@ Future<File> buildReport(ReportKind kind, DateTime ref, List<Shift> all,
 
     // Detalhe: cada trecho, com hora e local (só no relatório completo).
     if (full) {
-    content.add(pw.Text('Detalhe das atividades',
+    content.add(pw.Text(tr('Detalhe das atividades'),
         style: pw.TextStyle(
             fontSize: 12, fontWeight: pw.FontWeight.bold, color: _blue)));
     for (final s in list) {
@@ -334,9 +335,7 @@ Future<File> buildReport(ReportKind kind, DateTime ref, List<Shift> all,
         color: _light,
         padding: const pw.EdgeInsets.symmetric(horizontal: 6, vertical: 4),
         child: pw.Text(
-            _t('${weekdayShort(s.start)} ${fmtDate(s.start)}  -  '
-                'início ${fmtTime(s.start)} (${_coord(s.startLat, s.startLon)})'
-                '${s.end == null ? '' : '  -  fim ${fmtTime(s.end!)} (${_coord(s.endLat, s.endLon)})'}'),
+            _t(tr('{0} {1}  -  início {2} ({3}){4}', [weekdayShort(s.start), fmtDate(s.start), fmtTime(s.start), _coord(s.startLat, s.startLon), s.end == null ? '' : '  -  fim ${fmtTime(s.end!)} (${_coord(s.endLat, s.endLon)})'])),
             style: pw.TextStyle(
                 fontSize: 9, fontWeight: pw.FontWeight.bold, color: _blue)),
       ));
@@ -353,12 +352,12 @@ Future<File> buildReport(ReportKind kind, DateTime ref, List<Shift> all,
         children: [
           pw.TableRow(children: [
             for (final h in [
-              'Início',
-              'Fim',
-              'Duração',
-              'Atividade',
-              'Coordenadas / km',
-              'Local / nota'
+              tr('Início'),
+              tr('Fim'),
+              tr('Duração'),
+              tr('Atividade'),
+              tr('Coordenadas / km'),
+              tr('Local / nota')
             ])
               _cell(h, bold: true, color: _grey),
           ]),
@@ -399,8 +398,7 @@ Future<File> buildReport(ReportKind kind, DateTime ref, List<Shift> all,
                         fontSize: 20,
                         fontWeight: pw.FontWeight.bold,
                         color: _blue)),
-                pw.Text(_t('Relatório ${reportName(kind)}  -  '
-                    '${rangeLabel(from, to)}'),
+                pw.Text(_t(tr('Relatório {0}  -  {1}', [reportName(kind), rangeLabel(from, to)])),
                     style: const pw.TextStyle(fontSize: 11, color: _grey)),
               ],
             ),
@@ -410,10 +408,10 @@ Future<File> buildReport(ReportKind kind, DateTime ref, List<Shift> all,
               crossAxisAlignment: pw.CrossAxisAlignment.end,
               children: [
                 if (driver.isNotEmpty)
-                  pw.Text(_t('Motorista: $driver'),
+                  pw.Text(_t(tr('Motorista: {0}', [driver])),
                       style: const pw.TextStyle(fontSize: 10, color: _grey)),
                 if (plate.isNotEmpty)
-                  pw.Text(_t('Matrícula: $plate'),
+                  pw.Text(_t(tr('Matrícula: {0}', [plate])),
                       style: const pw.TextStyle(fontSize: 10, color: _grey)),
               ],
             ),
@@ -424,8 +422,7 @@ Future<File> buildReport(ReportKind kind, DateTime ref, List<Shift> all,
       mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
       children: [
         pw.Text(
-            _t('Gerado em ${fmtDateTime(now)}. Auxiliar do motorista: o '
-                'registro oficial é o do tacógrafo.'),
+            _t(tr('Gerado em {0}. Auxiliar do motorista: o registro oficial é o do tacógrafo.', [fmtDateTime(now)])),
             style: const pw.TextStyle(fontSize: 7, color: _grey)),
         pw.Text('${ctx.pageNumber}/${ctx.pagesCount}',
             style: const pw.TextStyle(fontSize: 8, color: _grey)),
@@ -435,8 +432,7 @@ Future<File> buildReport(ReportKind kind, DateTime ref, List<Shift> all,
   ));
 
   final dir = await getApplicationDocumentsDirectory();
-  final f = File('${dir.path}/TacoGuard-Relatorio-${reportName(kind)}'
-          '${full ? '' : '-simples'}.pdf'
+  final f = File('${dir.path}/TacoGuard-Relatorio-${reportName(kind)}${full ? '' : '-simples'}.pdf'
       .replaceAll('á', 'a'));
   await f.writeAsBytes(await doc.save(), flush: true);
   return f;

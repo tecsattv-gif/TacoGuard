@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
+import 'i18n.dart';
 import 'law.dart';
 import 'models.dart';
 import 'rules.dart';
@@ -1306,7 +1307,7 @@ String _situation() {
 
 Future<String> askGemini(String question) async {
   final system = 'Você é o assistente do app TacoGuard, para motoristas de '
-      'caminhão na Europa. Responda em português do Brasil, curto e '
+      'caminhão na Europa. Responda SEMPRE em $aiLang, curto e '
       'direto. Responda SOMENTE com base no resumo da lei abaixo e na '
       'situação do motorista. Cite sempre o artigo entre parênteses. Se a '
       'resposta não estiver no resumo, diga que não sabe e mande conferir '

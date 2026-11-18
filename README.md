@@ -12,6 +12,7 @@ O APK mais novo fica em [Releases](https://github.com/tecsattv-gif/TacoGuard/rel
 
 - **Jornada automática por GPS**: toque em *Iniciar jornada* de manhã e confirme no pop-up. Arrancou, conta condução. Parou, grava as coordenadas, a hora e o tempo parado.
 - **Pop-up a cada parada**: depois de alguns minutos parado (1 a 5, você escolhe; o padrão é 2) aparece a pergunta *Pausa, Martelo ou Carga/Descarga?*, por cima do Google Maps ou de outro app. Sem resposta, a parada fica "a classificar" (conta como pausa até ser corrigida). Se arrancar antes de 15 minutos sem ter respondido, a parada vira **martelo** sozinha, porque menos de 15 minutos não conta como pausa pela lei.
+- **Idiomas**: português, inglês, espanhol e francês, com detecção automática do idioma do telefone (Ajustes → Idioma).
 - **Telefone e tablet, em pé ou deitado**: no tablet ou com o telefone deitado o menu fica na lateral e a tela Hoje em duas colunas.
 - **Tela Hoje fácil de ler na cabine**: um número principal (o anel com o tempo que falta para a pausa), a faixa colorida do dia como o disco do tacógrafo (condução, pausa, martelo, carga/descarga) com os km, e todos os limites numa lista só, com barra verde, amarela ou vermelha.
 - **Condução contínua**: anel com o tempo que falta para as 4h30 e controle da pausa de 45 min (ou 15 + 30).
@@ -65,6 +66,7 @@ Segredos do repositório (Settings > Secrets and variables > Actions):
 
 ## Versões
 
+- **1.9.0**: **App em 4 idiomas**: português, inglês, espanhol e francês. Em Ajustes → **Idioma** escolha um deles ou **Automático (idioma do telefone)**, que é o padrão (telefone em outro idioma: inglês). Traduzidos: todas as telas, botões e mensagens, o pop-up das paradas, os avisos por voz (a voz também muda de idioma), a notificação, os relatórios PDF, os avisos e infrações, e a atualização. A consulta por IA (Gemini) responde no idioma escolhido. Os textos da **Lei** e das **150 perguntas prontas** continuam em português nesta versão (tradução na próxima). Código: `lib/i18n.dart` (função `tr()`, o texto em português é a chave) e `lib/i18n_data.dart` (traduções).
 - **1.8.9**: Mesmo conteúdo da 1.8.8. A 1.8.7 terminou de compilar depois da 1.8.8 e ficou marcada como a mais recente, por isso o app não oferecia a 1.8.8. Agora as compilações rodam uma de cada vez, na ordem dos envios.
 - **1.8.8**: Tela Hoje **deitada (paisagem)**: o lado esquerdo fica **fixo**, com o cartão da atividade e o anel de quanto falta para a pausa (encolhem para caber na altura da tela); só o lado direito rola para cima e para baixo (avisos, faixa do dia, limites, linha do tempo e botões). Em pé e no tablet em pé nada muda.
 - **1.8.7**: Telefone deitado: o conteúdo não fica mais por baixo dos botões do Android no lado direito (os "300 km" e "10h" apareciam cortados); a coluna da direita da tela Hoje ficou mais larga e os nomes dos limites usam até duas linhas em vez de cortar com "…".

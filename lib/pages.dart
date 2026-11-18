@@ -12,6 +12,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 
+import 'i18n.dart';
 import 'models.dart';
 import 'popup.dart';
 import 'report.dart';
@@ -26,7 +27,7 @@ void _snack(BuildContext context, String text) {
 
 /// 1.6.5: pergunta antes de gravar uma edição. Devolve true se confirmou.
 Future<bool> confirmEdit(BuildContext context, String title, String text,
-    {String ok = 'Confirmar'}) async {
+    {String? ok}) async {
   final r = await showDialog<bool>(
     context: context,
     builder: (ctx) => AlertDialog(
@@ -36,9 +37,10 @@ Future<bool> confirmEdit(BuildContext context, String title, String text,
       actions: [
         TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Cancelar')),
+            child: Text(tr('Cancelar'))),
         FilledButton(
-            onPressed: () => Navigator.pop(ctx, true), child: Text(ok)),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(ok ?? tr('Confirmar'))),
       ],
     ),
   );
@@ -55,7 +57,7 @@ void showUndo(ScaffoldMessengerState m, String text, VoidCallback onUndo,
     behavior: SnackBarBehavior.floating,
     content: _Countdown(text: text, seconds: seconds),
     action: SnackBarAction(
-      label: 'DESFAZER',
+      label: tr('DESFAZER'),
       onPressed: () {
         if (undone) return;
         undone = true;
@@ -127,7 +129,7 @@ Future<void> openMap(BuildContext context, double lat, double lon) async {
       flags: const [Flag.FLAG_ACTIVITY_NEW_TASK],
     ).launch();
   } catch (_) {
-    if (context.mounted) _snack(context, 'Não foi possível abrir o mapa.');
+    if (context.mounted) _snack(context, tr('Não foi possível abrir o mapa.'));
   }
 }
 
@@ -172,10 +174,7 @@ class SegmentList extends StatelessWidget {
                         style: const TextStyle(
                             fontSize: 15, fontWeight: FontWeight.w700)),
                     Text(
-                        '${fmtTime(s.start)} - '
-                        '${s.end == null ? 'agora' : fmtTime(s.end!)}'
-                        '${s.act == Act.drive && s.km > 0 ? '  •  ${fmtKm(s.km)}' : ''}'
-                        '${s.note.isEmpty ? '' : '  •  ${s.note}'}',
+                        '${fmtTime(s.start)} - ${s.end == null ? tr('agora') : fmtTime(s.end!)}${s.act == Act.drive && s.km > 0 ? '  •  ${fmtKm(s.km)}' : ''}${s.note.isEmpty ? '' : '  •  ${s.note}'}',
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style:
@@ -211,11 +210,11 @@ class SegmentList extends StatelessWidget {
         }
         final ok = await confirmEdit(
             ctx,
-            'Salvar a alteração?',
+            tr('Salvar a alteração?'),
             v.trim().isEmpty
-                ? 'A nota "${s.note}" deste trecho vai ser apagada.'
-                : 'A nota deste trecho passa a ser "${v.trim()}".',
-            ok: 'Salvar');
+                ? tr('A nota "{0}" deste trecho vai ser apagada.', [s.note])
+                : tr('A nota deste trecho passa a ser "{0}".', [v.trim()]),
+            ok: tr('Salvar'));
         if (!ok || !ctx.mounted) return;
         Tracker.I.setNote(s, v);
         Navigator.pop(ctx);
@@ -232,12 +231,11 @@ class SegmentList extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                  '${fmtTime(s.start)} - '
-                  '${s.end == null ? 'agora' : fmtTime(s.end!)}',
+                  '${fmtTime(s.start)} - ${s.end == null ? tr('agora') : fmtTime(s.end!)}',
                   style: const TextStyle(
                       fontSize: 20, fontWeight: FontWeight.w800)),
               const SizedBox(height: 4),
-              const Text('Corrigir a atividade deste trecho',
+              Text(tr('Corrigir a atividade deste trecho'),
                   style: TextStyle(color: TG.muted)),
               const SizedBox(height: 12),
               Wrap(spacing: 8, runSpacing: 8, children: [
@@ -250,11 +248,9 @@ class SegmentList extends StatelessWidget {
                       if (s.act == a) return;
                       final ok = await confirmEdit(
                           ctx,
-                          'Mudar a atividade?',
-                          'O trecho das ${fmtTime(s.start)} passa de '
-                              '${actLabel(s.act)} para ${actLabel(a)}. '
-                              'Os tempos do dia e da semana são recalculados.',
-                          ok: 'Mudar');
+                          tr('Mudar a atividade?'),
+                          tr('O trecho das {0} passa de {1} para {2}. Os tempos do dia e da semana são recalculados.', [fmtTime(s.start), actLabel(s.act), actLabel(a)]),
+                          ok: tr('Mudar'));
                       if (!ok || !ctx.mounted) return;
                       Tracker.I.reclassify(s, a);
                       Navigator.pop(ctx);
@@ -264,8 +260,8 @@ class SegmentList extends StatelessWidget {
               const SizedBox(height: 14),
               TextField(
                 controller: note,
-                decoration: const InputDecoration(
-                    hintText: 'Nome do local ou nota (opcional)'),
+                decoration: InputDecoration(
+                    hintText: tr('Nome do local ou nota (opcional)')),
                 onSubmitted: (v) => saveNote(v),
               ),
               const SizedBox(height: 12),
@@ -276,8 +272,7 @@ class SegmentList extends StatelessWidget {
                       onPressed: () => openMap(ctx, s.lat!, s.lon!),
                       icon: const Icon(Icons.map_rounded),
                       label: Text(
-                          '${s.lat!.toStringAsFixed(4)}, '
-                          '${s.lon!.toStringAsFixed(4)}',
+                          '${s.lat!.toStringAsFixed(4)}, ${s.lon!.toStringAsFixed(4)}',
                           overflow: TextOverflow.ellipsis),
                     ),
                   ),
@@ -285,7 +280,7 @@ class SegmentList extends StatelessWidget {
                 Expanded(
                   child: FilledButton(
                     onPressed: () => saveNote(note.text),
-                    child: const Text('Salvar'),
+                    child: Text(tr('Salvar')),
                   ),
                 ),
               ]),
@@ -330,10 +325,10 @@ class _HistoryPageState extends State<HistoryPage> {
     final now = DateTime.now();
     final list = sorted(_t.shifts).reversed.toList();
     if (list.isEmpty) {
-      return const Center(
+      return Center(
         child: Padding(
           padding: EdgeInsets.all(32),
-          child: Text('Ainda não há jornadas.\nInicie a primeira na tela Hoje.',
+          child: Text(tr('Ainda não há jornadas.\nInicie a primeira na tela Hoje.'),
               textAlign: TextAlign.center,
               style: TextStyle(color: TG.muted, fontSize: 15)),
         ),
@@ -346,13 +341,13 @@ class _HistoryPageState extends State<HistoryPage> {
       itemBuilder: (ctx, i) {
         final s = list[i];
         final issues = shiftIssues(_t.shifts, s, now)
-            .where((x) => !x.contains('classificadas'))
+            .where((x) => x != tr('Há paradas ainda não classificadas (contadas como pausa).'))
             .length;
         final idx = ordered.indexWhere((x) => identical(x, s));
         String? rest;
         if (idx > 0 && ordered[idx - 1].end != null) {
           final gap = s.start.difference(ordered[idx - 1].end!);
-          rest = 'Descanso antes: ${fmtDur(gap)}';
+          rest = tr('Descanso antes: {0}', [fmtDur(gap)]);
         }
         return Padding(
           padding: const EdgeInsets.only(bottom: 10),
@@ -372,29 +367,26 @@ class _HistoryPageState extends State<HistoryPage> {
                             fontSize: 17, fontWeight: FontWeight.w800)),
                   ),
                   if (s.open)
-                    const _Pill('Aberta', TG.accent)
+                    _Pill(tr('Aberta'), TG.accent)
                   else if (issues > 0)
-                    _Pill('$issues aviso${issues > 1 ? 's' : ''}', TG.danger)
+                    _Pill(issues > 1 ? tr('{0} avisos', [issues]) : tr('{0} aviso', [issues]), TG.danger)
                   else
                     const _Pill('OK', TG.ok),
                 ]),
                 const SizedBox(height: 2),
                 Text(
-                    '${fmtTime(s.start)} às '
-                    '${s.end == null ? 'agora' : fmtTime(s.end!)}'
-                    '  •  ${fmtKm(s.km)}'
-                    '${rest == null ? '' : '  •  $rest'}',
+                    '${fmtTime(s.start)} - ${s.end == null ? tr('agora') : fmtTime(s.end!)}  •  ${fmtKm(s.km)}${rest == null ? '' : '  •  $rest'}',
                     style: const TextStyle(color: TG.muted, fontSize: 13)),
                 const SizedBox(height: 10),
                 Row(children: [
-                  _Mini('Condução', fmtDur(s.total(Act.drive, now)), TG.drive),
+                  _Mini(tr('Condução'), fmtDur(s.total(Act.drive, now)), TG.drive),
                   _Mini(
-                      'Pausa',
+                      tr('Pausa'),
                       fmtDur(s.total(Act.pause, now) +
                           s.total(Act.unknown, now)),
                       TG.pause),
-                  _Mini('Martelo', fmtDur(s.total(Act.work, now)), TG.work),
-                  _Mini('Amplitude', fmtDur(s.amplitude(now)), TG.text),
+                  _Mini(tr('Martelo'), fmtDur(s.total(Act.work, now)), TG.work),
+                  _Mini(tr('Amplitude'), fmtDur(s.amplitude(now)), TG.text),
                 ]),
               ],
             ),
@@ -478,16 +470,15 @@ class _ShiftDetailPageState extends State<ShiftDetailPage> {
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Apagar esta jornada?'),
-        content: const Text('Ela sai do histórico e dos relatórios. '
-            'Depois de apagar, tem 8 segundos para desfazer.'),
+        title: Text(tr('Apagar esta jornada?')),
+        content: Text(tr('Ela sai do histórico e dos relatórios. Depois de apagar, tem 8 segundos para desfazer.')),
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('Cancelar')),
+              child: Text(tr('Cancelar'))),
           FilledButton(
               onPressed: () => Navigator.pop(ctx, true),
-              child: const Text('Apagar')),
+              child: Text(tr('Apagar'))),
         ],
       ),
     );
@@ -498,10 +489,10 @@ class _ShiftDetailPageState extends State<ShiftDetailPage> {
     final i = await _t.deleteShift(sh);
     if (mounted) Navigator.pop(context);
     if (i < 0) return;
-    showUndo(m, 'Jornada de $day apagada', () async {
+    showUndo(m, tr('Jornada de {0} apagada', [day]), () async {
       await _t.restoreShift(sh, i);
       m.showSnackBar(SnackBar(
-          content: Text('Jornada de $day restaurada'),
+          content: Text(tr('Jornada de {0} restaurada', [day])),
           duration: const Duration(seconds: 2)));
     });
   }
@@ -514,7 +505,7 @@ class _ShiftDetailPageState extends State<ShiftDetailPage> {
     final gap = (next?.start ?? now).difference(s.end!);
     final k = restKind(gap);
     final label = next == null && k == RestKind.tooShort
-        ? 'Descanso em curso'
+        ? tr('Descanso em curso')
         : restLabel(k);
     final has = s.endLat != null && s.endLon != null;
     return Padding(
@@ -534,9 +525,8 @@ class _ShiftDetailPageState extends State<ShiftDetailPage> {
                         fontSize: 15, fontWeight: FontWeight.w700)),
                 Text(
                     has
-                        ? 'Local: ${s.endLat!.toStringAsFixed(5)}, '
-                            '${s.endLon!.toStringAsFixed(5)}'
-                        : 'Local não gravado (sem GPS ao encerrar)',
+                        ? tr('Local: {0}, {1}', [s.endLat!.toStringAsFixed(5), s.endLon!.toStringAsFixed(5)])
+                        : tr('Local não gravado (sem GPS ao encerrar)'),
                     style: const TextStyle(color: TG.muted, fontSize: 12.5)),
               ],
             ),
@@ -559,7 +549,7 @@ class _ShiftDetailPageState extends State<ShiftDetailPage> {
           if (!s.open)
             IconButton(
                 onPressed: _delete,
-                tooltip: 'Apagar jornada',
+                tooltip: tr('Apagar jornada'),
                 icon: const Icon(Icons.delete_outline_rounded)),
         ],
       ),
@@ -569,27 +559,27 @@ class _ShiftDetailPageState extends State<ShiftDetailPage> {
           TCard(
             child: Column(children: [
               Row(children: [
-                _Mini('Início', fmtTime(s.start), TG.text),
-                _Mini('Fim', s.end == null ? 'aberta' : fmtTime(s.end!),
+                _Mini(tr('Início'), fmtTime(s.start), TG.text),
+                _Mini(tr('Fim'), s.end == null ? tr('aberta') : fmtTime(s.end!),
                     TG.text),
-                _Mini('Amplitude', fmtDur(s.amplitude(now)), TG.accent),
+                _Mini(tr('Amplitude'), fmtDur(s.amplitude(now)), TG.accent),
               ]),
               const SizedBox(height: 12),
               Row(children: [
-                _Mini('Condução', fmtDur(s.total(Act.drive, now)), TG.drive),
+                _Mini(tr('Condução'), fmtDur(s.total(Act.drive, now)), TG.drive),
                 _Mini(
-                    'Pausa',
+                    tr('Pausa'),
                     fmtDur(
                         s.total(Act.pause, now) + s.total(Act.unknown, now)),
                     TG.pause),
-                _Mini('Martelo', fmtDur(s.total(Act.work, now)), TG.work),
+                _Mini(tr('Martelo'), fmtDur(s.total(Act.work, now)), TG.work),
               ]),
               const SizedBox(height: 12),
               Row(children: [
-                _Mini('Carga/Desc.', fmtDur(s.total(Act.load, now)), TG.load),
-                _Mini('Maior cond. seguida',
+                _Mini(tr('Carga/Desc.'), fmtDur(s.total(Act.load, now)), TG.load),
+                _Mini(tr('Maior cond. seguida'),
                     fmtDur(maxContinuousDrive(s, now)), TG.text),
-                _Mini('Km', fmtKm(s.km), TG.drive),
+                _Mini(tr('Km'), fmtKm(s.km), TG.drive),
               ]),
             ]),
           ),
@@ -615,9 +605,9 @@ class _ShiftDetailPageState extends State<ShiftDetailPage> {
             ),
           if (s.end != null) _restCard(s, now),
           const SizedBox(height: 6),
-          const Padding(
+          Padding(
             padding: EdgeInsets.only(left: 4, bottom: 8),
-            child: Text('Atividades (toque para corrigir)',
+            child: Text(tr('Atividades (toque para corrigir)'),
                 style: TextStyle(
                     color: TG.muted,
                     fontSize: 13,
@@ -692,7 +682,7 @@ class _ReportsPageState extends State<ReportsPage> {
       return await buildReport(_kind, _ref, _t.shifts,
           driver: _t.driver, plate: _t.plate, full: _full);
     } catch (e) {
-      if (mounted) _snack(context, 'Não foi possível gerar o PDF: $e');
+      if (mounted) _snack(context, tr('Não foi possível gerar o PDF: {0}', [e]));
       return null;
     } finally {
       if (mounted) setState(() => _busy = false);
@@ -704,7 +694,7 @@ class _ReportsPageState extends State<ReportsPage> {
     if (f == null) return;
     final r = await OpenFilex.open(f.path, type: 'application/pdf');
     if (r.type != ResultType.done && mounted) {
-      _snack(context, 'Não há app para abrir PDF. Use Compartilhar.');
+      _snack(context, tr('Não há app para abrir PDF. Use Compartilhar.'));
     }
   }
 
@@ -713,7 +703,7 @@ class _ReportsPageState extends State<ReportsPage> {
     if (f == null) return;
     await SharePlus.instance.share(ShareParams(
       files: [XFile(f.path, mimeType: 'application/pdf')],
-      text: 'Relatório ${reportName(_kind)} do TacoGuard',
+      text: tr('Relatório {0} do TacoGuard', [reportName(_kind)]),
     ));
   }
 
@@ -722,15 +712,15 @@ class _ReportsPageState extends State<ReportsPage> {
     if (f == null) return;
     try {
       final path = await FilePicker.platform.saveFile(
-        dialogTitle: 'Salvar relatório',
+        dialogTitle: tr('Salvar relatório'),
         fileName: f.uri.pathSegments.last,
         type: FileType.custom,
         allowedExtensions: ['pdf'],
         bytes: await f.readAsBytes(),
       );
-      if (path != null && mounted) _snack(context, 'Relatório salvo.');
+      if (path != null && mounted) _snack(context, tr('Relatório salvo.'));
     } catch (e) {
-      if (mounted) _snack(context, 'Não foi possível salvar: $e');
+      if (mounted) _snack(context, tr('Não foi possível salvar: {0}', [e]));
     }
   }
 
@@ -752,7 +742,7 @@ class _ReportsPageState extends State<ReportsPage> {
       work += s.total(Act.work, now);
       load += s.total(Act.load, now);
       issues += shiftIssues(_t.shifts, s, now)
-          .where((x) => !x.contains('classificadas'))
+          .where((x) => x != tr('Há paradas ainda não classificadas (contadas como pausa).'))
           .length;
     }
     return ListView(
@@ -773,9 +763,9 @@ class _ReportsPageState extends State<ReportsPage> {
         const SizedBox(height: 8),
         SegmentedButton<bool>(
           showSelectedIcon: false,
-          segments: const [
-            ButtonSegment(value: false, label: Text('Simples')),
-            ButtonSegment(value: true, label: Text('Completo')),
+          segments: [
+            ButtonSegment(value: false, label: Text(tr('Simples'))),
+            ButtonSegment(value: true, label: Text(tr('Completo'))),
           ],
           selected: {_full},
           onSelectionChanged: (s) => setState(() => _full = s.first),
@@ -802,16 +792,16 @@ class _ReportsPageState extends State<ReportsPage> {
         TCard(
           child: Column(children: [
             Row(children: [
-              _Mini('Condução', fmtDur(drive), TG.drive),
-              _Mini('Pausa', fmtDur(pause), TG.pause),
-              _Mini('Martelo', fmtDur(work), TG.work),
-              _Mini('Carga/Desc.', fmtDur(load), TG.load),
+              _Mini(tr('Condução'), fmtDur(drive), TG.drive),
+              _Mini(tr('Pausa'), fmtDur(pause), TG.pause),
+              _Mini(tr('Martelo'), fmtDur(work), TG.work),
+              _Mini(tr('Carga/Desc.'), fmtDur(load), TG.load),
             ]),
             const SizedBox(height: 12),
             Row(children: [
-              _Mini('Jornadas', '${list.length}', TG.text),
-              _Mini('Avisos', '$issues', issues > 0 ? TG.danger : TG.ok),
-              _Mini('Km', fmtKm(km), TG.drive),
+              _Mini(tr('Jornadas'), '${list.length}', TG.text),
+              _Mini(tr('Avisos'), '$issues', issues > 0 ? TG.danger : TG.ok),
+              _Mini(tr('Km'), fmtKm(km), TG.drive),
               const Spacer(),
             ]),
           ]),
@@ -822,7 +812,7 @@ class _ReportsPageState extends State<ReportsPage> {
           child: FilledButton.icon(
             onPressed: _busy ? null : _open,
             icon: const Icon(Icons.picture_as_pdf_rounded),
-            label: Fit(_busy ? 'Gerando...' : 'Abrir PDF',
+            label: Fit(_busy ? tr('Gerando...') : tr('Abrir PDF'),
                 style:
                     const TextStyle(fontSize: 17, fontWeight: FontWeight.w800)),
           ),
@@ -835,7 +825,7 @@ class _ReportsPageState extends State<ReportsPage> {
               child: OutlinedButton.icon(
                 onPressed: _busy ? null : _save,
                 icon: const Icon(Icons.save_alt_rounded),
-                label: const Fit('Salvar'),
+                label: Fit(tr('Salvar')),
               ),
             ),
           ),
@@ -846,7 +836,7 @@ class _ReportsPageState extends State<ReportsPage> {
               child: OutlinedButton.icon(
                 onPressed: _busy ? null : _share,
                 icon: const Icon(Icons.share_rounded),
-                label: const Fit('Compartilhar'),
+                label: Fit(tr('Compartilhar')),
               ),
             ),
           ),
@@ -854,10 +844,8 @@ class _ReportsPageState extends State<ReportsPage> {
         const SizedBox(height: 14),
         Text(
             _full
-                ? 'Completo: o resumo, cada jornada, as pausas e descansos, os '
-                    'avisos e todas as atividades com hora e coordenadas.'
-                : 'Simples: o resumo, cada jornada, as pausas e descansos com '
-                    'o local, e os avisos e infrações.',
+                ? tr('Completo: o resumo, cada jornada, as pausas e descansos, os avisos e todas as atividades com hora e coordenadas.')
+                : tr('Simples: o resumo, cada jornada, as pausas e descansos com o local, e os avisos e infrações.'),
             textAlign: TextAlign.center,
             style: TextStyle(color: TG.muted, fontSize: 12.5)),
       ],
@@ -927,8 +915,7 @@ class _SettingsPageState extends State<SettingsPage> {
       ).launch();
     } catch (_) {
       if (mounted) {
-        _snack(context, 'Abra Configurações > Bateria > TacoGuard e '
-            'escolha "Sem restrições".');
+        _snack(context, tr('Abra Configurações > Bateria > TacoGuard e escolha "Sem restrições".'));
       }
     }
   }
@@ -944,26 +931,26 @@ class _SettingsPageState extends State<SettingsPage> {
     final f = await _backupFile();
     await SharePlus.instance.share(ShareParams(
       files: [XFile(f.path, mimeType: 'application/json')],
-      text: 'Backup do TacoGuard',
+      text: tr('Backup do TacoGuard'),
     ));
   }
 
   Future<void> _backupSave() async {
     try {
       final path = await FilePicker.platform.saveFile(
-        dialogTitle: 'Salvar backup',
+        dialogTitle: tr('Salvar backup'),
         fileName: 'TacoGuard-backup.json',
         bytes: Uint8List.fromList(utf8.encode(_t.exportJson())),
       );
-      if (path != null && mounted) _snack(context, 'Backup salvo.');
+      if (path != null && mounted) _snack(context, tr('Backup salvo.'));
     } catch (e) {
-      if (mounted) _snack(context, 'Não foi possível salvar: $e');
+      if (mounted) _snack(context, tr('Não foi possível salvar: {0}', [e]));
     }
   }
 
   Future<void> _restore() async {
     if (_t.current != null) {
-      _snack(context, 'Encerre a jornada antes de restaurar um backup.');
+      _snack(context, tr('Encerre a jornada antes de restaurar um backup.'));
       return;
     }
     FilePickerResult? res;
@@ -971,7 +958,7 @@ class _SettingsPageState extends State<SettingsPage> {
       res = await FilePicker.platform
           .pickFiles(type: FileType.any, withData: true);
     } catch (_) {
-      if (mounted) _snack(context, 'Não consegui abrir os arquivos.');
+      if (mounted) _snack(context, tr('Não consegui abrir os arquivos.'));
       return;
     }
     if (res == null || res.files.isEmpty) return;
@@ -984,16 +971,15 @@ class _SettingsPageState extends State<SettingsPage> {
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Restaurar backup?'),
-        content: const Text('As jornadas deste telefone serão substituídas '
-            'pelas do backup.'),
+        title: Text(tr('Restaurar backup?')),
+        content: Text(tr('As jornadas deste telefone serão substituídas pelas do backup.')),
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('Cancelar')),
+              child: Text(tr('Cancelar'))),
           FilledButton(
               onPressed: () => Navigator.pop(ctx, true),
-              child: const Text('Restaurar')),
+              child: Text(tr('Restaurar'))),
         ],
       ),
     );
@@ -1002,7 +988,7 @@ class _SettingsPageState extends State<SettingsPage> {
         await _t.importJson(utf8.decode(bytes, allowMalformed: true));
     if (mounted) {
       _snack(context,
-          done ? 'Backup restaurado.' : 'Este arquivo não é um backup do TacoGuard.');
+          done ? tr('Backup restaurado.') : tr('Este arquivo não é um backup do TacoGuard.'));
     }
   }
 
@@ -1018,24 +1004,45 @@ class _SettingsPageState extends State<SettingsPage> {
     return ListView(
       padding: EdgeInsets.fromLTRB(16, 0, 16, 28 + MediaQuery.paddingOf(context).bottom),
       children: [
-        _title('Velocidade'),
+        // 1.9.0: idioma do app (automático = o do telefone).
+        _title(tr('Idioma')),
+        TCard(
+          child: DropdownButtonHideUnderline(
+            child: DropdownButton<String>(
+              isExpanded: true,
+              value: langChoice,
+              items: [
+                DropdownMenuItem(
+                    value: '',
+                    child: Text(tr('Automático (idioma do telefone)'))),
+                for (final e in kLangs.entries)
+                  DropdownMenuItem(value: e.key, child: Text(e.value)),
+              ],
+              onChanged: (v) async {
+                await setLang(v ?? '');
+                await _t.setVoiceLang();
+                if (mounted) setState(() {});
+              },
+            ),
+          ),
+        ),
+        _title(tr('Velocidade')),
         TCard(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               SwitchListTile(
                 contentPadding: EdgeInsets.zero,
-                title: const Text('Aviso de velocidade'),
-                subtitle: const Text(
-                    'Bip acima do limite; mais de 1 min acima fica '
-                    'registado como infração, como no tacógrafo'),
+                title: Text(tr('Aviso de velocidade')),
+                subtitle: Text(
+                    tr('Bip acima do limite; mais de 1 min acima fica registado como infração, como no tacógrafo')),
                 value: _t.speedAlert,
                 onChanged: (v) {
                   setState(() => _t.speedAlert = v);
                   _t.saveSettings();
                 },
               ),
-              Text('Limite: ${_t.speedLimit} km/h',
+              Text(tr('Limite: {0} km/h', [_t.speedLimit]),
                   style: const TextStyle(
                       fontSize: 15, fontWeight: FontWeight.w700)),
               Slider(
@@ -1051,9 +1058,8 @@ class _SettingsPageState extends State<SettingsPage> {
               ),
               SwitchListTile(
                 contentPadding: EdgeInsets.zero,
-                title: const Text('Bip'),
-                subtitle: const Text('Desligado: sem som; o cartão vermelho a '
-                    'piscar e o registo da infração continuam'),
+                title: Text(tr('Bip')),
+                subtitle: Text(tr('Desligado: sem som; o cartão vermelho a piscar e o registo da infração continuam')),
                 value: _t.speedBeep,
                 onChanged: _t.speedAlert
                     ? (v) {
@@ -1067,30 +1073,29 @@ class _SettingsPageState extends State<SettingsPage> {
                 child: TextButton.icon(
                   onPressed: () => _t.beep(),
                   icon: const Icon(Icons.volume_up_rounded),
-                  label: const Text('Testar o bip'),
+                  label: Text(tr('Testar o bip')),
                 ),
               ),
             ],
           ),
         ),
-        _title('Paradas'),
+        _title(tr('Paradas')),
         TCard(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Considerar parada depois de ${_t.stopMinutes} min parado',
+              Text(tr('Considerar parada depois de {0} min parado', [_t.stopMinutes]),
                   style: const TextStyle(
                       fontSize: 15, fontWeight: FontWeight.w700)),
-              const Text(
-                  'Menos que isso é trânsito ou semáforo e conta como '
-                  'condução.',
+              Text(
+                  tr('Menos que isso é trânsito ou semáforo e conta como condução.'),
                   style: TextStyle(color: TG.muted, fontSize: 12.5)),
               Slider(
                 value: _t.stopMinutes.toDouble(),
                 min: 1,
                 max: 5,
                 divisions: 4,
-                label: '${_t.stopMinutes} min',
+                label: tr('{0} min', [_t.stopMinutes]),
                 onChanged: (v) {
                   setState(() => _t.stopMinutes = v.round());
                 },
@@ -1099,9 +1104,9 @@ class _SettingsPageState extends State<SettingsPage> {
               const Divider(),
               SwitchListTile(
                 contentPadding: EdgeInsets.zero,
-                title: const Text('Pop-up ao parar'),
-                subtitle: const Text(
-                    'Pergunta: Pausa, Martelo ou Carga/Descarga'),
+                title: Text(tr('Pop-up ao parar')),
+                subtitle: Text(
+                    tr('Pergunta: Pausa, Martelo ou Carga/Descarga')),
                 value: _t.popup,
                 onChanged: (v) {
                   setState(() => _t.popup = v);
@@ -1117,14 +1122,14 @@ class _SettingsPageState extends State<SettingsPage> {
                       await _load();
                     },
                     icon: const Icon(Icons.layers_rounded),
-                    label: const Fit('Liberar "Sobrepor a outros apps"'),
+                    label: Fit(tr('Liberar "Sobrepor a outros apps"')),
                   ),
                 ),
               SwitchListTile(
                 contentPadding: EdgeInsets.zero,
-                title: const Text('Avisos por voz'),
-                subtitle: const Text(
-                    'Fala quando falta pouco para a pausa e os limites'),
+                title: Text(tr('Avisos por voz')),
+                subtitle: Text(
+                    tr('Fala quando falta pouco para a pausa e os limites')),
                 value: _t.voice,
                 onChanged: (v) {
                   setState(() => _t.voice = v);
@@ -1134,32 +1139,31 @@ class _SettingsPageState extends State<SettingsPage> {
             ],
           ),
         ),
-        _title('Funcionar com a tela apagada'),
+        _title(tr('Funcionar com a tela apagada')),
         TCard(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                  'Para o GPS não ser cortado pelo celular durante a '
-                  'jornada, deixe o TacoGuard "Sem restrições" de bateria.',
+              Text(
+                  tr('Para o GPS não ser cortado pelo celular durante a jornada, deixe o TacoGuard "Sem restrições" de bateria.'),
                   style: TextStyle(fontSize: 14, height: 1.35)),
               const SizedBox(height: 10),
               OutlinedButton.icon(
                 onPressed: _battery,
                 icon: const Icon(Icons.battery_saver_rounded),
-                label: const Fit('Abrir ajustes de bateria'),
+                label: Fit(tr('Abrir ajustes de bateria')),
               ),
             ],
           ),
         ),
-        _title('Relatórios'),
+        _title(tr('Relatórios')),
         TCard(
           child: Column(children: [
             TextField(
               controller: _driver,
               textCapitalization: TextCapitalization.words,
-              decoration: const InputDecoration(
-                  labelText: 'Nome do motorista (sai no PDF)'),
+              decoration: InputDecoration(
+                  labelText: tr('Nome do motorista (sai no PDF)')),
               onChanged: (v) {
                 _t.driver = v.trim();
                 _t.saveSettings();
@@ -1169,9 +1173,9 @@ class _SettingsPageState extends State<SettingsPage> {
             TextField(
               controller: _plate,
               textCapitalization: TextCapitalization.characters,
-              decoration: const InputDecoration(
-                  labelText: 'Matrícula do veículo (sai no PDF)',
-                  hintText: 'Ex.: AA-00-BB'),
+              decoration: InputDecoration(
+                  labelText: tr('Matrícula do veículo (sai no PDF)'),
+                  hintText: tr('Ex.: AA-00-BB')),
               onChanged: (v) {
                 _t.plate = v.trim().toUpperCase();
                 _t.saveSettings();
@@ -1179,7 +1183,7 @@ class _SettingsPageState extends State<SettingsPage> {
             ),
           ]),
         ),
-        _title('Backup'),
+        _title(tr('Backup')),
         TCard(
           child: Column(children: [
             Row(children: [
@@ -1187,7 +1191,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 child: OutlinedButton.icon(
                   onPressed: _backupSave,
                   icon: const Icon(Icons.save_alt_rounded),
-                  label: const Fit('Salvar'),
+                  label: Fit(tr('Salvar')),
                 ),
               ),
               const SizedBox(width: 10),
@@ -1195,7 +1199,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 child: OutlinedButton.icon(
                   onPressed: _backupShare,
                   icon: const Icon(Icons.share_rounded),
-                  label: const Fit('Compartilhar'),
+                  label: Fit(tr('Compartilhar')),
                 ),
               ),
             ]),
@@ -1205,12 +1209,12 @@ class _SettingsPageState extends State<SettingsPage> {
               child: OutlinedButton.icon(
                 onPressed: _restore,
                 icon: const Icon(Icons.restore_rounded),
-                label: const Fit('Restaurar backup'),
+                label: Fit(tr('Restaurar backup')),
               ),
             ),
           ]),
         ),
-        _title('Sobre'),
+        _title(tr('Sobre')),
         TCard(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -1229,7 +1233,7 @@ class _SettingsPageState extends State<SettingsPage> {
                       Text('TacoGuard $_version',
                           style: const TextStyle(
                               fontSize: 17, fontWeight: FontWeight.w800)),
-                      const Text('Desenvolvido por Luiz Alberto Cardoso',
+                      Text(tr('Desenvolvido por Luiz Alberto Cardoso'),
                           style: TextStyle(color: TG.muted, fontSize: 13)),
                       const Text('tecsattv@gmail.com',
                           style: TextStyle(color: TG.muted, fontSize: 13)),
@@ -1243,14 +1247,12 @@ class _SettingsPageState extends State<SettingsPage> {
                 child: OutlinedButton.icon(
                   onPressed: () => UpdateService.manualCheck(context),
                   icon: const Icon(Icons.system_update_rounded),
-                  label: const Fit('Procurar atualização'),
+                  label: Fit(tr('Procurar atualização')),
                 ),
               ),
               const SizedBox(height: 10),
-              const Text(
-                  'O TacoGuard é um auxiliar do motorista. O registro '
-                  'oficial é o do tacógrafo, e pode haver pequenas '
-                  'diferenças de minutos entre os dois.',
+              Text(
+                  tr('O TacoGuard é um auxiliar do motorista. O registro oficial é o do tacógrafo, e pode haver pequenas diferenças de minutos entre os dois.'),
                   style: TextStyle(color: TG.muted, fontSize: 12.5)),
             ],
           ),
