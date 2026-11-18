@@ -388,7 +388,11 @@ class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
                 ),
               ),
               const VerticalDivider(width: 1, color: TG.line),
-              Expanded(child: body),
+              // Deitado, os botões do Android ficam à direita: o conteúdo
+              // não pode ficar por baixo deles.
+              Expanded(
+                  child: SafeArea(
+                      left: false, top: false, bottom: false, child: body)),
             ])
           : body,
       bottomNavigationBar: wide
@@ -630,11 +634,13 @@ class _TodayPageState extends State<TodayPage> {
           padding: pad,
           child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Expanded(
+                flex: 5,
                 child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: items.sublist(0, cut))),
             const SizedBox(width: 16),
             Expanded(
+                flex: 6,
                 child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: items.sublist(cut + 1))),
@@ -1283,13 +1289,13 @@ class _LimitList extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(l.title,
-                    maxLines: 1,
+                    maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
                         fontSize: 14, fontWeight: FontWeight.w700)),
                 if (l.note != null)
                   Text(l.note!,
-                      maxLines: 1,
+                      maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(color: TG.muted, fontSize: 11.5)),
               ],

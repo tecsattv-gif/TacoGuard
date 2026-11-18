@@ -65,6 +65,7 @@ Segredos do repositório (Settings > Secrets and variables > Actions):
 
 ## Versões
 
+- **1.8.7**: Telefone deitado: o conteúdo não fica mais por baixo dos botões do Android no lado direito (os "300 km" e "10h" apareciam cortados); a coluna da direita da tela Hoje ficou mais larga e os nomes dos limites usam até duas linhas em vez de cortar com "…".
 - **1.8.6**: **Relatório simples ou completo**: na tela Relatórios escolha **Simples** (resumo, jornadas, pausas e descansos com o local, avisos e infrações) ou **Completo** (tudo isso mais o "Detalhe das atividades", cada trecho com hora e coordenadas). O padrão é Completo.
 - **1.8.5**: **Tablet e telefone deitado**: com a tela larga (a partir de 640 px de largura), o menu passa para a lateral esquerda; a tela Hoje fica em **duas colunas** (à esquerda o estado, a velocidade e o anel da pausa; à direita a faixa do dia, os limites, a linha do tempo e os botões) e as outras telas ficam centradas com largura de leitura. Virando o aparelho, o layout muda na hora, sem perder nada. Telefone deitado mostra só os ícones no menu lateral.
 - **1.8.4**: Condução passa a ter o ícone de um **volante** (no lugar do caminhão) na tela Hoje, nos trechos, no Histórico e no pop-up. **Relatórios** abre no dia em que começou a jornada em curso (ou a última): a jornada conta no dia em que começou, e depois da meia-noite o relatório "de hoje" aparecia vazio.
