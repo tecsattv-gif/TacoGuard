@@ -9,6 +9,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'gps_filter.dart';
 import 'i18n.dart';
 import 'models.dart';
 import 'popup.dart';
@@ -47,9 +48,8 @@ class Tracker extends ChangeNotifier {
   StreamSubscription<Position>? _sub;
   Timer? _timer;
   double speedKmh = 0;
+  final _gps = GpsFilter(); // 1.9.8: filtro do SpeedGuard
   double _rawKmh = 0; // 1.9.1: última leitura, sem a mediana (sem atraso)
-  double _goodKmh = 0; // 1.9.5: última velocidade aceite (filtro de picos)
-  DateTime _goodAt = DateTime.fromMillisecondsSinceEpoch(0);
   DateTime? _overCand; // 1.9.5: 1ª leitura acima do limite, à espera da 2ª
   double? lat, lon;
   DateTime? lastFix;
@@ -492,15 +492,17 @@ class Tracker extends ChangeNotifier {
   }
 
   /// 1.7.7: abre (ou reabre) a leitura do GPS.
-  /// GPS puro do celular (não a localização "fundida" do Google, que no
-  /// Xiaomi às vezes manda velocidade 0 com o caminhão a andar), a cada 1 s.
+  /// 1.9.8: mesmo GPS do SpeedGuard (onde a velocidade funciona bem):
+  /// localização "fundida" do Android, a cada 1 s, e o filtro [GpsFilter]
+  /// que descarta as leituras ruins (repetidas, de antena, saltos e quedas
+  /// impossíveis — eram elas que davam 0 km/h com o caminhão a 60).
   void _listen() {
     _sub?.cancel();
     _lastRaw = DateTime.now();
+    _gps.reset();
     final settings = AndroidSettings(
       accuracy: LocationAccuracy.bestForNavigation,
       distanceFilter: 0,
-      forceLocationManager: true,
       intervalDuration: const Duration(seconds: 1),
       foregroundNotificationConfig: ForegroundNotificationConfig(
         notificationTitle: tr('TacoGuard ativo'),
@@ -556,78 +558,27 @@ class Tracker extends ChangeNotifier {
   /// manda 0 com o caminhão a andar) é calculada pela distância, e só com
   /// leituras precisas (até 30 m), para um pulo de posição não virar
   /// 100 km/h. No fim, mediana das 3 últimas para tirar picos.
+  /// Velocidade (km/h) e se está parado.
+  /// 1.9.8: igual ao SpeedGuard: a velocidade é a do próprio GPS, sem
+  /// cálculo por cima (as leituras ruins já foram tiradas pelo [GpsFilter],
+  /// que também põe 0 quando o caminhão está parado). Os cálculos da 1.7.7
+  /// a 1.9.7 (distância, mediana, picos) davam velocidade errada.
   (bool, double) _speedOf(Position p, DateTime now) {
-    _hist.add((now, p.latitude, p.longitude, p.accuracy));
-    _hist.removeWhere((h) => now.difference(h.$1).inSeconds > 12);
-    final sa = p.speedAccuracy; // m/s; 0 = não informada
-    // A velocidade do próprio GPS (efeito Doppler) é a mais certa: igual à
-    // do Garmin. 1.9.7: volta o limite de erro de antes (a 1.9.5 apertou
-    // demais, rejeitava leituras boas e caía no cálculo pela distância,
-    // que marcava 80 a 65 km/h).
-    final gpsOk = p.speed > 0 && (sa <= 0 || sa < 4);
-    double kmh = gpsOk ? p.speed * 3.6 : 0;
-    // Distância nos últimos segundos (para o pulo parado e para o cálculo).
-    final old = _hist.first;
-    final secs = now.difference(old.$1).inMilliseconds / 1000;
-    double? moved;
-    if (secs >= 4) {
-      moved = Geolocator.distanceBetween(
-          old.$2, old.$3, p.latitude, p.longitude);
-    }
-    // Plano B, só quando o GPS não manda velocidade: distância percorrida
-    // em 8 s ou mais e só com posições bem precisas (até 15 m), para o erro
-    // das posições não virar velocidade a mais.
-    if (!gpsOk && moved != null && secs >= 8 && p.accuracy <= 15 &&
-        old.$4 <= 15) {
-      final margin = (p.accuracy + old.$4) * 1.5 < 25
-          ? 25.0
-          : (p.accuracy + old.$4) * 1.5;
-      if (moved > margin) kmh = moved / secs * 3.6;
-    }
-    // O GPS marca velocidade mas o caminhão não saiu do lugar: é pulo.
-    if (secs >= 6 && moved != null && moved < 8) kmh = 0;
-    // 1.9.5: parou de verdade? Nos últimos ~3 s andou menos de 3 m (com
-    // leitura precisa): é zero já. O chip do GPS "desce" a velocidade aos
-    // poucos (1 em 1 km/h) depois de parar; isto corta essa demora.
-    for (final h in _hist.reversed) {
-      final dt = now.difference(h.$1).inMilliseconds / 1000;
-      if (dt < 2.5) continue;
-      if (dt <= 5 && p.accuracy <= 25 && h.$4 <= 25) {
-        final d =
-            Geolocator.distanceBetween(h.$2, h.$3, p.latitude, p.longitude);
-        if (d < 3) kmh = 0;
-      }
-      break;
-    }
-    if (kmh > 140) kmh = 140; // caminhão não passa disto: é leitura errada
-    // 1.9.5: pico impossível. Um caminhão não ganha mais de ~8 km/h por
-    // segundo (nem descendo a serra): um salto maior é erro do GPS
-    // (reflexo nas encostas, túnel). Fica a última velocidade boa.
-    final dtGood = now.difference(_goodAt).inMilliseconds / 1000;
-    if (_goodKmh > 0 && dtGood < 5 && kmh > _goodKmh + 3 + 8 * dtGood) {
-      kmh = _goodKmh;
-    } else {
-      _goodKmh = kmh;
-      _goodAt = now;
-    }
-    _lastKmh.add(kmh);
-    if (_lastKmh.length > 3) _lastKmh.removeAt(0);
-    final sorted = [..._lastKmh]..sort();
-    final med = sorted[sorted.length ~/ 2];
-    _rawKmh = kmh < 4 ? 0 : kmh;
-    // Parou (zero já confirmado pela distância): mostra 0 sem esperar a
-    // mediana.
-    if (kmh == 0 && _lastKmh.length >= 2 && _lastKmh[_lastKmh.length - 2] < 15) {
-      return (true, 0.0);
-    }
-    return (med < 4, med < 4 ? 0.0 : med);
+    final kmh = p.speed * 3.6;
+    final v = kmh < 4 ? 0.0 : (kmh > 140 ? 140.0 : kmh);
+    _rawKmh = v;
+    return (v == 0, v);
   }
 
-  void _onPosition(Position p) {
+  void _onPosition(Position raw) {
+    var p = raw;
     final now = DateTime.now();
     _lastRaw = now;
+    // 1.9.8: filtro do SpeedGuard (leitura ruim volta null: ignora).
+    final f = _gps.accept(p);
+    if (f == null) return;
+    p = f;
     // Leitura muito imprecisa (dentro da cabine, antena): ignora.
-    // 1.7.7: o limite passou de 60 para 100 m; para somar km continua 60.
     if (p.accuracy > 100) return;
     lastFix = now;
     lat = p.latitude;
