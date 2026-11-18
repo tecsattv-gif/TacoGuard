@@ -36,12 +36,14 @@ class Tracker extends ChangeNotifier {
   // 1.7.9: aviso de velocidade (bip acima do limite; 1 min acima = infração)
   bool speedAlert = true;
   int speedLimit = 90; // 85 a 100 km/h
+  int speedMargin = 0; // 1.9.1: avisar X km/h antes do limite (0 a 5)
   bool speedBeep = true; // 1.8.3: bip ligado/desligado (o cartão pisca igual)
 
   // ---------- GPS ----------
   StreamSubscription<Position>? _sub;
   Timer? _timer;
   double speedKmh = 0;
+  double _rawKmh = 0; // 1.9.1: última leitura, sem a mediana (sem atraso)
   double? lat, lon;
   DateTime? lastFix;
   bool gpsOn = false;
@@ -158,6 +160,7 @@ class Tracker extends ChangeNotifier {
       speedAlert = p.getBool('speedAlert') ?? true;
       speedLimit = (p.getInt('speedLimit') ?? 90).clamp(85, 100);
       speedBeep = p.getBool('speedBeep') ?? true;
+      speedMargin = (p.getInt('speedMargin') ?? 0).clamp(0, 5);
       carMode = p.getBool('carMode') ?? false;
       _truckLat = p.getDouble('truckLat');
       _truckLon = p.getDouble('truckLon');
@@ -236,6 +239,7 @@ class Tracker extends ChangeNotifier {
       await p.setBool('speedAlert', speedAlert);
       await p.setInt('speedLimit', speedLimit);
       await p.setBool('speedBeep', speedBeep);
+      await p.setInt('speedMargin', speedMargin);
     } catch (_) {}
     notifyListeners();
   }
@@ -567,6 +571,7 @@ class Tracker extends ChangeNotifier {
     if (_lastKmh.length > 3) _lastKmh.removeAt(0);
     final sorted = [..._lastKmh]..sort();
     final med = sorted[sorted.length ~/ 2];
+    _rawKmh = kmh < 4 ? 0 : kmh;
     return (med < 4, med < 4 ? 0.0 : med);
   }
 
@@ -806,18 +811,24 @@ class Tracker extends ChangeNotifier {
         !carMode &&
         currentAct == Act.drive &&
         !gpsStale;
-    if (!on || speedKmh <= speedLimit) {
+    // 1.9.1: o aviso usa a leitura mais recente (a mediana da tela atrasa
+    // 1 a 2 s) e começa JÁ ao chegar ao limite do seletor (menos a margem
+    // escolhida, porque o tacógrafo mede pela roda e costuma marcar um pouco
+    // mais que o GPS).
+    final kmh = _rawKmh > speedKmh ? _rawKmh : speedKmh;
+    final trigger = speedLimit - speedMargin;
+    if (!on || kmh < trigger) {
       if (_overSince != null) _endOver(now);
       return;
     }
     if (_overSince == null) {
       _overSince = now;
-      _overMax = speedKmh;
+      _overMax = kmh;
       // 1.8.1: um bip só, ao passar do limite.
       _lastBeep = now;
       if (speedBeep) beep();
     }
-    if (speedKmh > _overMax) _overMax = speedKmh;
+    if (kmh > _overMax) _overMax = kmh;
     // 1.8.1: depois de 40 s acima, bip seguido (a cada 1 s) até voltar
     // ao limite escolhido. Entre o 1º bip e os 40 s, só o cartão pisca.
     if (now.difference(_overSince!).inSeconds >= 40 &&
