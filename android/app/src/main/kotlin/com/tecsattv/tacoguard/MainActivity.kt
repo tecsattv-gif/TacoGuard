@@ -34,12 +34,15 @@ class MainActivity : FlutterActivity() {
             .setMethodCallHandler { call, result ->
                 if (call.method == "beep") {
                     try {
+                        // 1.9.6: volume escolhido nos Ajustes (0,1 a 1,0).
+                        val vol = ((call.argument<Double>("vol") ?: 1.0).toFloat())
+                            .coerceIn(0.05f, 1f)
                         val p = pool
                         if (p != null && loaded && bipId != 0) {
-                            p.play(bipId, 1f, 1f, 1, 0, 1f)
+                            p.play(bipId, vol, vol, 1, 0, 1f)
                         } else {
                             if (tone == null) {
-                                tone = ToneGenerator(AudioManager.STREAM_ALARM, 100)
+                                tone = ToneGenerator(AudioManager.STREAM_ALARM, (vol * 100).toInt())
                             }
                             tone?.startTone(ToneGenerator.TONE_PROP_BEEP2, 400)
                         }

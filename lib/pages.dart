@@ -1091,6 +1091,31 @@ class _SettingsPageState extends State<SettingsPage> {
                       }
                     : null,
               ),
+              // 1.9.6: volume do bip.
+              Row(children: [
+                const Icon(Icons.volume_down_rounded, color: TG.muted),
+                Expanded(
+                  child: Slider(
+                    value: _t.speedBeepVol.toDouble(),
+                    min: 10,
+                    max: 100,
+                    divisions: 9,
+                    label: tr('Volume {0}%', [_t.speedBeepVol]),
+                    onChanged: _t.speedAlert && _t.speedBeep
+                        ? (v) => setState(() => _t.speedBeepVol = v.round())
+                        : null,
+                    onChangeEnd: (_) {
+                      _t.saveSettings();
+                      _t.beep(); // ouve o volume escolhido
+                    },
+                  ),
+                ),
+                const Icon(Icons.volume_up_rounded, color: TG.muted),
+              ]),
+              Text(
+                  tr('Volume do bip: {0}%. O máximo depende também do volume de alarme do telefone.',
+                      [_t.speedBeepVol]),
+                  style: const TextStyle(color: TG.muted, fontSize: 12.5)),
               Align(
                 alignment: Alignment.centerRight,
                 child: TextButton.icon(

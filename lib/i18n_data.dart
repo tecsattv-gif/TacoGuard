@@ -3,6 +3,8 @@
 
 const Map<String, Map<String, String>> kTr = {
   'en': {
+    'Volume {0}%': 'Volume {0}%',
+    'Volume do bip: {0}%. O máximo depende também do volume de alarme do telefone.': 'Beep volume: {0}%. The maximum also depends on the phone alarm volume.',
     'Acima de {0} km/h': 'Above {0} km/h',
     'Martelo na hora ao parar': 'Other work right away when stopping',
     'Como o tacógrafo: velocidade zero, em poucos segundos passa para martelo e você escolhe se é pausa ou carga/descarga.': 'Like the tachograph: at zero speed it switches to other work within a few seconds and you choose if it is a break or loading/unloading.',
@@ -297,6 +299,8 @@ const Map<String, Map<String, String>> kTr = {
     'Última jornada: {0} {1}, {2} às {3}  •  condução {4}  •  {5}': 'Last shift: {0} {1}, {2} to {3}  •  driving {4}  •  {5}',
   },
   'es': {
+    'Volume {0}%': 'Volumen {0}%',
+    'Volume do bip: {0}%. O máximo depende também do volume de alarme do telefone.': 'Volumen del pitido: {0}%. El máximo depende también del volumen de alarma del teléfono.',
     'Acima de {0} km/h': 'Por encima de {0} km/h',
     'Martelo na hora ao parar': 'Otros trabajos al instante al parar',
     'Como o tacógrafo: velocidade zero, em poucos segundos passa para martelo e você escolhe se é pausa ou carga/descarga.': 'Como el tacógrafo: con velocidad cero, en pocos segundos pasa a otros trabajos y eliges si es pausa o carga/descarga.',
@@ -591,6 +595,8 @@ const Map<String, Map<String, String>> kTr = {
     'Última jornada: {0} {1}, {2} às {3}  •  condução {4}  •  {5}': 'Última jornada: {0} {1}, de {2} a {3}  •  conducción {4}  •  {5}',
   },
   'fr': {
+    'Volume {0}%': 'Volume {0}%',
+    'Volume do bip: {0}%. O máximo depende também do volume de alarme do telefone.': 'Volume du bip : {0}%. Le maximum dépend aussi du volume d\'alarme du téléphone.',
     'Acima de {0} km/h': 'Au-dessus de {0} km/h',
     'Martelo na hora ao parar': 'Autre tâche dès l\'arrêt',
     'Como o tacógrafo: velocidade zero, em poucos segundos passa para martelo e você escolhe se é pausa ou carga/descarga.': 'Comme le tachygraphe : à vitesse nulle, il passe en autre tâche en quelques secondes et vous choisissez s\'il s\'agit d\'une pause ou d\'un chargement/déchargement.',

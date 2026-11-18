@@ -40,6 +40,7 @@ class Tracker extends ChangeNotifier {
   bool speedAlert = true;
   int speedLimit = 90; // 85 a 100 km/h
   int speedMargin = 0; // 1.9.1: avisar X km/h antes do limite (0 a 5)
+  int speedBeepVol = 100; // 1.9.6: volume do bip (10 a 100 %)
   bool speedBeep = true; // 1.8.3: bip ligado/desligado (o cartão pisca igual)
 
   // ---------- GPS ----------
@@ -168,6 +169,7 @@ class Tracker extends ChangeNotifier {
       speedLimit = (p.getInt('speedLimit') ?? 90).clamp(85, 100);
       speedBeep = p.getBool('speedBeep') ?? true;
       speedMargin = (p.getInt('speedMargin') ?? 0).clamp(0, 5);
+      speedBeepVol = (p.getInt('speedBeepVol') ?? 100).clamp(10, 100);
       carMode = p.getBool('carMode') ?? false;
       _truckLat = p.getDouble('truckLat');
       _truckLon = p.getDouble('truckLon');
@@ -247,6 +249,7 @@ class Tracker extends ChangeNotifier {
       await p.setInt('speedLimit', speedLimit);
       await p.setBool('speedBeep', speedBeep);
       await p.setInt('speedMargin', speedMargin);
+      await p.setInt('speedBeepVol', speedBeepVol);
     } catch (_) {}
     notifyListeners();
   }
@@ -840,7 +843,7 @@ class Tracker extends ChangeNotifier {
 
   Future<void> beep() async {
     try {
-      await _beep.invokeMethod('beep');
+      await _beep.invokeMethod('beep', {'vol': speedBeepVol / 100.0});
     } catch (_) {
       try {
         await SystemSound.play(SystemSoundType.alert);
