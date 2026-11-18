@@ -807,8 +807,8 @@ class _TodayPageState extends State<TodayPage> {
       ),
       const _ColBreak(),
       _LimitList(rows: [
-        _Limit(tr('Semana'), week, Limits.weeklyDrive),
-        _Limit(tr('2 semanas'), week + prev, Limits.fortnightDrive),
+        _Limit(tr('Semanal'), week, Limits.weeklyDrive),
+        _Limit(tr('Bissemanal'), week + prev, Limits.fortnightDrive),
       ]),
       if (ref != null) ...[
         const SizedBox(height: 12),
@@ -1109,9 +1109,9 @@ class _TodayPageState extends State<TodayPage> {
             note: st.canExtendAmplitude
                 ? tr('descansos de 9 h: {0}/3', [st.reducedRestsUsed])
                 : tr('limite 13 h (sem descanso reduzido)')),
-        _Limit(tr('Semana'), st.weekDrive, Limits.weeklyDrive,
+        _Limit(tr('Semanal'), st.weekDrive, Limits.weeklyDrive,
             note: tr('pode conduzir {0}', [fmtDur(st.weekLeft)])),
-        _Limit(tr('2 semanas'), st.fortnightDrive, Limits.fortnightDrive,
+        _Limit(tr('Bissemanal'), st.fortnightDrive, Limits.fortnightDrive,
             note: tr('semana anterior {0}', [fmtDur(st.prevWeekDrive)])),
       ]),
       const SizedBox(height: 12),
