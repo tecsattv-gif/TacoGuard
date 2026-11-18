@@ -629,6 +629,57 @@ class _TodayPageState extends State<TodayPage> {
       final cut = items.indexWhere((w) => w is _ColBreak);
       // 1.8.5: tela larga (tablet ou telefone deitado): duas colunas. À
       // esquerda o estado e o anel; à direita o dia, os limites e o resto.
+      // 1.8.8: deitado (paisagem), a esquerda fica FIXA: o cartão da
+      // atividade e o anel do que falta para a pausa, encolhidos para
+      // caber na altura. A direita rola sozinha (avisos, dia, limites,
+      // linha do tempo e botões).
+      if (box.maxWidth >= 700 && box.maxWidth > box.maxHeight && cut > 0) {
+        final fixed = <Widget>[
+          items.first,
+          if (cut > 1) ...[const SizedBox(height: 12), items[cut - 1]],
+        ];
+        final moved = cut > 2
+            ? items
+                .sublist(1, cut - 1)
+                .where((w) => !(w is SizedBox && w.child == null))
+                .toList()
+            : <Widget>[];
+        final right = [
+          for (final w in moved) ...[w, const SizedBox(height: 10)],
+          ...items.sublist(cut + 1),
+        ];
+        return Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Expanded(
+            flex: 5,
+            child: Padding(
+              padding: EdgeInsets.fromLTRB(16, 4, 0,
+                  12 + MediaQuery.paddingOf(context).bottom),
+              child: LayoutBuilder(
+                builder: (context, lb) => FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.topCenter,
+                  child: SizedBox(
+                    width: lb.maxWidth,
+                    child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: fixed),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            flex: 6,
+            child: ListView(
+              padding: EdgeInsets.fromLTRB(
+                  0, 4, 16, 28 + MediaQuery.paddingOf(context).bottom),
+              children: right,
+            ),
+          ),
+        ]);
+      }
       if (box.maxWidth >= 700 && cut > 0) {
         return SingleChildScrollView(
           padding: pad,
