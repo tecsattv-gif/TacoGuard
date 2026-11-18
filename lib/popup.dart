@@ -225,10 +225,13 @@ class SpeedPopup {
   }
 
   /// Velocidade atual para o cartão (a cada leitura do GPS).
-  static void speed(double kmh) {
+  /// 1.9.4: manda também os segundos que faltam (a contagem não dependia
+  /// mais só das preferências, que o pop-up às vezes não lia: ficava em 60).
+  static void speed(double kmh, int? left) {
     if (!shown) return;
     try {
-      FlutterOverlayWindow.shareData(jsonEncode({'kmh': kmh.round()}));
+      FlutterOverlayWindow.shareData(
+          jsonEncode({'kmh': kmh.round(), 'left': left ?? 0}));
     } catch (_) {}
   }
 
@@ -304,6 +307,8 @@ class _SpeedPopupWindowState extends State<SpeedPopupWindow>
   int _limit = 90;
   DateTime? _since;
   int? _kmh;
+  int? _left; // segundos que faltam, vindos do app
+  DateTime _leftAt = DateTime.now();
   Timer? _tick;
   StreamSubscription? _sub;
 
@@ -319,7 +324,15 @@ class _SpeedPopupWindowState extends State<SpeedPopupWindow>
         try {
           final m = jsonDecode(e.toString()) as Map;
           final v = m['kmh'];
-          if (v is num && mounted) setState(() => _kmh = v.round());
+          final l = m['left'];
+          if (!mounted) return;
+          setState(() {
+            if (v is num) _kmh = v.round();
+            if (l is num) {
+              _left = l.round();
+              _leftAt = DateTime.now();
+            }
+          });
         } catch (_) {}
       });
     } catch (_) {}
@@ -349,9 +362,13 @@ class _SpeedPopupWindowState extends State<SpeedPopupWindow>
 
   @override
   Widget build(BuildContext context) {
-    final secs = _since == null
-        ? 60
-        : 60 - DateTime.now().difference(_since!).inSeconds;
+    // Contagem: o valor que o app manda (a cada leitura do GPS), descontando
+    // o tempo desde a última mensagem; sem mensagem ainda, pela hora salva.
+    final secs = _left != null
+        ? _left! - DateTime.now().difference(_leftAt).inSeconds
+        : _since == null
+            ? 60
+            : 60 - DateTime.now().difference(_since!).inSeconds;
     final left = secs < 0 ? 0 : secs;
     final text = left > 0
         ? tr('Acima de {0} km/h. Reduza: em {1} s vira infração.',

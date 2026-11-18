@@ -842,7 +842,7 @@ class Tracker extends ChangeNotifier {
       if (speedBeep) beep();
     }
     if (kmh > _overMax) _overMax = kmh;
-    SpeedPopup.speed(kmh);
+    SpeedPopup.speed(kmh, overSecondsLeft);
     // 1.8.1: depois de 40 s acima, bip seguido (a cada 1 s) até voltar
     // ao limite escolhido. Entre o 1º bip e os 40 s, só o cartão pisca.
     if (now.difference(_overSince!).inSeconds >= 40 &&
