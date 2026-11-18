@@ -862,10 +862,10 @@ class _TodayPageState extends State<TodayPage> {
         return tr('Fim da amplitude ({0}): encerre a jornada', [end]);
       }
       if (st.dayLimit >= Limits.dailyDriveExt && amp > r9 && r9 > Duration.zero) {
-        return tr('Ainda pode conduzir: {0} (9h) ou {1} (até o fim da amplitude, {2})',
+        return tr('Ainda pode conduzir: {0} (9h) ou {1} (amplitude, até {2})',
             [fmtDur(r9), fmtDur(amp), end]);
       }
-      return tr('Ainda pode conduzir: {0} (até o fim da amplitude, {1})',
+      return tr('Ainda pode conduzir: {0} (amplitude, até {1})',
           [fmtDur(amp), end]);
     }
     if (amp < r10) r10 = amp;
@@ -1081,16 +1081,25 @@ class _TodayPageState extends State<TodayPage> {
                           fontWeight: FontWeight.w800,
                           fontFeatures: const [FontFeature.tabularFigures()],
                           color: TG.level(usedCd))),
-                  Text(
-                      b.exceeded || next == 'pausa'
-                          ? tr('para a pausa')
-                          : next == 'dia'
-                              ? tr('para as {0}h do dia', [st.dayLimit.inHours])
-                              : next == 'amplitude'
-                                  ? tr('para o fim da amplitude ({0})',
-                                      [fmtTime(c.start.add(st.amplitudeLimit))])
-                                  : tr('para o limite da semana'),
-                      style: const TextStyle(color: TG.muted, fontSize: 14)),
+                  // 1.10.4: cabe dentro do anel (antes o texto da amplitude
+                  // passava por cima do arco).
+                  SizedBox(
+                    width: 140,
+                    child: Text(
+                        b.exceeded || next == 'pausa'
+                            ? tr('para a pausa')
+                            : next == 'dia'
+                                ? tr('para as {0}h do dia', [st.dayLimit.inHours])
+                                : next == 'amplitude'
+                                    ? tr('fim da amplitude às {0}',
+                                        [fmtTime(c.start.add(st.amplitudeLimit))])
+                                    : tr('para o limite da semana'),
+                        textAlign: TextAlign.center,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                            color: TG.muted, fontSize: 13, height: 1.2)),
+                  ),
                 ]),
               ),
             ),
@@ -1103,9 +1112,12 @@ class _TodayPageState extends State<TodayPage> {
               style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
           const SizedBox(height: 2),
           // 1.7.5: quanto ainda pode conduzir hoje, nas 9 h e nas 10 h.
-          Fit(_canDriveText(st, c.start),
+          // 1.10.4: até duas linhas, sem encolher a letra.
+          Text(_canDriveText(st, c.start),
+              textAlign: TextAlign.center,
+              maxLines: 2,
               style: const TextStyle(
-                  fontSize: 14, fontWeight: FontWeight.w800, color: TG.ok)),
+                  fontSize: 15, fontWeight: FontWeight.w800, color: TG.ok)),
           const SizedBox(height: 2),
           Fit(
               b.firstPartDone

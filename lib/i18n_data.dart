@@ -3,10 +3,10 @@
 
 const Map<String, Map<String, String>> kTr = {
   'en': {
-    'para o fim da amplitude ({0})': 'until the end of the spread-over ({0})',
+    'fim da amplitude às {0}': 'spread-over ends at {0}',
     'Fim da amplitude ({0}): encerre a jornada': 'End of spread-over ({0}): end the shift',
-    'Ainda pode conduzir: {0} (9h) ou {1} (até o fim da amplitude, {2})': 'You can still drive: {0} (9 h) or {1} (until the end of the spread-over, {2})',
-    'Ainda pode conduzir: {0} (até o fim da amplitude, {1})': 'You can still drive: {0} (until the end of the spread-over, {1})',
+    'Ainda pode conduzir: {0} (9h) ou {1} (amplitude, até {2})': 'You can still drive: {0} (9 h) or {1} (spread-over, until {2})',
+    'Ainda pode conduzir: {0} (amplitude, até {1})': 'You can still drive: {0} (spread-over, until {1})',
     'Volume {0}%': 'Volume {0}%',
     'Volume do bip: {0}%. O máximo depende também do volume de alarme do telefone.': 'Beep volume: {0}%. The maximum also depends on the phone alarm volume.',
     'Acima de {0} km/h': 'Above {0} km/h',
@@ -303,10 +303,10 @@ const Map<String, Map<String, String>> kTr = {
     'Última jornada: {0} {1}, {2} às {3}  •  condução {4}  •  {5}': 'Last shift: {0} {1}, {2} to {3}  •  driving {4}  •  {5}',
   },
   'es': {
-    'para o fim da amplitude ({0})': 'para el fin de la amplitud ({0})',
+    'fim da amplitude às {0}': 'fin de la amplitud a las {0}',
     'Fim da amplitude ({0}): encerre a jornada': 'Fin de la amplitud ({0}): termina la jornada',
-    'Ainda pode conduzir: {0} (9h) ou {1} (até o fim da amplitude, {2})': 'Aún puedes conducir: {0} (9 h) o {1} (hasta el fin de la amplitud, {2})',
-    'Ainda pode conduzir: {0} (até o fim da amplitude, {1})': 'Aún puedes conducir: {0} (hasta el fin de la amplitud, {1})',
+    'Ainda pode conduzir: {0} (9h) ou {1} (amplitude, até {2})': 'Aún puedes conducir: {0} (9 h) o {1} (amplitud, hasta las {2})',
+    'Ainda pode conduzir: {0} (amplitude, até {1})': 'Aún puedes conducir: {0} (amplitud, hasta las {1})',
     'Volume {0}%': 'Volumen {0}%',
     'Volume do bip: {0}%. O máximo depende também do volume de alarme do telefone.': 'Volumen del pitido: {0}%. El máximo depende también del volumen de alarma del teléfono.',
     'Acima de {0} km/h': 'Por encima de {0} km/h',
@@ -603,10 +603,10 @@ const Map<String, Map<String, String>> kTr = {
     'Última jornada: {0} {1}, {2} às {3}  •  condução {4}  •  {5}': 'Última jornada: {0} {1}, de {2} a {3}  •  conducción {4}  •  {5}',
   },
   'fr': {
-    'para o fim da amplitude ({0})': 'avant la fin de l\'amplitude ({0})',
+    'fim da amplitude às {0}': 'fin de l\'amplitude à {0}',
     'Fim da amplitude ({0}): encerre a jornada': 'Fin de l\'amplitude ({0}) : terminez la journée',
-    'Ainda pode conduzir: {0} (9h) ou {1} (até o fim da amplitude, {2})': 'Vous pouvez encore conduire : {0} (9 h) ou {1} (jusqu\'à la fin de l\'amplitude, {2})',
-    'Ainda pode conduzir: {0} (até o fim da amplitude, {1})': 'Vous pouvez encore conduire : {0} (jusqu\'à la fin de l\'amplitude, {1})',
+    'Ainda pode conduzir: {0} (9h) ou {1} (amplitude, até {2})': 'Vous pouvez encore conduire : {0} (9 h) ou {1} (amplitude, jusqu\'à {2})',
+    'Ainda pode conduzir: {0} (amplitude, até {1})': 'Vous pouvez encore conduire : {0} (amplitude, jusqu\'à {1})',
     'Volume {0}%': 'Volume {0}%',
     'Volume do bip: {0}%. O máximo depende também do volume de alarme do telefone.': 'Volume du bip : {0}%. Le maximum dépend aussi du volume d\'alarme du téléphone.',
     'Acima de {0} km/h': 'Au-dessus de {0} km/h',
