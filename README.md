@@ -65,6 +65,7 @@ Segredos do repositório (Settings > Secrets and variables > Actions):
 
 ## Versões
 
+- **1.8.9**: Mesmo conteúdo da 1.8.8. A 1.8.7 terminou de compilar depois da 1.8.8 e ficou marcada como a mais recente, por isso o app não oferecia a 1.8.8. Agora as compilações rodam uma de cada vez, na ordem dos envios.
 - **1.8.8**: Tela Hoje **deitada (paisagem)**: o lado esquerdo fica **fixo**, com o cartão da atividade e o anel de quanto falta para a pausa (encolhem para caber na altura da tela); só o lado direito rola para cima e para baixo (avisos, faixa do dia, limites, linha do tempo e botões). Em pé e no tablet em pé nada muda.
 - **1.8.7**: Telefone deitado: o conteúdo não fica mais por baixo dos botões do Android no lado direito (os "300 km" e "10h" apareciam cortados); a coluna da direita da tela Hoje ficou mais larga e os nomes dos limites usam até duas linhas em vez de cortar com "…".
 - **1.8.6**: **Relatório simples ou completo**: na tela Relatórios escolha **Simples** (resumo, jornadas, pausas e descansos com o local, avisos e infrações) ou **Completo** (tudo isso mais o "Detalhe das atividades", cada trecho com hora e coordenadas). O padrão é Completo.

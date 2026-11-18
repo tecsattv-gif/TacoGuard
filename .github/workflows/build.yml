@@ -5,6 +5,13 @@ on:
     branches: [main]
   workflow_dispatch:
 
+# Uma compilação de cada vez, na ordem dos envios: assim a Release mais nova
+# é sempre a última publicada (1.8.9: a 1.8.7 terminou depois da 1.8.8 e
+# ficou como "latest").
+concurrency:
+  group: build-apk
+  cancel-in-progress: false
+
 jobs:
   build:
     runs-on: ubuntu-latest
