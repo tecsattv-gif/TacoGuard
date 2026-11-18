@@ -47,6 +47,9 @@ class Tracker extends ChangeNotifier {
   Timer? _timer;
   double speedKmh = 0;
   double _rawKmh = 0; // 1.9.1: última leitura, sem a mediana (sem atraso)
+  double _goodKmh = 0; // 1.9.5: última velocidade aceite (filtro de picos)
+  DateTime _goodAt = DateTime.fromMillisecondsSinceEpoch(0);
+  DateTime? _overCand; // 1.9.5: 1ª leitura acima do limite, à espera da 2ª
   double? lat, lon;
   DateTime? lastFix;
   bool gpsOn = false;
@@ -554,7 +557,8 @@ class Tracker extends ChangeNotifier {
     _hist.add((now, p.latitude, p.longitude, p.accuracy));
     _hist.removeWhere((h) => now.difference(h.$1).inSeconds > 12);
     final sa = p.speedAccuracy; // m/s; 0 = não informada
-    final gpsOk = p.speed > 0 && (sa <= 0 || sa < 4);
+    // 1.9.5: velocidade do GPS só vale com erro pequeno (até ~9 km/h).
+    final gpsOk = p.speed > 0 && (sa <= 0 || sa <= 2.5);
     double kmh = gpsOk ? p.speed * 3.6 : 0;
     // Distância nos últimos segundos (para o pulo parado e para o cálculo).
     final old = _hist.first;
@@ -570,12 +574,40 @@ class Tracker extends ChangeNotifier {
     }
     // O GPS marca velocidade mas o caminhão não saiu do lugar: é pulo.
     if (secs >= 6 && moved != null && moved < 8) kmh = 0;
+    // 1.9.5: parou de verdade? Nos últimos ~3 s andou menos de 3 m (com
+    // leitura precisa): é zero já. O chip do GPS "desce" a velocidade aos
+    // poucos (1 em 1 km/h) depois de parar; isto corta essa demora.
+    for (final h in _hist.reversed) {
+      final dt = now.difference(h.$1).inMilliseconds / 1000;
+      if (dt < 2.5) continue;
+      if (dt <= 5 && p.accuracy <= 25 && h.$4 <= 25) {
+        final d =
+            Geolocator.distanceBetween(h.$2, h.$3, p.latitude, p.longitude);
+        if (d < 3) kmh = 0;
+      }
+      break;
+    }
     if (kmh > 140) kmh = 140; // caminhão não passa disto: é leitura errada
+    // 1.9.5: pico impossível. Um caminhão não ganha mais de ~8 km/h por
+    // segundo (nem descendo a serra): um salto maior é erro do GPS
+    // (reflexo nas encostas, túnel). Fica a última velocidade boa.
+    final dtGood = now.difference(_goodAt).inMilliseconds / 1000;
+    if (_goodKmh > 0 && dtGood < 5 && kmh > _goodKmh + 3 + 8 * dtGood) {
+      kmh = _goodKmh;
+    } else {
+      _goodKmh = kmh;
+      _goodAt = now;
+    }
     _lastKmh.add(kmh);
     if (_lastKmh.length > 3) _lastKmh.removeAt(0);
     final sorted = [..._lastKmh]..sort();
     final med = sorted[sorted.length ~/ 2];
     _rawKmh = kmh < 4 ? 0 : kmh;
+    // Parou (zero já confirmado pela distância): mostra 0 sem esperar a
+    // mediana.
+    if (kmh == 0 && _lastKmh.length >= 2 && _lastKmh[_lastKmh.length - 2] < 15) {
+      return (true, 0.0);
+    }
     return (med < 4, med < 4 ? 0.0 : med);
   }
 
@@ -830,11 +862,21 @@ class Tracker extends ChangeNotifier {
     final kmh = _rawKmh > speedKmh ? _rawKmh : speedKmh;
     final trigger = speedLimit - speedMargin;
     if (!on || kmh < trigger) {
+      _overCand = null;
       if (_overSince != null) _endOver(now);
       return;
     }
+    // 1.9.5: confirma com 2 leituras seguidas acima do limite (1 a 2 s).
+    // Uma leitura sozinha pode ser erro do GPS (na serra disparava a 60
+    // km/h). A contagem começa na hora da 1ª leitura, sem perder tempo.
     if (_overSince == null) {
-      _overSince = now;
+      final cand = _overCand;
+      if (cand == null || now.difference(cand).inSeconds > 4) {
+        _overCand = now;
+        return;
+      }
+      _overCand = null;
+      _overSince = cand;
       _overMax = kmh;
       onOverSpeed?.call(true);
       // 1.8.1: um bip só, ao passar do limite.
