@@ -168,19 +168,25 @@ class Tracker extends ChangeNotifier {
       speedAlert = p.getBool('speedAlert') ?? true;
       speedLimit = (p.getInt('speedLimit') ?? 90).clamp(85, 100);
       speedBeep = p.getBool('speedBeep') ?? true;
-      // 1.10.1: a margem saiu dos Ajustes; avisa sempre no limite.
-      speedMargin = 0;
+      speedMargin = (p.getInt('speedMargin') ?? 0).clamp(0, 5);
       speedBeepVol = (p.getInt('speedBeepVol') ?? 100).clamp(10, 100);
       carMode = p.getBool('carMode') ?? false;
       _truckLat = p.getDouble('truckLat');
       _truckLon = p.getDouble('truckLon');
       _carAway = p.getBool('carAway') ?? false;
     } catch (_) {}
+    // 1.10.2: proteção dos dados. Se o arquivo não abrir, não grava por
+    // cima (antes uma gravação podia apagar tudo) e tenta a cópia diária.
     try {
       final f = await _file();
       if (await f.exists()) {
-        _fromJson(await f.readAsString());
+        try {
+          _fromJson(await f.readAsString());
+        } catch (_) {
+          _loadFailed = true;
+        }
       }
+      if (shifts.isEmpty) await _fromDailyCopy();
     } catch (_) {}
     try {
       await _tts.setLanguage(ttsLang);
@@ -228,13 +234,64 @@ class Tracker extends ChangeNotifier {
     }
   }
 
+  bool _loadFailed = false;
+
   Future<void> save() async {
     _lastSave = DateTime.now();
+    if (_loadFailed) return; // não grava por cima de dados que não abriram
     try {
       final f = await _file();
       final tmp = File('${f.path}.tmp');
       await tmp.writeAsString(exportJson(), flush: true);
       await tmp.rename(f.path);
+      await _dailyCopy(f);
+    } catch (_) {}
+  }
+
+  /// 1.10.2: uma cópia por dia dos dados (guarda as 14 últimas), na pasta
+  /// do app. Só copia quando há jornadas.
+  Future<void> _dailyCopy(File f) async {
+    if (shifts.isEmpty) return;
+    try {
+      final dir = Directory('${f.parent.path}/copias');
+      if (!await dir.exists()) await dir.create(recursive: true);
+      final d = DateTime.now();
+      final name = 'tacoguard-${d.year}${d.month.toString().padLeft(2, '0')}'
+          '${d.day.toString().padLeft(2, '0')}.json';
+      await f.copy('${dir.path}/$name');
+      final all = dir
+          .listSync()
+          .whereType<File>()
+          .where((x) => x.path.endsWith('.json'))
+          .toList()
+        ..sort((a, b) => a.path.compareTo(b.path));
+      while (all.length > 14) {
+        await all.removeAt(0).delete();
+      }
+    } catch (_) {}
+  }
+
+  /// 1.10.2: sem dados no arquivo principal, abre a cópia diária mais nova.
+  Future<void> _fromDailyCopy() async {
+    try {
+      final f = await _file();
+      final dir = Directory('${f.parent.path}/copias');
+      if (!await dir.exists()) return;
+      final all = dir
+          .listSync()
+          .whereType<File>()
+          .where((x) => x.path.endsWith('.json'))
+          .toList()
+        ..sort((a, b) => b.path.compareTo(a.path));
+      for (final c in all) {
+        try {
+          _fromJson(await c.readAsString());
+          if (shifts.isNotEmpty) {
+            _loadFailed = false;
+            return;
+          }
+        } catch (_) {}
+      }
     } catch (_) {}
   }
 

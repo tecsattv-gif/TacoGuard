@@ -844,32 +844,14 @@ class _TodayPageState extends State<TodayPage> {
 
   /// Ex.: 7h de condução num dia em que ainda há dias de 10 h:
   /// "Ainda pode conduzir: 2h00 (9h) ou 3h00 (10h)".
-  String _canDriveText(Status st, DateTime shiftStart) {
+  String _canDriveText(Status st) {
     Duration rest(Duration lim) {
       final d = lim - st.dayDrive;
       return d.isNegative ? Duration.zero : d;
     }
 
-    var r9 = rest(Limits.dailyDrive);
-    var r10 = rest(Limits.dailyDriveExt);
-    // 1.10.1: o fim da amplitude também limita (antes dava as 10 h inteiras
-    // e passava da amplitude).
-    final amp = st.amplitudeDriveLeft;
-    final end = fmtTime(shiftStart.add(st.amplitudeLimit));
-    final top = st.dayLimit < Limits.dailyDriveExt ? r9 : r10;
-    if (amp < top) {
-      if (amp == Duration.zero) {
-        return tr('Fim da amplitude ({0}): encerre a jornada', [end]);
-      }
-      if (st.dayLimit >= Limits.dailyDriveExt && amp > r9 && r9 > Duration.zero) {
-        return tr('Ainda pode conduzir: {0} (9h) ou {1} (até o fim da amplitude, {2})',
-            [fmtDur(r9), fmtDur(amp), end]);
-      }
-      return tr('Ainda pode conduzir: {0} (até o fim da amplitude, {1})',
-          [fmtDur(amp), end]);
-    }
-    if (amp < r10) r10 = amp;
-    if (amp < r9) r9 = amp;
+    final r9 = rest(Limits.dailyDrive);
+    final r10 = rest(Limits.dailyDriveExt);
     if (st.dayLimit < Limits.dailyDriveExt) {
       return r9 == Duration.zero
           ? tr('Limite de 9h do dia atingido')
@@ -1086,10 +1068,7 @@ class _TodayPageState extends State<TodayPage> {
                           ? tr('para a pausa')
                           : next == 'dia'
                               ? tr('para as {0}h do dia', [st.dayLimit.inHours])
-                              : next == 'amplitude'
-                                  ? tr('para o fim da amplitude ({0})',
-                                      [fmtTime(c.start.add(st.amplitudeLimit))])
-                                  : tr('para o limite da semana'),
+                              : tr('para o limite da semana'),
                       style: const TextStyle(color: TG.muted, fontSize: 14)),
                 ]),
               ),
@@ -1103,7 +1082,7 @@ class _TodayPageState extends State<TodayPage> {
               style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
           const SizedBox(height: 2),
           // 1.7.5: quanto ainda pode conduzir hoje, nas 9 h e nas 10 h.
-          Fit(_canDriveText(st, c.start),
+          Fit(_canDriveText(st),
               style: const TextStyle(
                   fontSize: 14, fontWeight: FontWeight.w800, color: TG.ok)),
           const SizedBox(height: 2),
