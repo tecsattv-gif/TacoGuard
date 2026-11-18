@@ -560,8 +560,11 @@ class Tracker extends ChangeNotifier {
     _hist.add((now, p.latitude, p.longitude, p.accuracy));
     _hist.removeWhere((h) => now.difference(h.$1).inSeconds > 12);
     final sa = p.speedAccuracy; // m/s; 0 = não informada
-    // 1.9.5: velocidade do GPS só vale com erro pequeno (até ~9 km/h).
-    final gpsOk = p.speed > 0 && (sa <= 0 || sa <= 2.5);
+    // A velocidade do próprio GPS (efeito Doppler) é a mais certa: igual à
+    // do Garmin. 1.9.7: volta o limite de erro de antes (a 1.9.5 apertou
+    // demais, rejeitava leituras boas e caía no cálculo pela distância,
+    // que marcava 80 a 65 km/h).
+    final gpsOk = p.speed > 0 && (sa <= 0 || sa < 4);
     double kmh = gpsOk ? p.speed * 3.6 : 0;
     // Distância nos últimos segundos (para o pulo parado e para o cálculo).
     final old = _hist.first;
@@ -571,8 +574,14 @@ class Tracker extends ChangeNotifier {
       moved = Geolocator.distanceBetween(
           old.$2, old.$3, p.latitude, p.longitude);
     }
-    if (!gpsOk && moved != null && p.accuracy <= 30 && old.$4 <= 30) {
-      final margin = p.accuracy + old.$4 < 25 ? 25.0 : p.accuracy + old.$4;
+    // Plano B, só quando o GPS não manda velocidade: distância percorrida
+    // em 8 s ou mais e só com posições bem precisas (até 15 m), para o erro
+    // das posições não virar velocidade a mais.
+    if (!gpsOk && moved != null && secs >= 8 && p.accuracy <= 15 &&
+        old.$4 <= 15) {
+      final margin = (p.accuracy + old.$4) * 1.5 < 25
+          ? 25.0
+          : (p.accuracy + old.$4) * 1.5;
       if (moved > margin) kmh = moved / secs * 3.6;
     }
     // O GPS marca velocidade mas o caminhão não saiu do lugar: é pulo.
