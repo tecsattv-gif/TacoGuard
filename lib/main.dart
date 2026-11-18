@@ -935,12 +935,9 @@ class _TodayPageState extends State<TodayPage> {
       ),
       if (_t.overSpeed) ...[
         const SizedBox(height: 10),
-        _Banner(
-            icon: Icons.speed_rounded,
-            color: TG.danger,
-            text: _t.overSecondsLeft != null
-                ? tr('Acima de {0} km/h. Reduza: em {1} s vira infração.', [_t.speedLimit, _t.overSecondsLeft])
-                : tr('Excesso de velocidade a ser registado. Reduza para {0} km/h.', [_t.speedLimit])),
+        // 1.9.9: igual ao aviso por cima dos outros apps: contagem grande
+        // à esquerda, texto à direita.
+        _SpeedCountdown(left: _t.overSecondsLeft, limit: _t.speedLimit),
       ],
       if (_t.gpsError == null && _t.gpsOn && _t.gpsStale) ...[
         const SizedBox(height: 10),
@@ -1225,6 +1222,52 @@ class _Banner extends StatelessWidget {
 }
 
 /// Cartão principal da tela (sem contorno, um tom acima do fundo).
+/// 1.9.9: faixa do aviso de velocidade com a contagem regressiva grande
+/// (igual à do aviso por cima dos outros apps).
+class _SpeedCountdown extends StatelessWidget {
+  final int? left;
+  final int limit;
+  const _SpeedCountdown({required this.left, required this.limit});
+
+  @override
+  Widget build(BuildContext context) {
+    final l = left;
+    final text = l != null
+        ? tr('Acima de {0} km/h. Reduza: em {1} s vira infração.', [limit, l])
+        : tr('Excesso de velocidade a ser registado. Reduza para {0} km/h.',
+            [limit]);
+    return Container(
+      padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+      decoration: BoxDecoration(
+        color: TG.surface,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: TG.danger, width: 2),
+      ),
+      child: Row(children: [
+        SizedBox(
+          width: 96,
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Text(l != null ? '$l s' : '!',
+                style: const TextStyle(
+                    color: TG.danger,
+                    fontSize: 40,
+                    height: 1,
+                    fontWeight: FontWeight.w900)),
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Text(text,
+              style: const TextStyle(
+                  color: TG.text, fontSize: 17, fontWeight: FontWeight.w600)),
+        ),
+      ]),
+    );
+  }
+}
+
 /// 1.8.5: onde a tela Hoje se divide em duas colunas na tela larga.
 /// Na tela estreita vira só um espaço de 12.
 class _ColBreak extends StatelessWidget {
