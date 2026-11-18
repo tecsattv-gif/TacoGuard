@@ -5,8 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:open_filex/open_filex.dart';
 import 'package:package_info_plus/package_info_plus.dart';
-import 'package:path_provider/path_provider.dart';
 
+import 'app_dirs.dart';
 import 'i18n.dart';
 import 'theme.dart';
 
@@ -38,7 +38,7 @@ class UpdateService {
   /// Apaga os APKs de atualizações antigas que ficaram no cache.
   static Future<void> cleanOldApks({String? keep}) async {
     try {
-      final dir = await getTemporaryDirectory();
+      final dir = await AppDirs.temp();
       await for (final f in dir.list()) {
         final name = f.uri.pathSegments.last;
         if (f is File &&
@@ -197,7 +197,7 @@ class UpdateService {
     );
     final client = http.Client();
     try {
-      final dir = await getTemporaryDirectory();
+      final dir = await AppDirs.temp();
       final file = File('${dir.path}/TacoGuard-${info.version}.apk');
       await cleanOldApks(keep: file.path);
       final res = await client.send(http.Request('GET', Uri.parse(info.apkUrl)));

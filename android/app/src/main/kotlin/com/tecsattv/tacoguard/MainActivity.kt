@@ -30,6 +30,25 @@ class MainActivity : FlutterActivity() {
         } catch (e: Exception) {
             pool = null
         }
+        // 1.10.3: pastas do app (no lugar do plugin path_provider, que
+        // passou a falhar). "docs" = a mesma pasta de antes (app_flutter).
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "tacoguard/dirs")
+            .setMethodCallHandler { call, result ->
+                if (call.method == "dirs") {
+                    try {
+                        result.success(
+                            mapOf(
+                                "docs" to getDir("flutter", MODE_PRIVATE).path,
+                                "temp" to cacheDir.path
+                            )
+                        )
+                    } catch (e: Exception) {
+                        result.error("dirs", e.message, null)
+                    }
+                } else {
+                    result.notImplemented()
+                }
+            }
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "tacoguard/beep")
             .setMethodCallHandler { call, result ->
                 if (call.method == "beep") {

@@ -9,9 +9,9 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:open_filex/open_filex.dart';
 import 'package:package_info_plus/package_info_plus.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 
+import 'app_dirs.dart';
 import 'i18n.dart';
 import 'models.dart';
 import 'popup.dart';
@@ -921,7 +921,7 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   Future<File> _backupFile() async {
-    final dir = await getTemporaryDirectory();
+    final dir = await AppDirs.temp();
     final f = File('${dir.path}/TacoGuard-backup.json');
     await f.writeAsString(_t.exportJson(), flush: true);
     return f;
@@ -1053,29 +1053,6 @@ class _SettingsPageState extends State<SettingsPage> {
                 label: '${_t.speedLimit} km/h',
                 onChanged: _t.speedAlert
                     ? (v) => setState(() => _t.speedLimit = v.round())
-                    : null,
-                onChangeEnd: (_) => _t.saveSettings(),
-              ),
-              // 1.9.1: margem (o tacógrafo mede pela roda e marca um pouco
-              // mais que o GPS).
-              Text(
-                  _t.speedMargin == 0
-                      ? tr('Avisar ao chegar a {0} km/h', [_t.speedLimit])
-                      : tr('Avisar {0} km/h antes: a partir de {1} km/h',
-                          [_t.speedMargin, _t.speedLimit - _t.speedMargin]),
-                  style: const TextStyle(
-                      fontSize: 14, fontWeight: FontWeight.w700)),
-              Text(
-                  tr('O tacógrafo mede pela roda e costuma marcar 1 a 3 km/h a mais que o GPS. Se o tacógrafo registar antes do app, aumente a margem.'),
-                  style: const TextStyle(color: TG.muted, fontSize: 12.5)),
-              Slider(
-                value: _t.speedMargin.toDouble(),
-                min: 0,
-                max: 5,
-                divisions: 5,
-                label: '${_t.speedMargin} km/h',
-                onChanged: _t.speedAlert
-                    ? (v) => setState(() => _t.speedMargin = v.round())
                     : null,
                 onChangeEnd: (_) => _t.saveSettings(),
               ),

@@ -1,9 +1,9 @@
 import 'dart:io';
 
-import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 
+import 'app_dirs.dart';
 import 'i18n.dart';
 import 'models.dart';
 import 'rules.dart';
@@ -431,7 +431,7 @@ Future<File> buildReport(ReportKind kind, DateTime ref, List<Shift> all,
     build: (ctx) => content,
   ));
 
-  final dir = await getApplicationDocumentsDirectory();
+  final dir = await AppDirs.docs();
   final f = File('${dir.path}/TacoGuard-Relatorio-${reportName(kind)}${full ? '' : '-simples'}.pdf'
       .replaceAll('á', 'a'));
   await f.writeAsBytes(await doc.save(), flush: true);
