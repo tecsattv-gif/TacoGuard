@@ -11,6 +11,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'i18n.dart';
 import 'models.dart';
+import 'popup.dart';
 import 'rules.dart';
 
 /// Coração do app: guarda as jornadas, recebe o GPS, descobre sozinho
@@ -792,6 +793,11 @@ class Tracker extends ChangeNotifier {
 
   /// Acima do limite escolhido agora (o cartão da velocidade pisca).
   bool get overSpeed => _overSince != null;
+  DateTime? get overSince => _overSince;
+
+  /// 1.9.3: avisa a tela quando passa do limite (true) ou volta (false),
+  /// para abrir/fechar o aviso por cima dos outros apps.
+  void Function(bool on)? onOverSpeed;
 
   /// Segundos que faltam para virar infração (null se não está acima).
   int? get overSecondsLeft {
@@ -830,11 +836,13 @@ class Tracker extends ChangeNotifier {
     if (_overSince == null) {
       _overSince = now;
       _overMax = kmh;
+      onOverSpeed?.call(true);
       // 1.8.1: um bip só, ao passar do limite.
       _lastBeep = now;
       if (speedBeep) beep();
     }
     if (kmh > _overMax) _overMax = kmh;
+    SpeedPopup.speed(kmh);
     // 1.8.1: depois de 40 s acima, bip seguido (a cada 1 s) até voltar
     // ao limite escolhido. Entre o 1º bip e os 40 s, só o cartão pisca.
     if (now.difference(_overSince!).inSeconds >= 40 &&
@@ -872,9 +880,11 @@ class Tracker extends ChangeNotifier {
       ev.maxKmh = _overMax;
       save();
     }
+    final was = _overSince != null;
     _overSince = null;
     _overEvent = null;
     _overMax = 0;
+    if (was) onOverSpeed?.call(false);
     notifyListeners();
   }
 

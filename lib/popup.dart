@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
@@ -153,6 +154,9 @@ class StopPopup {
       await p.setString('popup_since', fmtTime(seg.start));
       await p.setBool('popup_auto', seg.act == Act.work);
       await p.remove('popup_answer');
+      await p.setString('popup_mode', 'stop');
+      await p.setInt('popup_nonce', DateTime.now().millisecondsSinceEpoch);
+      if (shown || SpeedPopup.shown) await SpeedPopup.close();
       if (shown) await close();
       final dpr = WidgetsBinding
           .instance.platformDispatcher.views.first.devicePixelRatio;
@@ -178,6 +182,252 @@ class StopPopup {
     try {
       await FlutterOverlayWindow.closeOverlay();
     } catch (_) {}
+  }
+}
+
+/// 1.9.3: aviso de velocidade por cima dos outros apps (WhatsApp, YouTube,
+/// Google Maps…), com o app minimizado: cartão vermelho a piscar com a
+/// velocidade e a contagem dos 60 s. Não recebe toques (o toque passa para o
+/// app de baixo).
+const double kSpeedW = 330, kSpeedH = 176;
+
+class SpeedPopup {
+  static bool shown = false;
+
+  static Future<void> show({
+    required int limit,
+    required DateTime since,
+    required double screenWidthDp,
+  }) async {
+    try {
+      if (shown || StopPopup.shown) return;
+      if (!await StopPopup.hasPermission()) return;
+      final p = await SharedPreferences.getInstance();
+      await p.setString('popup_mode', 'speed');
+      await p.setInt('popup_nonce', DateTime.now().millisecondsSinceEpoch);
+      await p.setInt('speed_limit', limit);
+      await p.setInt('speed_since', since.millisecondsSinceEpoch);
+      final dpr = WidgetsBinding
+          .instance.platformDispatcher.views.first.devicePixelRatio;
+      await FlutterOverlayWindow.showOverlay(
+        height: (kSpeedH * dpr).round(),
+        width: (kSpeedW * dpr).round(),
+        alignment: OverlayAlignment.topLeft,
+        enableDrag: false,
+        flag: OverlayFlag.clickThrough,
+        positionGravity: PositionGravity.none,
+        startPosition: OverlayPosition((screenWidthDp - kSpeedW) / 2, 60),
+        overlayTitle: 'TacoGuard',
+        overlayContent: tr('Acima de {0} km/h', [limit]),
+      );
+      shown = true;
+    } catch (_) {}
+  }
+
+  /// Velocidade atual para o cartão (a cada leitura do GPS).
+  static void speed(double kmh) {
+    if (!shown) return;
+    try {
+      FlutterOverlayWindow.shareData(jsonEncode({'kmh': kmh.round()}));
+    } catch (_) {}
+  }
+
+  static Future<void> close() async {
+    if (!shown) return;
+    shown = false;
+    try {
+      await FlutterOverlayWindow.closeOverlay();
+    } catch (_) {}
+  }
+}
+
+/// Raiz da janela por cima dos outros apps: mostra o pop-up da parada ou o
+/// aviso de velocidade, conforme o que o app pediu.
+class OverlayRoot extends StatefulWidget {
+  const OverlayRoot({super.key});
+  @override
+  State<OverlayRoot> createState() => _OverlayRootState();
+}
+
+class _OverlayRootState extends State<OverlayRoot> {
+  String _mode = 'stop';
+  int _nonce = 0;
+  Timer? _timer;
+
+  @override
+  void initState() {
+    super.initState();
+    _read();
+    // A janela pode ser reaproveitada de uma vez para outra: confere o modo.
+    _timer = Timer.periodic(
+        const Duration(milliseconds: 500), (_) => _read());
+  }
+
+  Future<void> _read() async {
+    try {
+      final p = await SharedPreferences.getInstance();
+      await p.reload();
+      final m = p.getString('popup_mode') ?? 'stop';
+      final n = p.getInt('popup_nonce') ?? 0;
+      if (mounted && (m != _mode || n != _nonce)) {
+        setState(() {
+          _mode = m;
+          _nonce = n;
+        });
+      }
+    } catch (_) {}
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => _mode == 'speed'
+      ? SpeedPopupWindow(key: ValueKey('s$_nonce'))
+      : StopPopupWindow(key: ValueKey('p$_nonce'));
+}
+
+class SpeedPopupWindow extends StatefulWidget {
+  const SpeedPopupWindow({super.key});
+  @override
+  State<SpeedPopupWindow> createState() => _SpeedPopupWindowState();
+}
+
+class _SpeedPopupWindowState extends State<SpeedPopupWindow>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _blink = AnimationController(
+      vsync: this, duration: const Duration(milliseconds: 450))
+    ..repeat(reverse: true);
+  int _limit = 90;
+  DateTime? _since;
+  int? _kmh;
+  Timer? _tick;
+  StreamSubscription? _sub;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+    _tick = Timer.periodic(const Duration(milliseconds: 500), (_) {
+      if (mounted) setState(() {});
+    });
+    try {
+      _sub = FlutterOverlayWindow.overlayListener.listen((e) {
+        try {
+          final m = jsonDecode(e.toString()) as Map;
+          final v = m['kmh'];
+          if (v is num && mounted) setState(() => _kmh = v.round());
+        } catch (_) {}
+      });
+    } catch (_) {}
+  }
+
+  Future<void> _load() async {
+    try {
+      final p = await SharedPreferences.getInstance();
+      await p.reload();
+      final s = p.getInt('speed_since');
+      if (mounted) {
+        setState(() {
+          _limit = p.getInt('speed_limit') ?? 90;
+          _since = s == null ? null : DateTime.fromMillisecondsSinceEpoch(s);
+        });
+      }
+    } catch (_) {}
+  }
+
+  @override
+  void dispose() {
+    _blink.dispose();
+    _tick?.cancel();
+    _sub?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final secs = _since == null
+        ? 60
+        : 60 - DateTime.now().difference(_since!).inSeconds;
+    final left = secs < 0 ? 0 : secs;
+    final text = left > 0
+        ? tr('Acima de {0} km/h. Reduza: em {1} s vira infração.',
+            [_limit, left])
+        : tr('Excesso de velocidade a ser registado. Reduza para {0} km/h.',
+            [_limit]);
+    return Material(
+      color: Colors.transparent,
+      child: Padding(
+        padding: const EdgeInsets.all(4),
+        child: Column(mainAxisSize: MainAxisSize.min, children: [
+          // Cartão da velocidade, vermelho a piscar (igual ao da tela Hoje).
+          AnimatedBuilder(
+            animation: _blink,
+            builder: (context, _) => Container(
+              padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
+              decoration: BoxDecoration(
+                color: Color.lerp(const Color(0xCC7F1D1D),
+                    const Color(0xFFDC2626), _blink.value),
+                borderRadius: BorderRadius.circular(18),
+                border: Border.all(color: const Color(0xFFEF4444), width: 2),
+              ),
+              child: Row(children: [
+                const Icon(Icons.speed_rounded, color: Colors.white, size: 30),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(tr('Acima de {0} km/h', [_limit]),
+                      style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 17,
+                          fontWeight: FontWeight.w800)),
+                ),
+                Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
+                  Text(_kmh == null ? '--' : '$_kmh',
+                      style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 30,
+                          height: 1,
+                          fontWeight: FontWeight.w900)),
+                  const Text('km/h',
+                      style: TextStyle(color: Colors.white70, fontSize: 11)),
+                ]),
+              ]),
+            ),
+          ),
+          const SizedBox(height: 6),
+          // Faixa com a contagem regressiva.
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
+            decoration: BoxDecoration(
+              color: TG.surface,
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: TG.danger, width: 1.5),
+            ),
+            child: Row(children: [
+              Text(left > 0 ? '$left s' : '!',
+                  style: const TextStyle(
+                      color: TG.danger,
+                      fontSize: 22,
+                      fontWeight: FontWeight.w900)),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(text,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                        color: TG.text,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600)),
+              ),
+            ]),
+          ),
+        ]),
+      ),
+    );
   }
 }
 

@@ -3,6 +3,7 @@
 
 const Map<String, Map<String, String>> kTr = {
   'en': {
+    'Acima de {0} km/h': 'Above {0} km/h',
     'Martelo na hora ao parar': 'Other work right away when stopping',
     'Como o tacógrafo: velocidade zero, em poucos segundos passa para martelo e você escolhe se é pausa ou carga/descarga.': 'Like the tachograph: at zero speed it switches to other work within a few seconds and you choose if it is a break or loading/unloading.',
     'Na hora': 'Right away',
@@ -296,6 +297,7 @@ const Map<String, Map<String, String>> kTr = {
     'Última jornada: {0} {1}, {2} às {3}  •  condução {4}  •  {5}': 'Last shift: {0} {1}, {2} to {3}  •  driving {4}  •  {5}',
   },
   'es': {
+    'Acima de {0} km/h': 'Por encima de {0} km/h',
     'Martelo na hora ao parar': 'Otros trabajos al instante al parar',
     'Como o tacógrafo: velocidade zero, em poucos segundos passa para martelo e você escolhe se é pausa ou carga/descarga.': 'Como el tacógrafo: con velocidad cero, en pocos segundos pasa a otros trabajos y eliges si es pausa o carga/descarga.',
     'Na hora': 'Al instante',
@@ -589,6 +591,7 @@ const Map<String, Map<String, String>> kTr = {
     'Última jornada: {0} {1}, {2} às {3}  •  condução {4}  •  {5}': 'Última jornada: {0} {1}, de {2} a {3}  •  conducción {4}  •  {5}',
   },
   'fr': {
+    'Acima de {0} km/h': 'Au-dessus de {0} km/h',
     'Martelo na hora ao parar': 'Autre tâche dès l\'arrêt',
     'Como o tacógrafo: velocidade zero, em poucos segundos passa para martelo e você escolhe se é pausa ou carga/descarga.': 'Comme le tachygraphe : à vitesse nulle, il passe en autre tâche en quelques secondes et vous choisissez s\'il s\'agit d\'une pause ou d\'un chargement/déchargement.',
     'Na hora': 'Immédiat',

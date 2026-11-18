@@ -30,7 +30,7 @@ Future<void> overlayMain() async {
     debugShowCheckedModeBanner: false,
     theme: TG.theme(),
     builder: clampTextScale,
-    home: const StopPopupWindow(),
+    home: const OverlayRoot(),
   ));
 }
 
@@ -223,6 +223,7 @@ class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
     WidgetsBinding.instance.addObserver(this);
     _t.onAsk = _ask;
     _t.onAskCancel = _cancelAsk;
+    _t.onOverSpeed = _overSpeed;
     // Resposta vinda do pop-up por cima dos outros apps.
     try {
       _overlaySub = FlutterOverlayWindow.overlayListener.listen((event) {
@@ -248,13 +249,16 @@ class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
     _overlaySub?.cancel();
     _t.onAsk = null;
     _t.onAskCancel = null;
+    _t.onOverSpeed = null;
     super.dispose();
   }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     _inFront = state == AppLifecycleState.resumed;
+    if (!_inFront && _t.overSpeed) _overSpeed(true);
     if (_inFront) {
+      SpeedPopup.close();
       StopPopup.close();
       final s = _t.currentSegment;
       final pending = s != null &&
@@ -263,6 +267,20 @@ class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
         _ask(s);
       }
       if (mounted) UpdateService.autoCheck(context, resumed: true);
+    }
+  }
+
+  /// 1.9.3: acima do limite com o app minimizado: aviso por cima dos outros
+  /// apps; voltou ao limite (ou o app veio para a frente): fecha.
+  void _overSpeed(bool on) {
+    if (!mounted) return;
+    if (on && !_inFront && _t.overSince != null) {
+      SpeedPopup.show(
+          limit: _t.speedLimit,
+          since: _t.overSince!,
+          screenWidthDp: MediaQuery.sizeOf(context).width);
+    } else if (!on) {
+      SpeedPopup.close();
     }
   }
 
