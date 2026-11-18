@@ -257,6 +257,25 @@ void main() {
     expect(st.nextLimit, 'dia');
   });
 
+  test('1.10.1: o fim da amplitude limita o que ainda pode conduzir', () {
+    // Caso real: jornada às 12:29, à 00:07 (11h38 de amplitude), 6h04 de
+    // condução e 0h07 de condução contínua. Pelas 10 h dariam 3h56, mas a
+    // amplitude de 15 h acaba às 03:29: só sobram 3h22.
+    final sh = mk(mon, [
+      (Act.drive, 240),
+      (Act.pause, 45),
+      (Act.drive, 117),
+      (Act.pause, 289),
+      (Act.drive, 7),
+    ], close: false);
+    final st = computeStatus([sh], sh, sh.segments.last.end!);
+    expect(st.amplitude, const Duration(hours: 11, minutes: 38));
+    expect(st.dayLeft, const Duration(hours: 3, minutes: 56));
+    expect(st.amplitudeLeft, const Duration(hours: 3, minutes: 22));
+    expect(st.driveLeft, const Duration(hours: 3, minutes: 22));
+    expect(st.nextLimit, 'amplitude');
+  });
+
   test('formatos', () {
     expect(fmtDur(const Duration(hours: 4, minutes: 5)), '4h05');
     expect(fmtDur(const Duration(minutes: 45)), '0h45');

@@ -1056,29 +1056,6 @@ class _SettingsPageState extends State<SettingsPage> {
                     : null,
                 onChangeEnd: (_) => _t.saveSettings(),
               ),
-              // 1.9.1: margem (o tacógrafo mede pela roda e marca um pouco
-              // mais que o GPS).
-              Text(
-                  _t.speedMargin == 0
-                      ? tr('Avisar ao chegar a {0} km/h', [_t.speedLimit])
-                      : tr('Avisar {0} km/h antes: a partir de {1} km/h',
-                          [_t.speedMargin, _t.speedLimit - _t.speedMargin]),
-                  style: const TextStyle(
-                      fontSize: 14, fontWeight: FontWeight.w700)),
-              Text(
-                  tr('O tacógrafo mede pela roda e costuma marcar 1 a 3 km/h a mais que o GPS. Se o tacógrafo registar antes do app, aumente a margem.'),
-                  style: const TextStyle(color: TG.muted, fontSize: 12.5)),
-              Slider(
-                value: _t.speedMargin.toDouble(),
-                min: 0,
-                max: 5,
-                divisions: 5,
-                label: '${_t.speedMargin} km/h',
-                onChanged: _t.speedAlert
-                    ? (v) => setState(() => _t.speedMargin = v.round())
-                    : null,
-                onChangeEnd: (_) => _t.saveSettings(),
-              ),
               SwitchListTile(
                 contentPadding: EdgeInsets.zero,
                 title: Text(tr('Bip')),

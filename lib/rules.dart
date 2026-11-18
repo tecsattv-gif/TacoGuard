@@ -211,20 +211,43 @@ class Status {
     return d.isNegative ? Duration.zero : d;
   }
 
+  /// 1.10.1: tempo que ainda falta até o fim da amplitude (13 h, ou 15 h
+  /// se ainda há descanso reduzido de 9 h).
+  Duration get amplitudeLeft {
+    final d = amplitudeLimit - amplitude;
+    return d.isNegative ? Duration.zero : d;
+  }
+
+  /// 1.10.1: condução que ainda cabe antes do fim da amplitude. Se for
+  /// preciso parar para a pausa (4h30) antes, a pausa também gasta
+  /// amplitude: desconta os 45 min (ou 30, se já fez os 15).
+  Duration get amplitudeDriveLeft {
+    final a = amplitudeLeft;
+    if (a <= brk.left) return a;
+    final after = a - brk.left - brk.breakNeeded;
+    return brk.left + (after.isNegative ? Duration.zero : after);
+  }
+
   /// 1.7.2: quanto ainda pode conduzir agora, pelo limite que chega
-  /// primeiro: a pausa (4h30), o fim das 9 h/10 h do dia ou a semana.
+  /// primeiro: a pausa (4h30), o fim das 9 h/10 h do dia, a amplitude
+  /// (1.10.1) ou a semana.
   Duration get driveLeft {
     var l = brk.left;
     if (dayLeft < l) l = dayLeft;
+    if (amplitudeLeft < l) l = amplitudeLeft;
     if (weekLeft < l) l = weekLeft;
     return l;
   }
 
-  /// O que vem primeiro: 'pausa', 'dia' ou 'semana'.
+  /// O que vem primeiro: 'pausa', 'dia', 'amplitude' ou 'semana'.
   String get nextLimit {
-    if (weekLeft < brk.left && weekLeft < dayLeft) return 'semana';
-    if (dayLeft <= brk.left) return 'dia';
-    return 'pausa';
+    final l = driveLeft;
+    if (l == brk.left) return 'pausa';
+    if (l == weekLeft && weekLeft < dayLeft && weekLeft < amplitudeLeft) {
+      return 'semana';
+    }
+    if (l == amplitudeLeft && amplitudeLeft < dayLeft) return 'amplitude';
+    return 'dia';
   }
 
 

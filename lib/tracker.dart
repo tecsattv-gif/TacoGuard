@@ -168,7 +168,8 @@ class Tracker extends ChangeNotifier {
       speedAlert = p.getBool('speedAlert') ?? true;
       speedLimit = (p.getInt('speedLimit') ?? 90).clamp(85, 100);
       speedBeep = p.getBool('speedBeep') ?? true;
-      speedMargin = (p.getInt('speedMargin') ?? 0).clamp(0, 5);
+      // 1.10.1: a margem saiu dos Ajustes; avisa sempre no limite.
+      speedMargin = 0;
       speedBeepVol = (p.getInt('speedBeepVol') ?? 100).clamp(10, 100);
       carMode = p.getBool('carMode') ?? false;
       _truckLat = p.getDouble('truckLat');
