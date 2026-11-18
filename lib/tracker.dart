@@ -28,7 +28,9 @@ class Tracker extends ChangeNotifier {
   }
 
   // ---------- Ajustes ----------
-  int stopMinutes = 2; // parado este tempo = parada (antes disso é trânsito)
+  // Parado este tempo = parada. 1.9.2: 0 = na hora (5 s), como o tacógrafo,
+  // que passa para martelo assim que o caminhão para (é o padrão).
+  int stopMinutes = 0;
   bool voice = true;
   bool popup = true;
   String driver = '';
@@ -152,7 +154,8 @@ class Tracker extends ChangeNotifier {
   Future<void> load() async {
     try {
       final p = await SharedPreferences.getInstance();
-      stopMinutes = p.getInt('stopMinutes') ?? 2;
+      // 1.9.2: chave nova, para todos passarem a "na hora" (padrão).
+      stopMinutes = (p.getInt('stopMinutes2') ?? 0).clamp(0, 5);
       voice = p.getBool('voice') ?? true;
       popup = p.getBool('popup') ?? true;
       driver = p.getString('driver') ?? '';
@@ -231,7 +234,7 @@ class Tracker extends ChangeNotifier {
   Future<void> saveSettings() async {
     try {
       final p = await SharedPreferences.getInstance();
-      await p.setInt('stopMinutes', stopMinutes);
+      await p.setInt('stopMinutes2', stopMinutes);
       await p.setBool('voice', voice);
       await p.setBool('popup', popup);
       await p.setString('driver', driver);
@@ -658,7 +661,10 @@ class Tracker extends ChangeNotifier {
         if (d == null || d > 40) _stopSince = null;
       }
       if (_stopSince != null &&
-          now.difference(_stopSince!) >= Duration(minutes: stopMinutes)) {
+          now.difference(_stopSince!) >=
+              (stopMinutes == 0
+                  ? const Duration(seconds: 5)
+                  : Duration(minutes: stopMinutes))) {
         _beginStop(_stopSince!);
       }
     } else {

@@ -36,7 +36,7 @@ O APK mais novo fica em [Releases](https://github.com/tecsattv-gif/TacoGuard/rel
 
 1. Abra o app e toque em **Iniciar jornada** e confirme no pop-up. Aceite as permissões de localização e de "Sobrepor a outros apps".
 2. Em **Ajustes**, toque em *Abrir ajustes de bateria* e toque em **Permitir** (o TacoGuard fica fora da economia de bateria, para o celular não cortar o GPS com a tela apagada). No Xiaomi, ligue também *Início automático* do TacoGuard, deixe a localização em *Permitir o tempo todo* com *Localização precisa*, e tranque o app nos recentes (cadeado).
-3. Dirija normalmente. Quando parar, a parada fica em martelo (como no tacógrafo). Se for pausa, mude no cartão da tela Hoje ou no pop-up que aparece aos 15 min parado.
+3. Dirija normalmente. Quando parar, a parada entra em martelo na hora (como no tacógrafo). Se for pausa, mude no cartão da tela Hoje ou no pop-up que aparece aos 15 min parado.
 4. No fim do dia, toque em **Encerrar jornada**. Começa a contar o descanso. Logo a seguir o app pergunta se quer **acertar o despertador** do telefone para o fim do descanso de **9 h** ou de **11 h** (ou Não).
 5. Encerrou cedo demais? Toque em **Reabrir a jornada** (disponível até o descanso chegar a 9 h).
 6. Apagou uma jornada sem querer? Toque em **DESFAZER** na barra que aparece (8 segundos).
@@ -66,6 +66,7 @@ Segredos do repositório (Settings > Secrets and variables > Actions):
 
 ## Versões
 
+- **1.9.2**: **Martelo na hora ao parar**, como o tacógrafo: com a velocidade em zero por 5 segundos, a condução fecha e a parada entra em **martelo** automaticamente, já com o cartão para escolher Pausa ou Carga/Descarga (vale desde a hora em que parou). É o novo padrão; em Ajustes → Paradas ainda dá para escolher esperar 1 a 5 min (o trânsito conta como condução).
 - **1.9.1**: **Aviso de velocidade sem atraso**: o bip e o cartão vermelho começam **no instante** em que a velocidade chega ao limite do seletor (antes era preciso passar do limite, e a velocidade usada era a média das 3 últimas leituras, que atrasava 1 a 2 s). Nova **margem** em Ajustes → Velocidade (0 a 5 km/h, padrão 0): avisa antes do limite, porque o tacógrafo mede pela roda e costuma marcar 1 a 3 km/h a mais que o GPS. A contagem dos 60 s começa no mesmo instante.
 - **1.9.0**: **App em 4 idiomas**: português, inglês, espanhol e francês. Em Ajustes → **Idioma** escolha um deles ou **Automático (idioma do telefone)**, que é o padrão (telefone em outro idioma: inglês). Traduzidos: todas as telas, botões e mensagens, o pop-up das paradas, os avisos por voz (a voz também muda de idioma), a notificação, os relatórios PDF, os avisos e infrações, e a atualização. A consulta por IA (Gemini) responde no idioma escolhido. Os textos da **Lei** e das **150 perguntas prontas** continuam em português nesta versão (tradução na próxima). Código: `lib/i18n.dart` (função `tr()`, o texto em português é a chave) e `lib/i18n_data.dart` (traduções).
 - **1.8.9**: Mesmo conteúdo da 1.8.8. A 1.8.7 terminou de compilar depois da 1.8.8 e ficou marcada como a mais recente, por isso o app não oferecia a 1.8.8. Agora as compilações rodam uma de cada vez, na ordem dos envios.

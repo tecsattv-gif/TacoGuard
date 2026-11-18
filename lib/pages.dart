@@ -1107,18 +1107,26 @@ class _SettingsPageState extends State<SettingsPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(tr('Considerar parada depois de {0} min parado', [_t.stopMinutes]),
+              Text(
+                  _t.stopMinutes == 0
+                      ? tr('Martelo na hora ao parar')
+                      : tr('Considerar parada depois de {0} min parado',
+                          [_t.stopMinutes]),
                   style: const TextStyle(
                       fontSize: 15, fontWeight: FontWeight.w700)),
               Text(
-                  tr('Menos que isso é trânsito ou semáforo e conta como condução.'),
+                  _t.stopMinutes == 0
+                      ? tr('Como o tacógrafo: velocidade zero, em poucos segundos passa para martelo e você escolhe se é pausa ou carga/descarga.')
+                      : tr('Menos que isso é trânsito ou semáforo e conta como condução.'),
                   style: TextStyle(color: TG.muted, fontSize: 12.5)),
               Slider(
                 value: _t.stopMinutes.toDouble(),
-                min: 1,
+                min: 0,
                 max: 5,
-                divisions: 4,
-                label: tr('{0} min', [_t.stopMinutes]),
+                divisions: 5,
+                label: _t.stopMinutes == 0
+                    ? tr('Na hora')
+                    : tr('{0} min', [_t.stopMinutes]),
                 onChanged: (v) {
                   setState(() => _t.stopMinutes = v.round());
                 },

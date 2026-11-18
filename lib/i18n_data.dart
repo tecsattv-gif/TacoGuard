@@ -3,6 +3,9 @@
 
 const Map<String, Map<String, String>> kTr = {
   'en': {
+    'Martelo na hora ao parar': 'Other work right away when stopping',
+    'Como o tacógrafo: velocidade zero, em poucos segundos passa para martelo e você escolhe se é pausa ou carga/descarga.': 'Like the tachograph: at zero speed it switches to other work within a few seconds and you choose if it is a break or loading/unloading.',
+    'Na hora': 'Right away',
     'Avisar ao chegar a {0} km/h': 'Warn on reaching {0} km/h',
     'Avisar {0} km/h antes: a partir de {1} km/h': 'Warn {0} km/h earlier: from {1} km/h',
     'O tacógrafo mede pela roda e costuma marcar 1 a 3 km/h a mais que o GPS. Se o tacógrafo registar antes do app, aumente a margem.': 'The tachograph measures from the wheel and usually reads 1 to 3 km/h more than the GPS. If the tachograph records before the app, increase the margin.',
@@ -293,6 +296,9 @@ const Map<String, Map<String, String>> kTr = {
     'Última jornada: {0} {1}, {2} às {3}  •  condução {4}  •  {5}': 'Last shift: {0} {1}, {2} to {3}  •  driving {4}  •  {5}',
   },
   'es': {
+    'Martelo na hora ao parar': 'Otros trabajos al instante al parar',
+    'Como o tacógrafo: velocidade zero, em poucos segundos passa para martelo e você escolhe se é pausa ou carga/descarga.': 'Como el tacógrafo: con velocidad cero, en pocos segundos pasa a otros trabajos y eliges si es pausa o carga/descarga.',
+    'Na hora': 'Al instante',
     'Avisar ao chegar a {0} km/h': 'Avisar al llegar a {0} km/h',
     'Avisar {0} km/h antes: a partir de {1} km/h': 'Avisar {0} km/h antes: a partir de {1} km/h',
     'O tacógrafo mede pela roda e costuma marcar 1 a 3 km/h a mais que o GPS. Se o tacógrafo registar antes do app, aumente a margem.': 'El tacógrafo mide por la rueda y suele marcar 1 a 3 km/h más que el GPS. Si el tacógrafo registra antes que la app, aumenta el margen.',
@@ -583,6 +589,9 @@ const Map<String, Map<String, String>> kTr = {
     'Última jornada: {0} {1}, {2} às {3}  •  condução {4}  •  {5}': 'Última jornada: {0} {1}, de {2} a {3}  •  conducción {4}  •  {5}',
   },
   'fr': {
+    'Martelo na hora ao parar': 'Autre tâche dès l\'arrêt',
+    'Como o tacógrafo: velocidade zero, em poucos segundos passa para martelo e você escolhe se é pausa ou carga/descarga.': 'Comme le tachygraphe : à vitesse nulle, il passe en autre tâche en quelques secondes et vous choisissez s\'il s\'agit d\'une pause ou d\'un chargement/déchargement.',
+    'Na hora': 'Immédiat',
     'Avisar ao chegar a {0} km/h': 'Alerter à {0} km/h',
     'Avisar {0} km/h antes: a partir de {1} km/h': 'Alerter {0} km/h avant : dès {1} km/h',
     'O tacógrafo mede pela roda e costuma marcar 1 a 3 km/h a mais que o GPS. Se o tacógrafo registar antes do app, aumente a margem.': 'Le tachygraphe mesure par la roue et indique souvent 1 à 3 km/h de plus que le GPS. S\'il enregistre avant l\'appli, augmentez la marge.',
