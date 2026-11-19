@@ -3,6 +3,10 @@
 
 const Map<String, Map<String, String>> kTr = {
   'en': {
+    'Feminina': 'Female',
+    'Masculina': 'Male',
+    'Ouvir': 'Listen',
+    'Usa as vozes do telefone. Se não houver voz do sexo escolhido no idioma, o tom da voz muda.': 'Uses the phone voices. If there is no voice of the chosen gender in the language, the voice pitch changes.',
     'fim da amplitude às {0}': 'spread-over ends at {0}',
     'Fim da amplitude ({0}): encerre a jornada': 'End of spread-over ({0}): end the shift',
     'Ainda pode conduzir: {0} (9h) ou {1} (amplitude, até {2})': 'You can still drive: {0} (9 h) or {1} (spread-over, until {2})',
@@ -303,6 +307,10 @@ const Map<String, Map<String, String>> kTr = {
     'Última jornada: {0} {1}, {2} às {3}  •  condução {4}  •  {5}': 'Last shift: {0} {1}, {2} to {3}  •  driving {4}  •  {5}',
   },
   'es': {
+    'Feminina': 'Femenina',
+    'Masculina': 'Masculina',
+    'Ouvir': 'Escuchar',
+    'Usa as vozes do telefone. Se não houver voz do sexo escolhido no idioma, o tom da voz muda.': 'Usa las voces del teléfono. Si no hay voz del sexo elegido en el idioma, cambia el tono de la voz.',
     'fim da amplitude às {0}': 'fin de la amplitud a las {0}',
     'Fim da amplitude ({0}): encerre a jornada': 'Fin de la amplitud ({0}): termina la jornada',
     'Ainda pode conduzir: {0} (9h) ou {1} (amplitude, até {2})': 'Aún puedes conducir: {0} (9 h) o {1} (amplitud, hasta las {2})',
@@ -603,6 +611,10 @@ const Map<String, Map<String, String>> kTr = {
     'Última jornada: {0} {1}, {2} às {3}  •  condução {4}  •  {5}': 'Última jornada: {0} {1}, de {2} a {3}  •  conducción {4}  •  {5}',
   },
   'fr': {
+    'Feminina': 'Féminine',
+    'Masculina': 'Masculine',
+    'Ouvir': 'Écouter',
+    'Usa as vozes do telefone. Se não houver voz do sexo escolhido no idioma, o tom da voz muda.': 'Utilise les voix du téléphone. S\'il n\'y a pas de voix du sexe choisi dans la langue, le ton de la voix change.',
     'fim da amplitude às {0}': 'fin de l\'amplitude à {0}',
     'Fim da amplitude ({0}): encerre a jornada': 'Fin de l\'amplitude ({0}) : terminez la journée',
     'Ainda pode conduzir: {0} (9h) ou {1} (amplitude, até {2})': 'Vous pouvez encore conduire : {0} (9 h) ou {1} (amplitude, jusqu\'à {2})',

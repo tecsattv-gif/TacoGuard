@@ -162,6 +162,7 @@ class Tracker extends ChangeNotifier {
       // 1.9.2: chave nova, para todos passarem a "na hora" (padrão).
       stopMinutes = (p.getInt('stopMinutes2') ?? 0).clamp(0, 5);
       voice = p.getBool('voice') ?? true;
+      voiceGender = p.getString('voiceGender') ?? 'f';
       popup = p.getBool('popup') ?? true;
       driver = p.getString('driver') ?? '';
       plate = p.getString('plate') ?? '';
@@ -190,9 +191,9 @@ class Tracker extends ChangeNotifier {
       if (shifts.isEmpty) await _fromDailyCopy();
     } catch (_) {}
     try {
-      await _tts.setLanguage(ttsLang);
       await _tts.setSpeechRate(0.5);
     } catch (_) {}
+    await setVoiceLang();
     notifyListeners();
   }
 
@@ -301,6 +302,7 @@ class Tracker extends ChangeNotifier {
       final p = await SharedPreferences.getInstance();
       await p.setInt('stopMinutes2', stopMinutes);
       await p.setBool('voice', voice);
+      await p.setString('voiceGender', voiceGender);
       await p.setBool('popup', popup);
       await p.setString('driver', driver);
       await p.setString('plate', plate);
@@ -953,11 +955,83 @@ class Tracker extends ChangeNotifier {
   }
 
   // ---------- Avisos ----------
+  /// 1.10.5: voz feminina ('f') ou masculina ('m').
+  String voiceGender = 'f';
+
+  // Códigos das vozes masculinas do motor de voz do Google (o nome da voz
+  // não diz o sexo; estes são os conhecidos).
+  static const _maleCodes = [
+    'jmn', 'pmj', 'ptd', 'ptz', // português
+    'gbb', 'gbd', 'rjs', 'iob', 'iom', 'tpd', 'tpf', // inglês
+    'eed', 'eef', 'esd', 'esf', // espanhol
+    'frb', 'frd', 'cab', // francês
+  ];
+
+  static bool _isMale(String name) {
+    final n = name.toLowerCase();
+    if (n.contains('female')) return false;
+    if (n.contains('male')) return true;
+    return _maleCodes.any((c) => n.contains('-x-$c'));
+  }
+
   /// 1.9.0: voz no idioma escolhido (chamado ao trocar o idioma).
+  /// 1.10.5: e com o sexo escolhido. Procura entre as vozes do telefone
+  /// uma do idioma e do sexo certos (de preferência sem internet); se não
+  /// houver, usa a voz normal com o tom mais grave (masculina) ou mais agudo
+  /// (feminina).
   Future<void> setVoiceLang() async {
     try {
       await _tts.setLanguage(ttsLang);
     } catch (_) {}
+    var found = false;
+    try {
+      final all = await _tts.getVoices;
+      final lang = ttsLang.toLowerCase();
+      final base = lang.split('-').first;
+      final mine = <Map>[];
+      for (final v in (all as List? ?? const [])) {
+        if (v is! Map) continue;
+        final loc = '${v['locale'] ?? ''}'.toLowerCase().replaceAll('_', '-');
+        if (loc == lang) mine.add(v);
+      }
+      if (mine.isEmpty) {
+        for (final v in (all as List? ?? const [])) {
+          if (v is! Map) continue;
+          final loc = '${v['locale'] ?? ''}'.toLowerCase().replaceAll('_', '-');
+          if (loc.startsWith(base)) mine.add(v);
+        }
+      }
+      final want = voiceGender == 'm';
+      final pick = mine.where((v) => _isMale('${v['name']}') == want).toList()
+        ..sort((a, b) {
+          // primeiro as que funcionam sem internet
+          int score(Map v) {
+            final n = '${v['name']}'.toLowerCase();
+            return n.contains('local') ? 0 : (n.contains('network') ? 2 : 1);
+          }
+
+          return score(a).compareTo(score(b));
+        });
+      if (pick.isNotEmpty) {
+        await _tts.setVoice({
+          'name': '${pick.first['name']}',
+          'locale': '${pick.first['locale']}',
+        });
+        await _tts.setPitch(1.0);
+        found = true;
+      }
+    } catch (_) {}
+    if (!found) {
+      try {
+        await _tts.setPitch(voiceGender == 'm' ? 0.75 : 1.1);
+      } catch (_) {}
+    }
+  }
+
+  /// Toca um exemplo da voz (Ajustes).
+  Future<void> testVoice() async {
+    await setVoiceLang();
+    _say(tr('Faltam 15 minutos para a pausa de {0} minutos.', [45]));
   }
 
   void _say(String text) {

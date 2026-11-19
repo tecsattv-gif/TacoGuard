@@ -1169,6 +1169,40 @@ class _SettingsPageState extends State<SettingsPage> {
                   _t.saveSettings();
                 },
               ),
+              // 1.10.5: voz feminina ou masculina.
+              Row(children: [
+                Expanded(
+                  child: SegmentedButton<String>(
+                    showSelectedIcon: false,
+                    segments: [
+                      ButtonSegment(
+                          value: 'f',
+                          icon: const Icon(Icons.face_3_rounded),
+                          label: Text(tr('Feminina'))),
+                      ButtonSegment(
+                          value: 'm',
+                          icon: const Icon(Icons.face_rounded),
+                          label: Text(tr('Masculina'))),
+                    ],
+                    selected: {_t.voiceGender},
+                    onSelectionChanged: _t.voice
+                        ? (v) async {
+                            setState(() => _t.voiceGender = v.first);
+                            await _t.saveSettings();
+                            await _t.testVoice();
+                          }
+                        : null,
+                  ),
+                ),
+                IconButton(
+                  tooltip: tr('Ouvir'),
+                  onPressed: _t.voice ? () => _t.testVoice() : null,
+                  icon: const Icon(Icons.volume_up_rounded),
+                ),
+              ]),
+              Text(
+                  tr('Usa as vozes do telefone. Se não houver voz do sexo escolhido no idioma, o tom da voz muda.'),
+                  style: const TextStyle(color: TG.muted, fontSize: 12.5)),
             ],
           ),
         ),
