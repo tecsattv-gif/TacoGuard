@@ -251,7 +251,7 @@ class _TachoTestPageState extends State<TachoTestPage> {
           Text(tr('Dados recebidos do tacógrafo'),
               style: const TextStyle(fontWeight: FontWeight.w800)),
           for (final e in _t.didData.entries)
-            Text('${TachoLink.dids[e.key] ?? e.key.toRadixString(16)}: ${TachoLink.hex(e.value)}',
+            Text('${TachoLink.dids[e.key] ?? e.key.toRadixString(16)}: ${TachoLink.pretty(e.key, e.value)}  (${TachoLink.hex(e.value)})',
                 style: const TextStyle(fontFamily: 'monospace', fontSize: 11.5)),
         ],
         const SizedBox(height: 12),

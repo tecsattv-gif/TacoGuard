@@ -444,6 +444,18 @@ class TachoLink extends ChangeNotifier {
     0xF906: 'Driver1TimeRelatedStates',
   };
 
+  /// Texto legível de um dado (tempos em minutos, 2 bytes → h:mm).
+  static String pretty(int did, Uint8List v) {
+    final n = v.fold<int>(0, (a, b) => (a << 8) | b);
+    if (did == 0xF902) return '${(n / 256).toStringAsFixed(0)} km/h';
+    if (did == 0xF903) return '$n';
+    if (did == 0xF9AB || did == 0xF9A0) return '$n';
+    if (v.length == 2 && n < 0xFB00) {
+      return '${n ~/ 60}h${(n % 60).toString().padLeft(2, '0')}';
+    }
+    return hex(v);
+  }
+
   /// Últimas respostas por DID (em bruto).
   final Map<int, Uint8List> didData = {};
   DateTime? didAt;
@@ -618,7 +630,8 @@ class TachoLink extends ChangeNotifier {
           : v.length == 2
               ? '${(v[0] << 8) | v[1]}'
               : '';
-      _log('${dids[did] ?? hex([m[1], m[2]])} = ${hex(v)}${n.isEmpty ? '' : ' ($n)'}');
+      _log('${dids[did] ?? hex([m[1], m[2]])} = ${hex(v)}${n.isEmpty ? '' : ' ($n)'} → ${pretty(did, v)}');
+      notifyListeners();
       if (!(_wait?.isCompleted ?? true)) _wait!.complete();
     } else if (m[0] == 0x7F && m.length >= 3) {
       if (m[2] == 0x78) {
@@ -659,7 +672,7 @@ class TachoLink extends ChangeNotifier {
       sb.writeln('Dados ${trtpNames[e.key] ?? e.key}: ${hex(e.value)}');
     }
     for (final e in didData.entries) {
-      sb.writeln('${dids[e.key] ?? e.key.toRadixString(16)}: ${hex(e.value)}');
+      sb.writeln('${dids[e.key] ?? e.key.toRadixString(16)}: ${hex(e.value)} → ${pretty(e.key, e.value)}');
     }
     sb
       ..writeln()
