@@ -479,6 +479,7 @@ class _TodayPageState extends State<TodayPage> {
   void initState() {
     super.initState();
     _t.addListener(_refresh);
+    TachoLink.I.addListener(_refresh);
     _timer = Timer.periodic(const Duration(seconds: 10), (_) => _refresh());
   }
 
@@ -489,6 +490,7 @@ class _TodayPageState extends State<TodayPage> {
   @override
   void dispose() {
     _t.removeListener(_refresh);
+    TachoLink.I.removeListener(_refresh);
     _timer?.cancel();
     super.dispose();
   }
@@ -821,9 +823,13 @@ class _TodayPageState extends State<TodayPage> {
         ]),
       ),
       const _ColBreak(),
+      // 1.11.11: com o tacógrafo ligado, os valores vêm dele.
       _LimitList(rows: [
-        _Limit(tr('Semanal'), week, Limits.weeklyDrive),
-        _Limit(tr('Bissemanal'), week + prev, Limits.fortnightDrive),
+        _Limit(tr('Semanal'), TachoLink.I.weekDrive ?? week, Limits.weeklyDrive,
+            note: TachoLink.I.weekDrive != null ? tr('do tacógrafo') : null),
+        _Limit(tr('Bissemanal'),
+            TachoLink.I.fortnightDrive ?? (week + prev), Limits.fortnightDrive,
+            note: TachoLink.I.fortnightDrive != null ? tr('do tacógrafo') : null),
       ]),
       if (ref != null) ...[
         const SizedBox(height: 12),
@@ -1157,10 +1163,16 @@ class _TodayPageState extends State<TodayPage> {
             note: st.canExtendAmplitude
                 ? tr('descansos de 9 h: {0}/3', [st.reducedRestsUsed])
                 : tr('limite 13 h (sem descanso reduzido)')),
-        _Limit(tr('Semanal'), st.weekDrive, Limits.weeklyDrive,
-            note: tr('pode conduzir {0}', [fmtDur(st.weekLeft)])),
-        _Limit(tr('Bissemanal'), st.fortnightDrive, Limits.fortnightDrive,
-            note: tr('semana anterior {0}', [fmtDur(st.prevWeekDrive)])),
+        _Limit(tr('Semanal'), TachoLink.I.weekDrive ?? st.weekDrive,
+            Limits.weeklyDrive,
+            note: TachoLink.I.weekDrive != null
+                ? tr('do tacógrafo')
+                : tr('pode conduzir {0}', [fmtDur(st.weekLeft)])),
+        _Limit(tr('Bissemanal'), TachoLink.I.fortnightDrive ?? st.fortnightDrive,
+            Limits.fortnightDrive,
+            note: TachoLink.I.fortnightDrive != null
+                ? tr('do tacógrafo')
+                : tr('semana anterior {0}', [fmtDur(st.prevWeekDrive)])),
       ]),
       const SizedBox(height: 12),
       // Totais do dia.

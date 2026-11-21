@@ -427,14 +427,14 @@ class TachoLink extends ChangeNotifier {
     0xF927: 'Driver1CurrentDurationOfSelectedActivity',
     0xF99A: 'Driver1CurrentDailyDrivingTime',
     0xF99B: 'Driver1CurrentWeeklyDrivingTime',
+    0xF9B3: 'Driver1Remaining2WeeksDrivingTime',
+    0xF9B1: 'Driver1RemainingDrivingTimeOfCurrentWeek',
     0xF9AD: 'Driver1RemainingCurrentDrivingTime',
     0xF9AF: 'Driver1RemainingDrivingTimeOnCurrentShift',
     0xF9C2: 'Driver1RemainingTimeUntilNextBreakOrRest',
     0xF9C0: 'Driver1RemainingTimeOfCurrentBreakRest',
     0xF9B9: 'Driver1DurationOfNextBreakRest',
     0xF99C: 'Driver1TimeLeftUntilNewDailyRestPeriod',
-    0xF9B1: 'Driver1RemainingDrivingTimeOfCurrentWeek',
-    0xF9B3: 'Driver1Remaining2WeeksDrivingTime',
     0xF9A1: 'Driver1TimeLeftUntilNewWeeklyRestPeriod',
     0xF997: 'Driver1EndOfLastDailyRestPeriod',
     0xF998: 'Driver1EndOfLastWeeklyRestPeriod',
@@ -456,6 +456,21 @@ class TachoLink extends ChangeNotifier {
   int? get workingState {
     final v = didData[0xF903];
     return v == null || v.isEmpty ? null : v.first;
+  }
+
+  /// 1.11.11: condução da semana segundo o tacógrafo (só ligado).
+  Duration? get weekDrive {
+    if (!connected) return null;
+    final m = minutes(0xF99B);
+    return m == null ? null : Duration(minutes: m);
+  }
+
+  /// Condução das 2 semanas: 90 h menos o que o tacógrafo diz que falta.
+  Duration? get fortnightDrive {
+    if (!connected) return null;
+    final left = minutes(0xF9B3);
+    if (left == null || left > 90 * 60) return null;
+    return Duration(minutes: 90 * 60 - left);
   }
 
   /// Há dados recentes do tacógrafo (menos de 3 minutos).

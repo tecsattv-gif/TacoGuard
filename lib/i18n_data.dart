@@ -3,6 +3,7 @@
 
 const Map<String, Map<String, String>> kTr = {
   'en': {
+    'do tacógrafo': 'from the tachograph',
     'Como ligar (passo a passo)': 'How to connect (step by step)',
     'Descanso': 'Rest',
     'Disponibilidade': 'Availability',
@@ -349,6 +350,7 @@ const Map<String, Map<String, String>> kTr = {
     'Última jornada: {0} {1}, {2} às {3}  •  condução {4}  •  {5}': 'Last shift: {0} {1}, {2} to {3}  •  driving {4}  •  {5}',
   },
   'es': {
+    'do tacógrafo': 'del tacógrafo',
     'Como ligar (passo a passo)': 'Cómo conectar (paso a paso)',
     'Descanso': 'Descanso',
     'Disponibilidade': 'Disponibilidad',
@@ -695,6 +697,7 @@ const Map<String, Map<String, String>> kTr = {
     'Última jornada: {0} {1}, {2} às {3}  •  condução {4}  •  {5}': 'Última jornada: {0} {1}, de {2} a {3}  •  conducción {4}  •  {5}',
   },
   'fr': {
+    'do tacógrafo': 'du tachygraphe',
     'Como ligar (passo a passo)': 'Comment se connecter (pas à pas)',
     'Descanso': 'Repos',
     'Disponibilidade': 'Disponibilité',
