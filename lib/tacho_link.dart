@@ -4,6 +4,7 @@ import 'dart:typed_data';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart' show WidgetsBinding, WidgetsBindingObserver, AppLifecycleState;
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'app_dirs.dart';
@@ -21,7 +22,7 @@ import 'app_dirs.dart';
 /// decodificar com as respostas reais do tacógrafo na etapa seguinte.
 ///
 /// Nada disto mexe nas contas do app: sem ligação, tudo segue pelo GPS.
-class TachoLink extends ChangeNotifier {
+class TachoLink extends ChangeNotifier with WidgetsBindingObserver {
   TachoLink._();
   static final TachoLink I = TachoLink._();
 
@@ -88,6 +89,35 @@ class TachoLink extends ChangeNotifier {
     } catch (_) {}
     _sub ??= _ev.receiveBroadcastStream().listen(_onEvent, onError: (_) {});
     if (enabled && deviceAddress.isNotEmpty) connect();
+    // 1.12.3: vigia da ligação. Com a opção ligada e um tacógrafo
+    // escolhido, volta a ligar sozinho sempre que a ligação cair, ficar
+    // presa a "a ligar" ou o app voltar ao ecrã.
+    _guard ??= Timer.periodic(const Duration(seconds: 15), (_) => _keepAlive());
+    try {
+      WidgetsBinding.instance.addObserver(this);
+    } catch (_) {}
+  }
+
+  Timer? _guard;
+  DateTime _lastTry = DateTime(2000);
+
+  void _keepAlive({bool now = false}) {
+    if (!enabled || deviceAddress.isEmpty || connected) return;
+    final since = DateTime.now().difference(_lastTry);
+    if (state.startsWith('a ligar') || state.startsWith('à espera')) {
+      // Preso a ligar há muito tempo: recomeça.
+      if (since.inSeconds < 45) return;
+      _log('a ligação demorou demais; a tentar de novo');
+      disconnect();
+    } else if (!now && since.inSeconds < 25) {
+      return;
+    }
+    connect();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState s) {
+    if (s == AppLifecycleState.resumed) _keepAlive(now: true);
   }
 
   Future<void> _save() async {
@@ -160,6 +190,7 @@ class TachoLink extends ChangeNotifier {
 
   Future<void> connect() async {
     if (deviceAddress.isEmpty) return;
+    _lastTry = DateTime.now();
     await askPermission();
     _log('ligar a $deviceName ($deviceAddress)');
     try {
@@ -219,11 +250,7 @@ class TachoLink extends ChangeNotifier {
         _txCredits = 0;
         _firstPoll = true;
         // Volta a tentar sozinho daqui a 30 s, se a opção estiver ligada.
-        if (enabled && deviceAddress.isNotEmpty) {
-          Future.delayed(const Duration(seconds: 30), () {
-            if (enabled && !connected && state == 'disconnected') connect();
-          });
-        }
+        // (1.12.3: o vigia _keepAlive volta a ligar.)
       }
       notifyListeners();
     } else if (type == 'channels') {
