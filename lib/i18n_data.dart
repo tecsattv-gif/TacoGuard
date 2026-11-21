@@ -3,6 +3,8 @@
 
 const Map<String, Map<String, String>> kTr = {
   'en': {
+    'Tacógrafo (agora)': 'Tachograph (now)',
+    'O tacógrafo não dá o total do mês; o mês vem do Histórico (ao vivo e .DDD).': "The tachograph doesn't give a monthly total; the month comes from History (live and .DDD).",
     'Condução bissemanal': 'Two-week driving',
     'Este ficheiro não é uma descarga de cartão de motorista (.DDD).': 'This file is not a driver card download (.DDD).',
     'Importar cartão?': 'Import card?',
@@ -359,6 +361,8 @@ const Map<String, Map<String, String>> kTr = {
     'Última jornada: {0} {1}, {2} às {3}  •  condução {4}  •  {5}': 'Last shift: {0} {1}, {2} to {3}  •  driving {4}  •  {5}',
   },
   'es': {
+    'Tacógrafo (agora)': 'Tacógrafo (ahora)',
+    'O tacógrafo não dá o total do mês; o mês vem do Histórico (ao vivo e .DDD).': 'El tacógrafo no da el total del mes; el mes viene del Historial (en vivo y .DDD).',
     'Condução bissemanal': 'Conducción bisemanal',
     'Este ficheiro não é uma descarga de cartão de motorista (.DDD).': 'Este archivo no es una descarga de tarjeta de conductor (.DDD).',
     'Importar cartão?': '¿Importar tarjeta?',
@@ -715,6 +719,8 @@ const Map<String, Map<String, String>> kTr = {
     'Última jornada: {0} {1}, {2} às {3}  •  condução {4}  •  {5}': 'Última jornada: {0} {1}, de {2} a {3}  •  conducción {4}  •  {5}',
   },
   'fr': {
+    'Tacógrafo (agora)': 'Tachygraphe (maintenant)',
+    'O tacógrafo não dá o total do mês; o mês vem do Histórico (ao vivo e .DDD).': "Le tachygraphe ne donne pas le total du mois ; le mois vient de l'Historique (en direct et .DDD).",
     'Condução bissemanal': 'Conduite sur 2 semaines',
     'Este ficheiro não é uma descarga de cartão de motorista (.DDD).': "Ce fichier n'est pas un téléchargement de carte conducteur (.DDD).",
     'Importar cartão?': 'Importer la carte ?',

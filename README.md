@@ -67,6 +67,7 @@ Segredos do repositório (Settings > Secrets and variables > Actions):
 
 ## Versões
 
+- **1.12.4**: Relatórios: no período atual e com o tacógrafo ligado aparece o cartão **Tacógrafo (agora)** com a condução da semana (/56 h), bissemanal (/90 h), o que falta na semana e em 2 semanas (e a condução de hoje no Diário). O total do mês não existe no tacógrafo: o Mensal vem do Histórico (ao vivo e .DDD).
 - **1.12.3**: Ligação ao tacógrafo **fica**: um vigia (de 15 em 15 s) volta a ligar sozinho sempre que a ligação cair, ficar presa a "a ligar" mais de 45 s, ou quando o app volta ao ecrã — basta a opção ligada e o tacógrafo escolhido (ficam gravados).
 - **1.12.2**: Cartão Tacógrafo do ecrã Hoje com a linha **Condução bissemanal** (90 h menos o que falta em 2 semanas, F9B3), logo a seguir à condução na semana.
 - **1.12.1**: Tutorial de ligação corrigido com o caminho real no DTCO 4.1: **OK → ▼ até "Entrada condutor 1" → OK → ▼ até "Bluetooth" → OK → "Emparelhamento" → OK**, depois emparelhar no telemóvel e ligar no TacoGuard.

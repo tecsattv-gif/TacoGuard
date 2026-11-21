@@ -18,6 +18,7 @@ import 'models.dart';
 import 'popup.dart';
 import 'report.dart';
 import 'rules.dart';
+import 'tacho_link.dart';
 import 'tacho_page.dart';
 import 'theme.dart';
 import 'tracker.dart';
@@ -808,6 +809,64 @@ class _ReportsPageState extends State<ReportsPage> {
             ]),
           ]),
         ),
+        // 1.12.4: período atual com o tacógrafo ligado: os totais dele.
+        if (!now.isBefore(from) && now.isBefore(to))
+          ListenableBuilder(
+            listenable: TachoLink.I,
+            builder: (context, _) {
+              final t = TachoLink.I;
+              if (!t.connected) return const SizedBox.shrink();
+              String hm(int? m) => m == null
+                  ? '—'
+                  : '${m ~/ 60}h${(m % 60).toString().padLeft(2, '0')}';
+              final rows = <(String, String)>[
+                if (_kind == ReportKind.day)
+                  (tr('Condução hoje'), hm(t.minutes(0xF99A))),
+                (tr('Condução na semana'),
+                    '${hm(t.minutes(0xF99B))} / 56h'),
+                (tr('Condução bissemanal'),
+                    '${hm(t.fortnightDrive?.inMinutes)} / 90h'),
+                (tr('Falta conduzir na semana'), hm(t.minutes(0xF9B1))),
+                (tr('Falta conduzir em 2 semanas'), hm(t.minutes(0xF9B3))),
+              ];
+              return Padding(
+                padding: const EdgeInsets.only(top: 12),
+                child: TCard(
+                  child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(children: [
+                          const Icon(Icons.bluetooth_connected,
+                              color: TG.drive, size: 20),
+                          const SizedBox(width: 8),
+                          Expanded(
+                              child: Text(tr('Tacógrafo (agora)'),
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.w800))),
+                        ]),
+                        const SizedBox(height: 6),
+                        for (final r in rows)
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 2),
+                            child: Row(children: [
+                              Expanded(child: Text(r.$1)),
+                              Text(r.$2,
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.w700)),
+                            ]),
+                          ),
+                        if (_kind == ReportKind.month) ...[
+                          const SizedBox(height: 6),
+                          Text(
+                              tr('O tacógrafo não dá o total do mês; o mês vem do Histórico (ao vivo e .DDD).'),
+                              style: const TextStyle(
+                                  color: TG.muted, fontSize: 12.5)),
+                        ],
+                      ]),
+                ),
+              );
+            },
+          ),
         const SizedBox(height: 16),
         SizedBox(
           height: 56,
