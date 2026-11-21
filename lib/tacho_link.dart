@@ -493,6 +493,7 @@ class TachoLink extends ChangeNotifier {
 
   /// Últimas respostas por DID (em bruto).
   final Map<int, Uint8List> didData = {};
+  final Map<int, DateTime> didTime = {};
   DateTime? didAt;
 
   bool _v2 = false;
@@ -555,7 +556,16 @@ class TachoLink extends ChangeNotifier {
     _polling = true;
     var answered = 0;
     try {
-      for (final did in dids.keys) {
+      // 1.12.0: o estado (F903) é repetido a cada 4 pedidos, para o app
+      // ver depressa quando a atividade muda.
+      final order = <int>[];
+      var k = 0;
+      for (final d in dids.keys) {
+        if (k > 0 && k % 4 == 0) order.add(0xF903);
+        order.add(d);
+        k++;
+      }
+      for (final did in order) {
         if (!_v2 || !connected) break;
         if (_bad.contains(did)) continue;
         // Espera os créditos do tacógrafo (ele devolve-os aos poucos).
@@ -660,6 +670,9 @@ class TachoLink extends ChangeNotifier {
       final did = (m[1] << 8) | m[2];
       final v = Uint8List.fromList(m.sublist(3));
       didData[did] = v;
+      didTime[did] = DateTime.now();
+      didAt = DateTime.now();
+      lastData = didAt;
       final n = v.length == 1
           ? '${v[0]}'
           : v.length == 2

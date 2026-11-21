@@ -14,6 +14,7 @@ import 'i18n.dart';
 import 'models.dart';
 import 'popup.dart';
 import 'rules.dart';
+import 'tacho_link.dart';
 
 /// Coração do app: guarda as jornadas, recebe o GPS, descobre sozinho
 /// quando o caminhão parou ou arrancou e solta os avisos.
@@ -194,7 +195,116 @@ class Tracker extends ChangeNotifier {
       await _tts.setSpeechRate(0.5);
     } catch (_) {}
     await setVoiceLang();
+    TachoLink.I.addListener(_onTacho);
     notifyListeners();
+  }
+
+  // ---------- 1.12.0: atividade vinda do tacógrafo ----------
+  int? _tachoState;
+  DateTime? _tachoChangeAt;
+  bool _tachoBusy = false;
+
+  /// O tacógrafo está ligado e a mandar a atividade: ele manda, o GPS só
+  /// conta os km e a velocidade.
+  bool get tachoLive =>
+      TachoLink.I.live && TachoLink.I.workingState != null;
+
+  static Act _tachoAct(int st) => switch (st) {
+        3 => Act.drive,
+        2 => Act.work,
+        1 => Act.work, // disponibilidade (não é pausa pela lei)
+        _ => Act.pause,
+      };
+
+  Future<void> _onTacho() async {
+    final t = TachoLink.I;
+    final st = t.workingState;
+    if (!t.live || st == null) {
+      _tachoState = null;
+      return;
+    }
+    if (_tachoBusy) return;
+    _tachoBusy = true;
+    try {
+      final now = DateTime.now();
+      final act = _tachoAct(st);
+      final note = st == 1 ? 'Disponibilidade (tacógrafo)' : 'tacógrafo';
+      if (st != _tachoState) {
+        _tachoState = st;
+        _tachoChangeAt = now;
+        if (current == null) {
+          if (st == 0) return; // descanso e sem jornada: nada a fazer
+          await startShift();
+          final c = current;
+          if (c != null && c.segments.isNotEmpty) c.segments.first.note = note;
+        }
+        if (currentAct != act) {
+          onAskCancel?.call();
+          autoStop = null;
+          setAct(act, at: now);
+        }
+        final seg = currentSegment;
+        if (seg != null && seg.note.isEmpty) seg.note = note;
+        save();
+        notifyListeners();
+      }
+      // Acerta o início do trecho com a duração que o tacógrafo indica
+      // (lida depois da mudança, para não usar o valor da atividade antiga).
+      final c = current;
+      final seg = currentSegment;
+      final m = t.minutes(0xF927);
+      final when = t.didTime[0xF927];
+      if (c != null &&
+          seg != null &&
+          m != null &&
+          when != null &&
+          _tachoChangeAt != null &&
+          when.isAfter(_tachoChangeAt!) &&
+          seg.note.contains('tacógrafo')) {
+        final start = when.subtract(Duration(minutes: m));
+        final i = c.segments.indexOf(seg);
+        final prev = i > 0 ? c.segments[i - 1] : null;
+        final floor = prev?.start ?? c.start;
+        if (start.isBefore(seg.start) &&
+            start.isAfter(floor.add(const Duration(minutes: 1)))) {
+          seg.start = start;
+          if (prev != null) prev.end = start;
+          _tachoChangeAt = null; // já acertado
+          save();
+          notifyListeners();
+        }
+      }
+    } finally {
+      _tachoBusy = false;
+    }
+  }
+
+  /// 1.12.0: junta as jornadas lidas do cartão (.DDD). As jornadas do
+  /// telefone que se sobrepõem às do cartão são trocadas pelas do cartão;
+  /// a jornada aberta (e o que vem depois dela) não é mexida.
+  Future<(int added, int replaced)> importShifts(List<Shift> imp) async {
+    final open = current;
+    final list = imp
+        .where((s) => s.end != null &&
+            (open == null || s.end!.isBefore(open.start)))
+        .toList();
+    if (list.isEmpty) return (0, 0);
+    var replaced = 0;
+    shifts.removeWhere((old) {
+      if (old.open) return false;
+      final oe = old.end!;
+      final hit = list.any((n) => old.start.isBefore(n.end!) && oe.isAfter(n.start));
+      if (hit) replaced++;
+      return hit;
+    });
+    shifts.addAll(list);
+    final s2 = sorted(shifts);
+    shifts
+      ..clear()
+      ..addAll(s2);
+    await save();
+    notifyListeners();
+    return (list.length, replaced);
   }
 
   void _fromJson(String text) {
@@ -673,7 +783,8 @@ class Tracker extends ChangeNotifier {
       _prevLon = p.longitude;
     }
     _prevAt = now;
-    _motion(still, speedKmh, now);
+    // 1.12.0: com o tacógrafo ligado, é ele que diz a atividade.
+    if (!tachoLive) _motion(still, speedKmh, now);
     _speedCheck(now);
     notifyListeners();
   }

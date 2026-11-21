@@ -12,6 +12,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:share_plus/share_plus.dart';
 
 import 'app_dirs.dart';
+import 'ddd.dart';
 import 'i18n.dart';
 import 'models.dart';
 import 'popup.dart';
@@ -993,6 +994,61 @@ class _SettingsPageState extends State<SettingsPage> {
     }
   }
 
+  /// 1.12.0: importa as atividades do cartão de motorista (.DDD).
+  Future<void> _importDdd() async {
+    FilePickerResult? res;
+    try {
+      res = await FilePicker.platform
+          .pickFiles(type: FileType.any, withData: true);
+    } catch (_) {
+      if (mounted) _snack(context, tr('Não consegui abrir os arquivos.'));
+      return;
+    }
+    if (res == null || res.files.isEmpty) return;
+    final pf = res.files.first;
+    var bytes = pf.bytes;
+    if (bytes == null && pf.path != null) {
+      bytes = await File(pf.path!).readAsBytes();
+    }
+    if (bytes == null || !mounted) return;
+    DddResult? r;
+    try {
+      r = Ddd.parse(bytes);
+    } catch (_) {
+      r = null;
+    }
+    if (r == null || r.shifts.isEmpty) {
+      _snack(context, tr('Este ficheiro não é uma descarga de cartão de motorista (.DDD).'));
+      return;
+    }
+    final rr = r;
+    final first = rr.days.first.dateUtc.toLocal();
+    final last = rr.days.last.dateUtc.toLocal();
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(tr('Importar cartão?')),
+        content: Text(tr(
+            '{0} dias ({1} a {2}), {3} jornadas. As jornadas do telefone nesses dias são trocadas pelas do cartão.',
+            ['${rr.days.length}', fmtDate(first), fmtDate(last), '${rr.shifts.length}'])),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: Text(tr('Cancelar'))),
+          FilledButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: Text(tr('Importar'))),
+        ],
+      ),
+    );
+    if (ok != true) return;
+    final (added, replaced) = await _t.importShifts(rr.shifts);
+    if (mounted) {
+      _snack(context,
+          tr('{0} jornadas importadas do cartão ({1} substituídas).', ['$added', '$replaced']));
+    }
+  }
+
   Widget _title(String t) => Padding(
         padding: const EdgeInsets.only(left: 4, top: 18, bottom: 8),
         child: Text(t,
@@ -1210,6 +1266,26 @@ class _SettingsPageState extends State<SettingsPage> {
         // 1.11.0: ligação ao tacógrafo por Bluetooth (opcional).
         _title(tr('Tacógrafo')),
         const TachoCard(),
+        const SizedBox(height: 8),
+        TCard(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(tr('Histórico do cartão de motorista'),
+                  style: const TextStyle(fontWeight: FontWeight.w800)),
+              const SizedBox(height: 4),
+              Text(
+                  tr('Importe o ficheiro .DDD da descarga do seu cartão (dado pela empresa ou tirado com um leitor de cartões). As atividades dos últimos dias entram no Histórico e nos relatórios.'),
+                  style: const TextStyle(color: TG.muted, fontSize: 12.5)),
+              const SizedBox(height: 10),
+              OutlinedButton.icon(
+                onPressed: _importDdd,
+                icon: const Icon(Icons.sim_card_download_rounded),
+                label: Fit(tr('Importar ficheiro .DDD')),
+              ),
+            ],
+          ),
+        ),
         _title(tr('Funcionar com a tela apagada')),
         TCard(
           child: Column(
