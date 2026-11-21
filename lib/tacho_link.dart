@@ -427,15 +427,15 @@ class TachoLink extends ChangeNotifier {
     0xF927: 'Driver1CurrentDurationOfSelectedActivity',
     0xF99A: 'Driver1CurrentDailyDrivingTime',
     0xF99B: 'Driver1CurrentWeeklyDrivingTime',
-    0xF99C: 'Driver1TimeLeftUntilNewDailyRestPeriod',
-    0xF9A1: 'Driver1TimeLeftUntilNewWeeklyRestPeriod',
     0xF9AD: 'Driver1RemainingCurrentDrivingTime',
     0xF9AF: 'Driver1RemainingDrivingTimeOnCurrentShift',
+    0xF9C2: 'Driver1RemainingTimeUntilNextBreakOrRest',
+    0xF9C0: 'Driver1RemainingTimeOfCurrentBreakRest',
+    0xF9B9: 'Driver1DurationOfNextBreakRest',
+    0xF99C: 'Driver1TimeLeftUntilNewDailyRestPeriod',
     0xF9B1: 'Driver1RemainingDrivingTimeOfCurrentWeek',
     0xF9B3: 'Driver1Remaining2WeeksDrivingTime',
-    0xF9B9: 'Driver1DurationOfNextBreakRest',
-    0xF9C0: 'Driver1RemainingTimeOfCurrentBreakRest',
-    0xF9C2: 'Driver1RemainingTimeUntilNextBreakOrRest',
+    0xF9A1: 'Driver1TimeLeftUntilNewWeeklyRestPeriod',
     0xF997: 'Driver1EndOfLastDailyRestPeriod',
     0xF998: 'Driver1EndOfLastWeeklyRestPeriod',
     0xF9AB: 'Driver1NumberOfUsedReducedDailyRestPeriods',
@@ -443,6 +443,26 @@ class TachoLink extends ChangeNotifier {
     0xF90B: 'TimeDate',
     0xF906: 'Driver1TimeRelatedStates',
   };
+
+  /// Minutos de um dado de tempo (null se não houver ou não for válido).
+  int? minutes(int did) {
+    final v = didData[did];
+    if (v == null || v.length != 2) return null;
+    final n = (v[0] << 8) | v[1];
+    return n >= 0xFB00 ? null : n;
+  }
+
+  /// Atividade do motorista 1: 0 descanso, 1 disponível, 2 trabalho, 3 condução.
+  int? get workingState {
+    final v = didData[0xF903];
+    return v == null || v.isEmpty ? null : v.first;
+  }
+
+  /// Há dados recentes do tacógrafo (menos de 3 minutos).
+  bool get live =>
+      connected && didAt != null &&
+      DateTime.now().difference(didAt!).inMinutes < 3;
+
 
   /// Texto legível de um dado (tempos em minutos, 2 bytes → h:mm).
   static String pretty(int did, Uint8List v) {

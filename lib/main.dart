@@ -18,6 +18,7 @@ import 'popup.dart';
 import 'rules.dart';
 import 'theme.dart';
 import 'tacho_link.dart';
+import 'tacho_page.dart';
 import 'tracker.dart';
 import 'update_service.dart';
 
@@ -641,6 +642,8 @@ class _TodayPageState extends State<TodayPage> {
     final c = _t.current;
     final now = DateTime.now();
     final items = c == null ? _closed(now) : _open(c, now);
+    // 1.11.8: tempos do tacógrafo (só com Bluetooth ligado).
+    if (items.isNotEmpty) items.insert(1, const TachoLiveCard());
     final pad = EdgeInsets.fromLTRB(
         16, 4, 16, 28 + MediaQuery.paddingOf(context).bottom);
     return LayoutBuilder(builder: (context, box) {

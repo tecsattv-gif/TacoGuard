@@ -1,3 +1,4 @@
+import 'dart:ui' show FontFeature;
 import 'package:flutter/material.dart';
 import 'package:share_plus/share_plus.dart';
 
@@ -272,4 +273,78 @@ class _TachoTestPageState extends State<TachoTestPage> {
       ]),
     );
   }
+}
+
+
+/// 1.11.8: cartão no ecrã Hoje com os tempos lidos do tacógrafo.
+/// Só aparece com o tacógrafo ligado e a mandar dados.
+class TachoLiveCard extends StatelessWidget {
+  const TachoLiveCard({super.key});
+
+  static String _hm(int? m) =>
+      m == null ? '—' : '${m ~/ 60}h${(m % 60).toString().padLeft(2, '0')}';
+
+  @override
+  Widget build(BuildContext context) => ListenableBuilder(
+        listenable: TachoLink.I,
+        builder: (context, _) {
+          final t = TachoLink.I;
+          if (!t.connected || t.didData.isEmpty) return const SizedBox(height: 0, width: 0);
+          final st = t.workingState;
+          final act = switch (st) {
+            0 => tr('Descanso'),
+            1 => tr('Disponibilidade'),
+            2 => tr('Outro trabalho'),
+            3 => tr('Condução'),
+            _ => '—',
+          };
+          final rows = <(String, int)>[
+            (tr('Condução contínua'), 0xF923),
+            (tr('Pausa acumulada'), 0xF925),
+            (tr('Atividade atual há'), 0xF927),
+            (tr('Condução hoje'), 0xF99A),
+            (tr('Condução na semana'), 0xF99B),
+            (tr('Falta conduzir até a pausa'), 0xF9AD),
+            (tr('Falta conduzir hoje'), 0xF9AF),
+            (tr('Falta conduzir na semana'), 0xF9B1),
+            (tr('Falta conduzir em 2 semanas'), 0xF9B3),
+            (tr('Até ao descanso diário'), 0xF99C),
+            (tr('Até ao descanso semanal'), 0xF9A1),
+          ];
+          final cs = Theme.of(context).colorScheme;
+          return Card(
+            margin: const EdgeInsets.only(top: 12),
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+              child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(children: [
+                      Icon(Icons.bluetooth_connected, color: cs.primary, size: 20),
+                      const SizedBox(width: 8),
+                      Expanded(
+                          child: Text('${tr('Tacógrafo')}: $act',
+                              style: const TextStyle(fontWeight: FontWeight.w800))),
+                      if (t.live)
+                        Text(tr('ao vivo'),
+                            style: TextStyle(color: cs.primary, fontSize: 12)),
+                    ]),
+                    const SizedBox(height: 6),
+                    for (final r in rows)
+                      if (t.minutes(r.$2) != null)
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 2),
+                          child: Row(children: [
+                            Expanded(child: Text(r.$1)),
+                            Text(_hm(t.minutes(r.$2)),
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.w700,
+                                    fontFeatures: [FontFeature.tabularFigures()])),
+                          ]),
+                        ),
+                  ]),
+            ),
+          );
+        },
+      );
 }
