@@ -67,6 +67,7 @@ Segredos do repositório (Settings > Secrets and variables > Actions):
 
 ## Versões
 
+- **1.12.5**: Jornada segue o tacógrafo: com **cama há 1 h ou mais** no DTCO, o TacoGuard **encerra a jornada** na hora em que o descanso começou. Se **arrancar** (ou passar a trabalho) antes de 9 h de descanso, a mesma jornada é **reaberta** e o tempo parado conta como pausa; com 9 h ou mais, abre jornada nova.
 - **1.12.4**: Relatórios: no período atual e com o tacógrafo ligado aparece o cartão **Tacógrafo (agora)** com a condução da semana (/56 h), bissemanal (/90 h), o que falta na semana e em 2 semanas (e a condução de hoje no Diário). O total do mês não existe no tacógrafo: o Mensal vem do Histórico (ao vivo e .DDD).
 - **1.12.3**: Ligação ao tacógrafo **fica**: um vigia (de 15 em 15 s) volta a ligar sozinho sempre que a ligação cair, ficar presa a "a ligar" mais de 45 s, ou quando o app volta ao ecrã — basta a opção ligada e o tacógrafo escolhido (ficam gravados).
 - **1.12.2**: Cartão Tacógrafo do ecrã Hoje com a linha **Condução bissemanal** (90 h menos o que falta em 2 semanas, F9B3), logo a seguir à condução na semana.

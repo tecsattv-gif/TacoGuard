@@ -234,9 +234,16 @@ class Tracker extends ChangeNotifier {
         _tachoChangeAt = now;
         if (current == null) {
           if (st == 0) return; // descanso e sem jornada: nada a fazer
-          await startShift();
-          final c = current;
-          if (c != null && c.segments.isNotEmpty) c.segments.first.note = note;
+          // 1.12.5: arrancou/trabalho depois de um fecho automático com
+          // menos de 9 h de descanso: reabre a mesma jornada (o tempo
+          // parado conta como pausa). Senão, jornada nova.
+          if (reopenable != null) {
+            await reopenShift(Act.pause);
+          } else {
+            await startShift();
+            final c = current;
+            if (c != null && c.segments.isNotEmpty) c.segments.first.note = note;
+          }
         }
         if (currentAct != act) {
           onAskCancel?.call();
@@ -247,6 +254,27 @@ class Tracker extends ChangeNotifier {
         if (seg != null && seg.note.isEmpty) seg.note = note;
         save();
         notifyListeners();
+      }
+      // 1.12.5: descanso (cama) no tacógrafo há 1 h ou mais: encerra a
+      // jornada na hora em que o descanso começou. Se voltar a conduzir
+      // antes das 9 h de descanso, a jornada é reaberta (ver acima).
+      if (st == 0) {
+        final c0 = current;
+        final sg = currentSegment;
+        if (c0 != null && sg != null && sg.act == Act.pause) {
+          final restStart = sg.start;
+          if (now.difference(restStart) >= const Duration(hours: 1) &&
+              c0.segments.any((x) => x.act != Act.pause)) {
+            await endShift();
+            if (c0.segments.length > 1 && identical(c0.segments.last, sg)) {
+              c0.segments.removeLast();
+            }
+            c0.end = restStart;
+            await save();
+            notifyListeners();
+            return;
+          }
+        }
       }
       // Acerta o início do trecho com a duração que o tacógrafo indica
       // (lida depois da mudança, para não usar o valor da atividade antiga).
