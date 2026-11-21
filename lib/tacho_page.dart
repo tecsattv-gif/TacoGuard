@@ -491,6 +491,7 @@ class TachoLiveCard extends StatelessWidget {
             (tr('Atividade atual há'), 0xF927),
             (tr('Condução hoje'), 0xF99A),
             (tr('Condução na semana'), 0xF99B),
+            (tr('Condução bissemanal'), -1), // 90 h − o que falta (F9B3)
             (tr('Falta conduzir até a pausa'), 0xF9AD),
             (tr('Falta conduzir hoje'), 0xF9AF),
             (tr('Falta conduzir na semana'), 0xF9B1),
@@ -518,12 +519,18 @@ class TachoLiveCard extends StatelessWidget {
                     ]),
                     const SizedBox(height: 6),
                     for (final r in rows)
-                      if (t.minutes(r.$2) != null)
+                      if ((r.$2 == -1
+                              ? t.fortnightDrive?.inMinutes
+                              : t.minutes(r.$2)) !=
+                          null)
                         Padding(
                           padding: const EdgeInsets.symmetric(vertical: 2),
                           child: Row(children: [
                             Expanded(child: Text(r.$1)),
-                            Text(_hm(t.minutes(r.$2)),
+                            Text(
+                                _hm(r.$2 == -1
+                                    ? t.fortnightDrive?.inMinutes
+                                    : t.minutes(r.$2)),
                                 style: const TextStyle(
                                     fontWeight: FontWeight.w700,
                                     fontFeatures: [FontFeature.tabularFigures()])),

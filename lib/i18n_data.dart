@@ -3,6 +3,7 @@
 
 const Map<String, Map<String, String>> kTr = {
   'en': {
+    'Condução bissemanal': 'Two-week driving',
     'Este ficheiro não é uma descarga de cartão de motorista (.DDD).': 'This file is not a driver card download (.DDD).',
     'Importar cartão?': 'Import card?',
     '{0} dias ({1} a {2}), {3} jornadas. As jornadas do telefone nesses dias são trocadas pelas do cartão.': "{0} days ({1} to {2}), {3} shifts. The phone's shifts on those days are replaced by the card's.",
@@ -358,6 +359,7 @@ const Map<String, Map<String, String>> kTr = {
     'Última jornada: {0} {1}, {2} às {3}  •  condução {4}  •  {5}': 'Last shift: {0} {1}, {2} to {3}  •  driving {4}  •  {5}',
   },
   'es': {
+    'Condução bissemanal': 'Conducción bisemanal',
     'Este ficheiro não é uma descarga de cartão de motorista (.DDD).': 'Este archivo no es una descarga de tarjeta de conductor (.DDD).',
     'Importar cartão?': '¿Importar tarjeta?',
     '{0} dias ({1} a {2}), {3} jornadas. As jornadas do telefone nesses dias são trocadas pelas do cartão.': '{0} días ({1} a {2}), {3} jornadas. Las jornadas del móvil en esos días se sustituyen por las de la tarjeta.',
@@ -713,6 +715,7 @@ const Map<String, Map<String, String>> kTr = {
     'Última jornada: {0} {1}, {2} às {3}  •  condução {4}  •  {5}': 'Última jornada: {0} {1}, de {2} a {3}  •  conducción {4}  •  {5}',
   },
   'fr': {
+    'Condução bissemanal': 'Conduite sur 2 semaines',
     'Este ficheiro não é uma descarga de cartão de motorista (.DDD).': "Ce fichier n'est pas un téléchargement de carte conducteur (.DDD).",
     'Importar cartão?': 'Importer la carte ?',
     '{0} dias ({1} a {2}), {3} jornadas. As jornadas do telefone nesses dias são trocadas pelas do cartão.': '{0} jours (du {1} au {2}), {3} journées. Les journées du téléphone sur ces jours sont remplacées par celles de la carte.',

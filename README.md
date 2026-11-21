@@ -67,6 +67,7 @@ Segredos do repositório (Settings > Secrets and variables > Actions):
 
 ## Versões
 
+- **1.12.2**: Cartão Tacógrafo do ecrã Hoje com a linha **Condução bissemanal** (90 h menos o que falta em 2 semanas, F9B3), logo a seguir à condução na semana.
 - **1.12.1**: Tutorial de ligação corrigido com o caminho real no DTCO 4.1: **OK → ▼ até "Entrada condutor 1" → OK → ▼ até "Bluetooth" → OK → "Emparelhamento" → OK**, depois emparelhar no telemóvel e ligar no TacoGuard.
 - **1.12.0**: Dados do tacógrafo no **Histórico e nos relatórios**:
   - **Ao vivo**: com o tacógrafo ligado por Bluetooth, a atividade vem dele (condução, outros trabalhos, disponibilidade → martelo, descanso → pausa). Se não houver jornada aberta e o tacógrafo passar a condução/trabalho, a jornada abre sozinha. O início de cada trecho é acertado com a duração que o DTCO indica (F927). O estado (F903) é pedido a cada 4 pedidos. Os trechos ficam com a nota "tacógrafo". O GPS continua a contar km e velocidade; sem ligação, tudo volta ao GPS.
