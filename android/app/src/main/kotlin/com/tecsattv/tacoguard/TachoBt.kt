@@ -3,6 +3,12 @@ package com.tecsattv.tacoguard
 import android.Manifest
 import android.app.Activity
 import android.bluetooth.BluetoothAdapter
+import android.bluetooth.BluetoothDevice
+import android.bluetooth.BluetoothGatt
+import android.bluetooth.BluetoothGattCallback
+import android.bluetooth.BluetoothGattCharacteristic
+import android.bluetooth.BluetoothGattDescriptor
+import android.bluetooth.BluetoothProfile
 import android.bluetooth.BluetoothServerSocket
 import android.bluetooth.BluetoothSocket
 import android.content.pm.PackageManager
@@ -13,6 +19,9 @@ import io.flutter.plugin.common.BinaryMessenger
 import io.flutter.plugin.common.EventChannel
 import io.flutter.plugin.common.MethodChannel
 import java.util.UUID
+import java.util.concurrent.LinkedBlockingQueue
+import java.util.concurrent.Semaphore
+import java.util.concurrent.TimeUnit
 
 /**
  * 1.11.0: ligação Bluetooth ao tacógrafo inteligente (interface ITS,
@@ -54,15 +63,20 @@ class TachoBt(private val activity: Activity, messenger: BinaryMessenger) {
                     }
                     "write" -> {
                         val data = call.argument<ByteArray>("data") ?: ByteArray(0)
-                        Thread {
-                            try {
-                                socket?.outputStream?.write(data)
-                                socket?.outputStream?.flush()
-                            } catch (e: Exception) {
-                                emit("error", "write: ${e.message}")
-                            }
-                        }.start()
-                        result.success(socket != null)
+                        if (gatt != null) {
+                            bleQueue.offer(data)
+                            result.success(true)
+                        } else {
+                            Thread {
+                                try {
+                                    socket?.outputStream?.write(data)
+                                    socket?.outputStream?.flush()
+                                } catch (e: Exception) {
+                                    emit("error", "write: ${e.message}")
+                                }
+                            }.start()
+                            result.success(socket != null)
+                        }
                     }
                     "disconnect" -> {
                         close()
@@ -136,6 +150,14 @@ class TachoBt(private val activity: Activity, messenger: BinaryMessenger) {
             emit("info", "serviços do tacógrafo: " +
                 if (uuids.isEmpty()) "nenhum anunciado" else uuids.joinToString(", "))
             emit("info", "tipo: ${dev.type}  emparelhado: ${dev.bondState == 12}")
+            // 1.11.2: tipo 2 = só Bluetooth LE (o DTCO 4.1 é assim): liga por
+            // GATT. Tipo 3 (os dois): tenta LE primeiro.
+            if (dev.type == BluetoothDevice.DEVICE_TYPE_LE ||
+                dev.type == BluetoothDevice.DEVICE_TYPE_DUAL) {
+                busy = false
+                connectBle(dev)
+                return
+            }
             val tries = mutableListOf<Pair<String, () -> BluetoothSocket>>()
             for (u in uuids.distinct()) {
                 tries.add("serviço $u" to { dev.createRfcommSocketToServiceRecord(u) })
@@ -212,7 +234,196 @@ class TachoBt(private val activity: Activity, messenger: BinaryMessenger) {
         emit("state", "disconnected")
     }
 
+
+    // ---------- Bluetooth LE (1.11.2) ----------
+    @Volatile private var gatt: BluetoothGatt? = null
+    private var rxChar: BluetoothGattCharacteristic? = null
+    private var txChar: BluetoothGattCharacteristic? = null
+    private val bleQueue = LinkedBlockingQueue<ByteArray>()
+    private val writeDone = Semaphore(0)
+    private var mtu = 23
+    private var writer: Thread? = null
+
+    private fun props(p: Int): String {
+        val l = mutableListOf<String>()
+        if (p and BluetoothGattCharacteristic.PROPERTY_READ != 0) l.add("read")
+        if (p and BluetoothGattCharacteristic.PROPERTY_WRITE != 0) l.add("write")
+        if (p and BluetoothGattCharacteristic.PROPERTY_WRITE_NO_RESPONSE != 0) l.add("writeNR")
+        if (p and BluetoothGattCharacteristic.PROPERTY_NOTIFY != 0) l.add("notify")
+        if (p and BluetoothGattCharacteristic.PROPERTY_INDICATE != 0) l.add("indicate")
+        return l.joinToString("/")
+    }
+
+    // Serviços padrão do Bluetooth (não são os dados do tacógrafo).
+    private fun isStd(u: UUID): Boolean {
+        val s = u.toString().lowercase()
+        return s.endsWith("-0000-1000-8000-00805f9b34fb") &&
+            (s.startsWith("00001800") || s.startsWith("00001801") ||
+                s.startsWith("0000180a") || s.startsWith("0000180f"))
+    }
+
+    private val cccd: UUID = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb")
+
+    private fun connectBle(dev: BluetoothDevice) {
+        emit("state", "a ligar (Bluetooth LE)")
+        val cb = object : BluetoothGattCallback() {
+            override fun onConnectionStateChange(g: BluetoothGatt, status: Int, newState: Int) {
+                if (newState == BluetoothProfile.STATE_CONNECTED) {
+                    emit("info", "LE ligado (status $status); a pedir MTU e serviços")
+                    try {
+                        g.requestMtu(247)
+                    } catch (_: Exception) {
+                        g.discoverServices()
+                    }
+                } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
+                    emit("info", "LE desligado (status $status)")
+                    try {
+                        g.close()
+                    } catch (_: Exception) {
+                    }
+                    if (gatt === g) gatt = null
+                    writer?.interrupt()
+                    emit("state", "disconnected")
+                }
+            }
+
+            override fun onMtuChanged(g: BluetoothGatt, m: Int, status: Int) {
+                mtu = m
+                emit("info", "MTU $m")
+                g.discoverServices()
+            }
+
+            override fun onServicesDiscovered(g: BluetoothGatt, status: Int) {
+                var rx: BluetoothGattCharacteristic? = null
+                var tx: BluetoothGattCharacteristic? = null
+                for (sv in g.services) {
+                    emit("info", "serviço ${sv.uuid}")
+                    for (c in sv.characteristics) {
+                        emit("info", "  car. ${c.uuid} [${props(c.properties)}]")
+                    }
+                }
+                // Escolhe o serviço não padrão que tenha um "notify" e um "write".
+                for (sv in g.services) {
+                    if (isStd(sv.uuid)) continue
+                    val n = sv.characteristics.firstOrNull {
+                        it.properties and (BluetoothGattCharacteristic.PROPERTY_NOTIFY or
+                            BluetoothGattCharacteristic.PROPERTY_INDICATE) != 0
+                    }
+                    val w = sv.characteristics.firstOrNull {
+                        it.properties and (BluetoothGattCharacteristic.PROPERTY_WRITE or
+                            BluetoothGattCharacteristic.PROPERTY_WRITE_NO_RESPONSE) != 0
+                    }
+                    if (n != null && w != null) {
+                        rx = n
+                        tx = w
+                        break
+                    }
+                }
+                if (rx == null || tx == null) {
+                    emit("error", "LE: não achei o canal de dados (ver lista de serviços)")
+                    return
+                }
+                rxChar = rx
+                txChar = tx
+                emit("info", "dados por: recebe ${rx.uuid}, envia ${tx.uuid}")
+                g.setCharacteristicNotification(rx, true)
+                val d = rx.getDescriptor(cccd)
+                if (d != null) {
+                    val v = if (rx.properties and BluetoothGattCharacteristic.PROPERTY_INDICATE != 0 &&
+                        rx.properties and BluetoothGattCharacteristic.PROPERTY_NOTIFY == 0)
+                        BluetoothGattDescriptor.ENABLE_INDICATION_VALUE
+                    else BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE
+                    if (Build.VERSION.SDK_INT >= 33) {
+                        g.writeDescriptor(d, v)
+                    } else {
+                        @Suppress("DEPRECATION")
+                        d.value = v
+                        @Suppress("DEPRECATION")
+                        g.writeDescriptor(d)
+                    }
+                } else {
+                    ready()
+                }
+            }
+
+            override fun onDescriptorWrite(g: BluetoothGatt, d: BluetoothGattDescriptor, status: Int) {
+                emit("info", "avisos ligados (status $status)")
+                ready()
+            }
+
+            @Deprecated("Android < 13")
+            override fun onCharacteristicChanged(g: BluetoothGatt, c: BluetoothGattCharacteristic) {
+                @Suppress("DEPRECATION")
+                val v = c.value ?: return
+                emit("data", v.copyOf())
+            }
+
+            override fun onCharacteristicChanged(g: BluetoothGatt, c: BluetoothGattCharacteristic, value: ByteArray) {
+                emit("data", value.copyOf())
+            }
+
+            override fun onCharacteristicWrite(g: BluetoothGatt, c: BluetoothGattCharacteristic, status: Int) {
+                if (status != 0) emit("info", "envio LE status $status")
+                writeDone.release()
+            }
+        }
+        try {
+            gatt = if (Build.VERSION.SDK_INT >= 23)
+                dev.connectGatt(activity, false, cb, BluetoothDevice.TRANSPORT_LE)
+            else dev.connectGatt(activity, false, cb)
+        } catch (e: Exception) {
+            emit("error", "LE: ${e.message}")
+            emit("state", "disconnected")
+        }
+    }
+
+    private fun ready() {
+        bleQueue.clear()
+        writer?.interrupt()
+        writer = Thread {
+            try {
+                while (true) {
+                    val data = bleQueue.take()
+                    val g = gatt ?: break
+                    val c = txChar ?: break
+                    val size = (mtu - 3).coerceAtLeast(20)
+                    var i = 0
+                    while (i < data.size) {
+                        val part = data.copyOfRange(i, minOf(i + size, data.size))
+                        val noResp = c.properties and BluetoothGattCharacteristic.PROPERTY_WRITE == 0
+                        val type = if (noResp) BluetoothGattCharacteristic.WRITE_TYPE_NO_RESPONSE
+                        else BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT
+                        if (Build.VERSION.SDK_INT >= 33) {
+                            g.writeCharacteristic(c, part, type)
+                        } else {
+                            @Suppress("DEPRECATION")
+                            c.value = part
+                            c.writeType = type
+                            @Suppress("DEPRECATION")
+                            g.writeCharacteristic(c)
+                        }
+                        writeDone.tryAcquire(2, TimeUnit.SECONDS)
+                        i += size
+                    }
+                }
+            } catch (_: InterruptedException) {
+            } catch (e: Exception) {
+                emit("error", "envio LE: ${e.message}")
+            }
+        }
+        writer?.start()
+        emit("state", "connected")
+    }
+
     fun close() {
+        writer?.interrupt()
+        writer = null
+        try {
+            gatt?.disconnect()
+            gatt?.close()
+        } catch (_: Exception) {
+        }
+        gatt = null
         try {
             socket?.close()
         } catch (_: Exception) {
