@@ -68,6 +68,7 @@ Segredos do repositório (Settings > Secrets and variables > Actions):
 
 ## Versões
 
+- **1.13.1**: Telefone deitado: o cartão do **tacógrafo ao vivo** passa para a coluna da direita (a que rola). Na coluna fixa da esquerda ele obrigava a encolher tudo para caber na altura e a tela ficava muito reduzida.
 - **1.13.0**: Nova tela **Gráficos**, aberta pelo ícone de gráfico no cartão do tacógrafo ao vivo e no topo das telas Hoje e Histórico: **Tacógrafo (agora)** com barras contra os limites (condução contínua 4h30, hoje 9/10 h, semana 56 h, bissemanal 90 h); **condução por dia** (14 dias, linhas de 9 h e 10 h); **condução por semana** (8 semanas, linha de 56 h, e a bissemanal); **atividades da semana** (anel com condução, pausa, martelo e carga/descarga); **quilómetros por dia**. Tocar numa barra mostra o valor. No tablet ou deitado, em duas colunas.
 - **1.12.9**: **Visual novo**: tela de abertura (splash) com o escudo do TacoGuard, o disco de 24 h do tacógrafo (descanso, trabalho e condução), o velocímetro e o volante, sobre uma estrada; em pé enche a tela, deitado ou no tablet aparece inteira. **Ícone do app** com o mesmo escudo (fundo azul-escuro no ícone adaptativo). **Barra de estado**: o ícone perto das horas passa a ser o escudo com o volante (`drawable/ic_stat_tacho.xml`).
 - **1.12.8**: PDF dos relatórios com a secção **Tacógrafo (agora)** (período atual e tacógrafo ligado): condução da semana /56 h, bissemanal /90 h, o que falta na semana e em 2 semanas (e a condução de hoje no diário).
