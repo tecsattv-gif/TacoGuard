@@ -41,7 +41,7 @@ class ChartsPage extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(vertical: 24),
                 child: Text(
                     tr('Ainda não há jornadas registadas no app.'),
-                    style: const TextStyle(color: TG.muted)),
+                    style: TextStyle(color: TG.muted)),
               ),
             ));
           } else {
@@ -201,7 +201,7 @@ class ChartsPage extends StatelessWidget {
           ? Padding(
               padding: const EdgeInsets.symmetric(vertical: 16),
               child: Text(tr('Sem atividades nesta semana.'),
-                  style: const TextStyle(color: TG.muted)),
+                  style: TextStyle(color: TG.muted)),
             )
           : Row(children: [
               SizedBox(
@@ -218,7 +218,7 @@ class ChartsPage extends StatelessWidget {
                               fontWeight: FontWeight.w800, fontSize: 18)),
                       Text(tr('total'),
                           style:
-                              const TextStyle(color: TG.muted, fontSize: 12)),
+                              TextStyle(color: TG.muted, fontSize: 12)),
                     ]),
                   ),
                 ),
@@ -253,7 +253,7 @@ class ChartsPage extends StatelessWidget {
                               child: Text(
                                   '${(tot[a]! * 100 / sum).round()}%',
                                   textAlign: TextAlign.right,
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                       color: TG.muted, fontSize: 12)),
                             ),
                           ]),
@@ -326,7 +326,7 @@ class _Section extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.only(top: 2),
               child: Text(subtitle!,
-                  style: const TextStyle(color: TG.muted, fontSize: 12)),
+                  style: TextStyle(color: TG.muted, fontSize: 12)),
             ),
           const SizedBox(height: 12),
           child,
@@ -448,6 +448,8 @@ class _BarPainter extends CustomPainter {
   final double minMax;
   final Color Function(double) colorOf;
   final int? selected;
+  // 1.14.0: redesenha quando a paleta de cores muda.
+  final int _gen = themeNotifier.value;
   _BarPainter({
     required this.values,
     required this.labels,
@@ -512,7 +514,7 @@ class _BarPainter extends CustomPainter {
           RRect.fromRectAndRadius(
               Rect.fromLTRB(cx - slot / 2 + 1, 0, cx + slot / 2 - 1, h),
               const Radius.circular(6)),
-          Paint()..color = Colors.white.withValues(alpha: 0.06),
+          Paint()..color = TG.text.withValues(alpha: 0.06),
         );
       }
       // legendas: todas se couberem, senão uma sim, uma não
@@ -540,7 +542,7 @@ class _BarPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _BarPainter o) =>
-      o.values != values || o.selected != selected;
+      o.values != values || o.selected != selected || o._gen != _gen;
 }
 
 class _DonutPainter extends CustomPainter {

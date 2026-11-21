@@ -344,7 +344,7 @@ class _LawPageState extends State<LawPage> {
         ),
         const SizedBox(height: 12),
         if (list.isEmpty)
-          const Padding(
+          Padding(
             padding: EdgeInsets.all(24),
             child: Text('Nada encontrado.',
                 textAlign: TextAlign.center,
@@ -366,7 +366,7 @@ class _LawPageState extends State<LawPage> {
                           fontWeight: FontWeight.w700, fontSize: 16)),
                   subtitle: Text(t.ref,
                       style:
-                          const TextStyle(color: TG.muted, fontSize: 12)),
+                          TextStyle(color: TG.muted, fontSize: 12)),
                   childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 14),
                   children: [
                     for (final p in t.points)
@@ -375,7 +375,7 @@ class _LawPageState extends State<LawPage> {
                         child: Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Padding(
+                            Padding(
                               padding: EdgeInsets.only(top: 7, right: 10),
                               child: CircleAvatar(
                                   radius: 3, backgroundColor: TG.accent),
@@ -394,7 +394,7 @@ class _LawPageState extends State<LawPage> {
             ),
           ),
         const SizedBox(height: 6),
-        const Text(
+        Text(
           'Resumo do Regulamento (CE) n.º 561/2006, com as alterações do '
           'Regulamento (UE) 2020/1054. Não substitui o texto oficial nem o '
           'tacógrafo.',

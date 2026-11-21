@@ -91,7 +91,7 @@ class StopChoices extends StatelessWidget {
                                 fontSize: 17,
                                 fontWeight: FontWeight.w800)),
                         Text(stopHint(a),
-                            style: const TextStyle(
+                            style: TextStyle(
                                 color: TG.muted, fontSize: 12.5)),
                       ],
                     ),
@@ -426,7 +426,7 @@ class _SpeedPopupWindowState extends State<SpeedPopupWindow>
             ),
             child: Row(children: [
               Text(left > 0 ? '$left s' : '!',
-                  style: const TextStyle(
+                  style: TextStyle(
                       color: TG.danger,
                       fontSize: 22,
                       fontWeight: FontWeight.w900)),
@@ -435,7 +435,7 @@ class _SpeedPopupWindowState extends State<SpeedPopupWindow>
                 child: Text(text,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
+                    style: TextStyle(
                         color: TG.text,
                         fontSize: 13,
                         fontWeight: FontWeight.w600)),
@@ -517,7 +517,7 @@ class _StopPopupWindowState extends State<StopPopupWindow> {
           children: [
             Row(
               children: [
-                const Icon(Icons.pause_circle_filled_rounded,
+                Icon(Icons.pause_circle_filled_rounded,
                     color: TG.accent, size: 26),
                 const SizedBox(width: 8),
                 Expanded(
@@ -530,7 +530,7 @@ class _StopPopupWindowState extends State<StopPopupWindow> {
                             : _auto
                                 ? tr('Martelo desde {0}', [_since])
                                 : tr('Parado desde {0}', [_since]),
-                        style: const TextStyle(
+                        style: TextStyle(
                             color: TG.text,
                             fontSize: 16,
                             fontWeight: FontWeight.w800),
@@ -541,7 +541,7 @@ class _StopPopupWindowState extends State<StopPopupWindow> {
                               : _auto
                                   ? tr('Parado há 15 min. É pausa?')
                                   : tr('O que é esta parada?'),
-                          style: const TextStyle(
+                          style: TextStyle(
                               color: TG.muted, fontSize: 13)),
                     ],
                   ),
@@ -549,7 +549,7 @@ class _StopPopupWindowState extends State<StopPopupWindow> {
                 GestureDetector(
                   behavior: HitTestBehavior.opaque,
                   onTapDown: (_) => _pick('later'),
-                  child: const Padding(
+                  child: Padding(
                     padding: EdgeInsets.all(10),
                     child: Icon(Icons.close_rounded,
                         color: TG.muted, size: 28),
@@ -564,7 +564,7 @@ class _StopPopupWindowState extends State<StopPopupWindow> {
                 _auto
                     ? tr('Sem resposta, continua martelo (como o tacógrafo).')
                     : tr('Sem resposta, fica "a classificar".'),
-                style: const TextStyle(color: TG.muted, fontSize: 11)),
+                style: TextStyle(color: TG.muted, fontSize: 11)),
           ],
         ),
       ),

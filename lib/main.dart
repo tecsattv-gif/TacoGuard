@@ -5,7 +5,6 @@ import 'dart:ui' show FontFeature;
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:android_intent_plus/android_intent.dart';
 import 'package:flutter_overlay_window/flutter_overlay_window.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -30,6 +29,7 @@ import 'update_service.dart';
 Future<void> overlayMain() async {
   WidgetsFlutterBinding.ensureInitialized();
   await loadLang();
+  await loadTheme(systemBars: false); // 1.14.0: mesma paleta do app
   runApp(MaterialApp(
     debugShowCheckedModeBanner: false,
     theme: TG.theme(),
@@ -40,24 +40,44 @@ Future<void> overlayMain() async {
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
-    statusBarColor: Colors.transparent,
-    statusBarIconBrightness: Brightness.light,
-    systemNavigationBarColor: TG.surface,
-  ));
   await loadLang();
+  await loadTheme(); // 1.14.0: paleta de cores (também acerta as barras)
   await Tracker.I.load();
   await TachoLink.I.load(); // 1.11.0: ligação ao tacógrafo (se ligada)
   runApp(const TacoApp());
 }
 
-class TacoApp extends StatelessWidget {
+class TacoApp extends StatefulWidget {
   const TacoApp({super.key});
   @override
+  State<TacoApp> createState() => _TacoAppState();
+}
+
+class _TacoAppState extends State<TacoApp> with WidgetsBindingObserver {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  /// 1.14.0: no modo automático, segue o telefone quando muda claro/escuro.
+  @override
+  void didChangePlatformBrightness() {
+    if (themeModeChoice == 'auto') refreshTheme();
+  }
+
+  @override
   // 1.9.0: troca de idioma redesenha o app inteiro.
-  Widget build(BuildContext context) => ValueListenableBuilder<String>(
-        valueListenable: langNotifier,
-        builder: (context, lang, _) => MaterialApp(
+  // 1.14.0: troca da paleta de cores também.
+  Widget build(BuildContext context) => ListenableBuilder(
+        listenable: Listenable.merge([langNotifier, themeNotifier]),
+        builder: (context, _) => MaterialApp(
           title: 'TacoGuard',
           debugShowCheckedModeBanner: false,
           theme: TG.theme(),
@@ -321,7 +341,7 @@ class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
                   seg.act == Act.work
                       ? tr('Em martelo desde {0}, como o tacógrafo. Escolha para mudar desde essa hora:', [fmtTime(seg.start)])
                       : tr('Parado desde {0}', [fmtTime(seg.start)]),
-                  style: const TextStyle(color: TG.muted, fontSize: 13)),
+                  style: TextStyle(color: TG.muted, fontSize: 13)),
               const SizedBox(height: 16),
               StopChoices(onPick: (a) => Navigator.pop(ctx, a)),
               const SizedBox(height: 4),
@@ -417,7 +437,7 @@ class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
                   ],
                 ),
               ),
-              const VerticalDivider(width: 1, color: TG.line),
+              VerticalDivider(width: 1, color: TG.line),
               // Deitado, os botões do Android ficam à direita: o conteúdo
               // não pode ficar por baixo deles.
               Expanded(
@@ -733,7 +753,7 @@ class _TodayPageState extends State<TodayPage> {
         padding: const EdgeInsets.fromLTRB(20, 22, 20, 20),
         child: Column(children: [
           if (rest == null) ...[
-            const Icon(Icons.hotel_rounded, color: TG.pause, size: 40),
+            Icon(Icons.hotel_rounded, color: TG.pause, size: 40),
             const SizedBox(height: 8),
             Text(tr('Pronto para começar'),
                 style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800)),
@@ -743,10 +763,10 @@ class _TodayPageState extends State<TodayPage> {
                 ref?.end == null
                     ? tr('Em descanso')
                     : tr('Em descanso desde {0}', [fmtTime(ref!.end!)]),
-                style: const TextStyle(color: TG.muted, fontSize: 14)),
+                style: TextStyle(color: TG.muted, fontSize: 14)),
             const SizedBox(height: 2),
             Text(fmtDur(rest),
-                style: const TextStyle(
+                style: TextStyle(
                     fontSize: 56,
                     fontWeight: FontWeight.w800,
                     color: TG.pause,
@@ -756,7 +776,7 @@ class _TodayPageState extends State<TodayPage> {
             const SizedBox(height: 4),
             Text(_restText(rest),
                 textAlign: TextAlign.center,
-                style: const TextStyle(color: TG.muted, fontSize: 14)),
+                style: TextStyle(color: TG.muted, fontSize: 14)),
             if (ref != null && ref.endLat != null && ref.endLon != null)
               TextButton.icon(
                 onPressed: () => openMap(context, ref.endLat!, ref.endLon!),
@@ -821,7 +841,7 @@ class _TodayPageState extends State<TodayPage> {
         const SizedBox(height: 12),
         TCard(
           child: Row(children: [
-            const Icon(Icons.flag_rounded, color: TG.muted),
+            Icon(Icons.flag_rounded, color: TG.muted),
             const SizedBox(width: 12),
             Expanded(
               child: Text(
@@ -930,7 +950,7 @@ class _TodayPageState extends State<TodayPage> {
                     seg == null
                         ? ''
                         : tr('desde {0}  •  {1}', [fmtTime(seg.start), fmtDur(seg.dur(now))]),
-                    style: const TextStyle(color: TG.muted, fontSize: 13)),
+                    style: TextStyle(color: TG.muted, fontSize: 13)),
               ],
             ),
           ),
@@ -952,7 +972,7 @@ class _TodayPageState extends State<TodayPage> {
                       ? (_t.gpsStale ? TG.warn : TG.ok)
                       : TG.danger),
               const SizedBox(width: 3),
-              const Text('km/h',
+              Text('km/h',
                   style: TextStyle(color: TG.muted, fontSize: 11)),
             ]),
           ]),
@@ -991,7 +1011,7 @@ class _TodayPageState extends State<TodayPage> {
             Text(
                 tr('Com {0} min parado vira martelo, como o tacógrafo. Já pode escolher:', [_t.stopMinutes]),
                 textAlign: TextAlign.center,
-                style: const TextStyle(color: TG.muted, fontSize: 12.5)),
+                style: TextStyle(color: TG.muted, fontSize: 12.5)),
             const SizedBox(height: 10),
             StopChoices(onPick: (a) => _t.stopNow(a)),
           ]),
@@ -1104,7 +1124,7 @@ class _TodayPageState extends State<TodayPage> {
                         textAlign: TextAlign.center,
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
+                        style: TextStyle(
                             color: TG.muted, fontSize: 13, height: 1.2)),
                   ),
                 ]),
@@ -1123,14 +1143,14 @@ class _TodayPageState extends State<TodayPage> {
           Text(_canDriveText(st, c.start),
               textAlign: TextAlign.center,
               maxLines: 2,
-              style: const TextStyle(
+              style: TextStyle(
                   fontSize: 15, fontWeight: FontWeight.w800, color: TG.ok)),
           const SizedBox(height: 2),
           Fit(
               b.firstPartDone
                   ? tr('1ª parte (15 min) feita • falta a de 30 min')
                   : tr('Próxima pausa: 45 min (ou 15 + 30)'),
-              style: const TextStyle(color: TG.muted, fontSize: 13)),
+              style: TextStyle(color: TG.muted, fontSize: 13)),
         ]),
       ),
       const _ColBreak(),
@@ -1180,7 +1200,7 @@ class _TodayPageState extends State<TodayPage> {
         TCard(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
           child: Row(children: [
-            const Icon(Icons.weekend_rounded, color: TG.muted),
+            Icon(Icons.weekend_rounded, color: TG.muted),
             const SizedBox(width: 12),
             Expanded(
               child: Text(
@@ -1216,7 +1236,7 @@ class _TodayPageState extends State<TodayPage> {
           onPressed: _end,
           style: OutlinedButton.styleFrom(
               foregroundColor: TG.danger,
-              side: const BorderSide(color: TG.danger, width: 1.5),
+              side: BorderSide(color: TG.danger, width: 1.5),
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(18))),
           icon: const Icon(Icons.stop_rounded),
@@ -1235,7 +1255,7 @@ class _Section extends StatelessWidget {
   Widget build(BuildContext context) => Padding(
         padding: const EdgeInsets.only(left: 4, bottom: 8),
         child: Text(text,
-            style: const TextStyle(
+            style: TextStyle(
                 color: TG.muted, fontSize: 13, fontWeight: FontWeight.w700)),
       );
 }
@@ -1301,7 +1321,7 @@ class _SpeedCountdown extends StatelessWidget {
             fit: BoxFit.scaleDown,
             alignment: Alignment.centerLeft,
             child: Text(l != null ? '$l s' : '!',
-                style: const TextStyle(
+                style: TextStyle(
                     color: TG.danger,
                     fontSize: 40,
                     height: 1,
@@ -1311,7 +1331,7 @@ class _SpeedCountdown extends StatelessWidget {
         const SizedBox(width: 12),
         Expanded(
           child: Text(text,
-              style: const TextStyle(
+              style: TextStyle(
                   color: TG.text, fontSize: 17, fontWeight: FontWeight.w600)),
         ),
       ]),
@@ -1440,7 +1460,7 @@ class _LimitList extends StatelessWidget {
                   Text(l.note!,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(color: TG.muted, fontSize: 11.5)),
+                      style: TextStyle(color: TG.muted, fontSize: 11.5)),
               ],
             ),
           ),
@@ -1521,7 +1541,7 @@ class _DayStrip extends StatelessWidget {
           ),
           const SizedBox(width: 4),
           Text(a == Act.load ? tr('Carga') : actLabel(a),
-              style: const TextStyle(color: TG.muted, fontSize: 11.5)),
+              style: TextStyle(color: TG.muted, fontSize: 11.5)),
         ]);
     return TCard(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
@@ -1532,7 +1552,7 @@ class _DayStrip extends StatelessWidget {
                 style: const TextStyle(
                     fontSize: 14, fontWeight: FontWeight.w700)),
           ),
-          const Icon(Icons.route_rounded, color: TG.drive, size: 16),
+          Icon(Icons.route_rounded, color: TG.drive, size: 16),
           const SizedBox(width: 4),
           Text(fmtKm(shift.km),
               style: const TextStyle(
@@ -1548,7 +1568,7 @@ class _DayStrip extends StatelessWidget {
             child: SizedBox(
               height: 16,
               child: segs.isEmpty
-                  ? const ColoredBox(color: TG.surfaceHigh)
+                  ? ColoredBox(color: TG.surfaceHigh)
                   : Row(children: [
                       for (var i = 0; i < segs.length; i++) ...[
                         if (i > 0) const SizedBox(width: 1),
@@ -1587,7 +1607,7 @@ class _Total extends StatelessWidget {
               style:
                   const TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
           Text(actLabel(act),
-              style: const TextStyle(color: TG.muted, fontSize: 11.5)),
+              style: TextStyle(color: TG.muted, fontSize: 11.5)),
         ]),
       );
 }
@@ -1680,11 +1700,11 @@ class _RestBar extends StatelessWidget {
         ),
         const SizedBox(height: 4),
         Row(children: [
-          const Text('0', style: TextStyle(color: TG.muted, fontSize: 11)),
+          Text('0', style: TextStyle(color: TG.muted, fontSize: 11)),
           const Spacer(flex: 9),
-          const Text('9 h', style: TextStyle(color: TG.muted, fontSize: 11)),
+          Text('9 h', style: TextStyle(color: TG.muted, fontSize: 11)),
           const Spacer(flex: 2),
-          const Text('11 h', style: TextStyle(color: TG.muted, fontSize: 11)),
+          Text('11 h', style: TextStyle(color: TG.muted, fontSize: 11)),
         ]),
       ]);
     });
@@ -1694,6 +1714,8 @@ class _RestBar extends StatelessWidget {
 class _RingPainter extends CustomPainter {
   final double used;
   final Color color;
+  // 1.14.0: redesenha quando a paleta de cores muda.
+  final int _gen = themeNotifier.value;
   _RingPainter({required this.used, required this.color});
 
   @override
@@ -1729,5 +1751,5 @@ class _RingPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _RingPainter old) =>
-      old.used != used || old.color != color;
+      old.used != used || old.color != color || old._gen != _gen;
 }

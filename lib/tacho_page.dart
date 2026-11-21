@@ -139,7 +139,7 @@ class _TachoCardState extends State<TachoCard> {
         if (_t.lastError != null) ...[
           const SizedBox(height: 6),
           Text(_t.lastError!,
-              style: const TextStyle(color: TG.danger, fontSize: 12)),
+              style: TextStyle(color: TG.danger, fontSize: 12)),
         ],
         const SizedBox(height: 8),
         Wrap(spacing: 8, runSpacing: 4, children: [

@@ -1,25 +1,230 @@
+import 'dart:ui' as ui;
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'models.dart';
 
-/// Cores do TacoGuard (tema escuro, para usar na cabine de dia e de noite).
-class TG {
-  static const bg = Color(0xFF0A111E);
-  static const surface = Color(0xFF121C2D);
-  static const surfaceHigh = Color(0xFF1A2740);
-  static const line = Color(0xFF24324D);
-  static const accent = Color(0xFF2DD4BF);
-  static const text = Color(0xFFE8EEF8);
-  static const muted = Color(0xFF8A9BB5);
-  static const ok = Color(0xFF34D399);
-  static const warn = Color(0xFFFBBF24);
-  static const danger = Color(0xFFF87171);
+/// 1.14.0: paleta de cores. Modo (automático, escuro, claro, noite) e cor
+/// de destaque escolhidos nos Ajustes; tudo o que usa TG.* segue a escolha.
+class Palette {
+  final Brightness brightness;
+  final Color bg, surface, surfaceHigh, line, text, muted;
+  final Color ok, warn, danger, drive, pause, work, load, unknown;
+  const Palette({
+    required this.brightness,
+    required this.bg,
+    required this.surface,
+    required this.surfaceHigh,
+    required this.line,
+    required this.text,
+    required this.muted,
+    required this.ok,
+    required this.warn,
+    required this.danger,
+    required this.drive,
+    required this.pause,
+    required this.work,
+    required this.load,
+    required this.unknown,
+  });
+}
 
-  static const drive = Color(0xFF38BDF8);
-  static const pause = Color(0xFF34D399);
-  static const work = Color(0xFFFBBF24);
-  static const load = Color(0xFFFB923C);
-  static const unknown = Color(0xFF94A3B8);
+/// Escuro: o visual de sempre (cabine de dia e de noite).
+const _dark = Palette(
+  brightness: Brightness.dark,
+  bg: Color(0xFF0A111E),
+  surface: Color(0xFF121C2D),
+  surfaceHigh: Color(0xFF1A2740),
+  line: Color(0xFF24324D),
+  text: Color(0xFFE8EEF8),
+  muted: Color(0xFF8A9BB5),
+  ok: Color(0xFF34D399),
+  warn: Color(0xFFFBBF24),
+  danger: Color(0xFFF87171),
+  drive: Color(0xFF38BDF8),
+  pause: Color(0xFF34D399),
+  work: Color(0xFFFBBF24),
+  load: Color(0xFFFB923C),
+  unknown: Color(0xFF94A3B8),
+);
+
+/// Noite: preto total, menos brilho a conduzir de noite (e gasta menos
+/// bateria nos ecrãs AMOLED).
+const _night = Palette(
+  brightness: Brightness.dark,
+  bg: Color(0xFF000000),
+  surface: Color(0xFF0B0D12),
+  surfaceHigh: Color(0xFF151922),
+  line: Color(0xFF1F2430),
+  text: Color(0xFFCDD5E1),
+  muted: Color(0xFF7A8597),
+  ok: Color(0xFF2FBF8A),
+  warn: Color(0xFFE6AC1F),
+  danger: Color(0xFFEF6B6B),
+  drive: Color(0xFF34A9DD),
+  pause: Color(0xFF2FBF8A),
+  work: Color(0xFFE6AC1F),
+  load: Color(0xFFE5853A),
+  unknown: Color(0xFF8590A3),
+);
+
+/// Claro: fundo branco, para dia de muito sol. Cores mais fortes para
+/// lerem bem sobre o branco.
+const _light = Palette(
+  brightness: Brightness.light,
+  bg: Color(0xFFF2F5FA),
+  surface: Color(0xFFFFFFFF),
+  surfaceHigh: Color(0xFFE8EDF5),
+  line: Color(0xFFD3DBE7),
+  text: Color(0xFF0F172A),
+  muted: Color(0xFF55657D),
+  ok: Color(0xFF047857),
+  warn: Color(0xFFB45309),
+  danger: Color(0xFFDC2626),
+  drive: Color(0xFF0369A1),
+  pause: Color(0xFF047857),
+  work: Color(0xFFB45309),
+  load: Color(0xFFC2410C),
+  unknown: Color(0xFF64748B),
+);
+
+/// Cor de destaque: versão para fundo escuro e para fundo claro.
+class AccentColor {
+  final String name;
+  final Color dark, light;
+  const AccentColor(this.name, this.dark, this.light);
+}
+
+const kAccents = <String, AccentColor>{
+  'teal': AccentColor('Turquesa', Color(0xFF2DD4BF), Color(0xFF0F766E)),
+  'blue': AccentColor('Azul', Color(0xFF60A5FA), Color(0xFF1D4ED8)),
+  'green': AccentColor('Verde', Color(0xFF4ADE80), Color(0xFF15803D)),
+  'yellow': AccentColor('Amarelo', Color(0xFFFACC15), Color(0xFFA16207)),
+  'orange': AccentColor('Laranja', Color(0xFFFB923C), Color(0xFFC2410C)),
+  'red': AccentColor('Vermelho', Color(0xFFF87171), Color(0xFFB91C1C)),
+  'pink': AccentColor('Rosa', Color(0xFFF472B6), Color(0xFFBE185D)),
+  'purple': AccentColor('Roxo', Color(0xFFA78BFA), Color(0xFF6D28D9)),
+};
+
+/// Modos do tema (o nome em português é traduzido com tr()).
+const kThemeModes = <String, String>{
+  'auto': 'Automático (como o telefone)',
+  'dark': 'Escuro',
+  'light': 'Claro',
+  'night': 'Noite (preto)',
+};
+
+String themeModeChoice = 'dark';
+String accentChoice = 'teal';
+
+/// Avisa o app para redesenhar tudo quando a paleta muda.
+final themeNotifier = ValueNotifier<int>(0);
+
+Palette _pal = _dark;
+
+void _resolve() {
+  switch (themeModeChoice) {
+    case 'light':
+      _pal = _light;
+    case 'night':
+      _pal = _night;
+    case 'auto':
+      _pal = ui.PlatformDispatcher.instance.platformBrightness ==
+              Brightness.light
+          ? _light
+          : _dark;
+    default:
+      _pal = _dark;
+  }
+}
+
+/// Lê a paleta salva. Chamar no início do app e do pop-up (rodam separados).
+Future<void> loadTheme({bool systemBars = true}) async {
+  try {
+    final p = await SharedPreferences.getInstance();
+    await p.reload();
+    final m = p.getString('themeMode') ?? 'dark';
+    final a = p.getString('themeAccent') ?? 'teal';
+    themeModeChoice = kThemeModes.containsKey(m) ? m : 'dark';
+    accentChoice = kAccents.containsKey(a) ? a : 'teal';
+  } catch (_) {}
+  _resolve();
+  if (systemBars) applySystemBars();
+}
+
+/// Troca modo e/ou cor de destaque, salva e redesenha o app inteiro.
+Future<void> setThemeChoice({String? mode, String? accent}) async {
+  if (mode != null && kThemeModes.containsKey(mode)) themeModeChoice = mode;
+  if (accent != null && kAccents.containsKey(accent)) accentChoice = accent;
+  try {
+    final p = await SharedPreferences.getInstance();
+    await p.setString('themeMode', themeModeChoice);
+    await p.setString('themeAccent', accentChoice);
+  } catch (_) {}
+  refreshTheme();
+}
+
+/// Recalcula a paleta (ex.: o telefone passou de claro a escuro) e
+/// redesenha todas as telas abertas.
+void refreshTheme() {
+  _resolve();
+  applySystemBars();
+  themeNotifier.value++;
+  // As cores TG.* são lidas direto no build: marca tudo para redesenhar,
+  // incluindo as telas que estão por baixo na pilha.
+  void mark(Element e) {
+    e.markNeedsBuild();
+    e.visitChildren(mark);
+  }
+
+  WidgetsBinding.instance.rootElement?.visitChildren(mark);
+}
+
+/// Barra de estado e de navegação com as cores da paleta.
+void applySystemBars() {
+  final light = _pal.brightness == Brightness.light;
+  SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
+    statusBarColor: Colors.transparent,
+    statusBarIconBrightness: light ? Brightness.dark : Brightness.light,
+    statusBarBrightness: light ? Brightness.light : Brightness.dark,
+    systemNavigationBarColor: _pal.surface,
+    systemNavigationBarIconBrightness:
+        light ? Brightness.dark : Brightness.light,
+  ));
+}
+
+/// Cores do TacoGuard (seguem a paleta escolhida).
+class TG {
+  static Palette get palette => _pal;
+  static bool get isLight => _pal.brightness == Brightness.light;
+  static Color get bg => _pal.bg;
+  static Color get surface => _pal.surface;
+  static Color get surfaceHigh => _pal.surfaceHigh;
+  static Color get line => _pal.line;
+  static Color get accent {
+    final a = kAccents[accentChoice] ?? kAccents['teal']!;
+    return isLight ? a.light : a.dark;
+  }
+
+  static Color get text => _pal.text;
+  static Color get muted => _pal.muted;
+  static Color get ok => _pal.ok;
+  static Color get warn => _pal.warn;
+  static Color get danger => _pal.danger;
+
+  static Color get drive => _pal.drive;
+  static Color get pause => _pal.pause;
+  static Color get work => _pal.work;
+  static Color get load => _pal.load;
+  static Color get unknown => _pal.unknown;
+
+  /// Cor do texto por cima de [c] (preto ou branco, o que ler melhor).
+  static Color on(Color c) =>
+      ThemeData.estimateBrightnessForColor(c) == Brightness.dark
+          ? Colors.white
+          : const Color(0xFF0A111E);
 
   static Color act(Act a) {
     switch (a) {
@@ -59,16 +264,26 @@ class TG {
   }
 
   static ThemeData theme() {
+    final b = _pal.brightness;
     final scheme = ColorScheme.fromSeed(
       seedColor: accent,
-      brightness: Brightness.dark,
-    ).copyWith(surface: surface, primary: accent);
+      brightness: b,
+    ).copyWith(
+      surface: surface,
+      onSurface: text,
+      onSurfaceVariant: muted,
+      primary: accent,
+      onPrimary: on(accent),
+      outline: line,
+      outlineVariant: line,
+      error: danger,
+    );
     return ThemeData(
       useMaterial3: true,
-      brightness: Brightness.dark,
+      brightness: b,
       colorScheme: scheme,
       scaffoldBackgroundColor: bg,
-      appBarTheme: const AppBarTheme(
+      appBarTheme: AppBarTheme(
         backgroundColor: bg,
         foregroundColor: text,
         elevation: 0,
@@ -83,7 +298,7 @@ class TG {
         margin: EdgeInsets.zero,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
-          side: const BorderSide(color: line),
+          side: BorderSide(color: line),
         ),
       ),
       navigationBarTheme: NavigationBarThemeData(
@@ -93,8 +308,8 @@ class TG {
         labelTextStyle: WidgetStateProperty.all(
             const TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
       ),
-      dividerTheme: const DividerThemeData(color: line, thickness: 1),
-      snackBarTheme: const SnackBarThemeData(
+      dividerTheme: DividerThemeData(color: line, thickness: 1),
+      snackBarTheme: SnackBarThemeData(
         behavior: SnackBarBehavior.floating,
         backgroundColor: surfaceHigh,
         contentTextStyle: TextStyle(color: text),
@@ -104,9 +319,9 @@ class TG {
         shape:
             RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
       ),
-      bottomSheetTheme: const BottomSheetThemeData(
+      bottomSheetTheme: BottomSheetThemeData(
         backgroundColor: surface,
-        shape: RoundedRectangleBorder(
+        shape: const RoundedRectangleBorder(
             borderRadius: BorderRadius.vertical(top: Radius.circular(26))),
       ),
       inputDecorationTheme: InputDecorationTheme(

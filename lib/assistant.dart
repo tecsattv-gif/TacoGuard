@@ -1471,7 +1471,7 @@ class _AssistantPageState extends State<AssistantPage> {
               Padding(
                 padding: const EdgeInsets.only(bottom: 4),
                 child: Text(m.tag!,
-                    style: const TextStyle(
+                    style: TextStyle(
                         color: TG.accent,
                         fontSize: 11,
                         fontWeight: FontWeight.w800)),
@@ -1482,7 +1482,7 @@ class _AssistantPageState extends State<AssistantPage> {
               Padding(
                 padding: const EdgeInsets.only(top: 6),
                 child: Text(m.ref!,
-                    style: const TextStyle(color: TG.muted, fontSize: 12)),
+                    style: TextStyle(color: TG.muted, fontSize: 12)),
               ),
           ],
         ),
@@ -1497,7 +1497,7 @@ class _AssistantPageState extends State<AssistantPage> {
           onTap: () => _send(f.q),
           child: Row(children: [
             Expanded(child: Text(f.q, style: const TextStyle(fontSize: 15))),
-            const Icon(Icons.chevron_right_rounded, color: TG.muted),
+            Icon(Icons.chevron_right_rounded, color: TG.muted),
           ]),
         ),
       );
@@ -1513,7 +1513,7 @@ class _AssistantPageState extends State<AssistantPage> {
                 ? 'Nenhuma pergunta pronta com essas palavras. Toque em '
                     'enviar para procurar na lei.'
                 : 'Perguntas prontas sobre "$typed"',
-            style: const TextStyle(
+            style: TextStyle(
                 color: TG.muted, fontWeight: FontWeight.w700)),
         const SizedBox(height: 8),
         for (final f in found.take(12)) _faqCard(f),
@@ -1522,7 +1522,7 @@ class _AssistantPageState extends State<AssistantPage> {
     return [
       Text('${kFaq.length} perguntas prontas, sem internet. Toque numa ou '
           'escreva abaixo para procurar.',
-          style: const TextStyle(color: TG.muted, fontSize: 13)),
+          style: TextStyle(color: TG.muted, fontSize: 13)),
       const SizedBox(height: 4),
       for (final g in kFaqGroups) ...[
         Padding(
@@ -1532,7 +1532,7 @@ class _AssistantPageState extends State<AssistantPage> {
             const SizedBox(width: 8),
             Expanded(
               child: Text(g.title,
-                  style: const TextStyle(
+                  style: TextStyle(
                       color: TG.accent,
                       fontSize: 14,
                       fontWeight: FontWeight.w800)),
@@ -1590,7 +1590,7 @@ class _AssistantPageState extends State<AssistantPage> {
                         ),
                       ),
                     const SizedBox(height: 4),
-                    const Text(
+                    Text(
                       'A resposta é uma ajuda. Confira sempre o artigo: '
                       'o que vale é a lei e o tacógrafo.',
                       textAlign: TextAlign.center,

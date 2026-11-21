@@ -110,12 +110,12 @@ class _CountdownState extends State<_Countdown> {
           CircularProgressIndicator(
               value: _left / widget.seconds,
               strokeWidth: 3,
-              color: Colors.white),
+              color: TG.text),
           Text('$_left',
-              style: const TextStyle(
+              style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w800,
-                  color: Colors.white)),
+                  color: TG.text)),
         ]),
       ),
       const SizedBox(width: 12),
@@ -181,12 +181,12 @@ class SegmentList extends StatelessWidget {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style:
-                            const TextStyle(color: TG.muted, fontSize: 12.5)),
+                            TextStyle(color: TG.muted, fontSize: 12.5)),
                   ],
                 ),
               ),
               if (s.act != Act.drive && s.hasCoords)
-                const Padding(
+                Padding(
                   padding: EdgeInsets.only(right: 6),
                   child:
                       Icon(Icons.place_rounded, size: 16, color: TG.muted),
@@ -374,12 +374,12 @@ class _HistoryPageState extends State<HistoryPage> {
                   else if (issues > 0)
                     _Pill(issues > 1 ? tr('{0} avisos', [issues]) : tr('{0} aviso', [issues]), TG.danger)
                   else
-                    const _Pill('OK', TG.ok),
+                    _Pill('OK', TG.ok),
                 ]),
                 const SizedBox(height: 2),
                 Text(
                     '${fmtTime(s.start)} - ${s.end == null ? tr('agora') : fmtTime(s.end!)}  •  ${fmtKm(s.km)}${rest == null ? '' : '  •  $rest'}',
-                    style: const TextStyle(color: TG.muted, fontSize: 13)),
+                    style: TextStyle(color: TG.muted, fontSize: 13)),
                 const SizedBox(height: 10),
                 Row(children: [
                   _Mini(tr('Condução'), fmtDur(s.total(Act.drive, now)), TG.drive),
@@ -436,7 +436,7 @@ class _Mini extends StatelessWidget {
                       fontWeight: FontWeight.w800)),
               Fit(label,
                   alignment: Alignment.centerLeft,
-                  style: const TextStyle(color: TG.muted, fontSize: 11.5)),
+                  style: TextStyle(color: TG.muted, fontSize: 11.5)),
             ],
           ),
         ),
@@ -517,7 +517,7 @@ class _ShiftDetailPageState extends State<ShiftDetailPage> {
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         onTap: has ? () => openMap(context, s.endLat!, s.endLon!) : null,
         child: Row(children: [
-          const Icon(Icons.hotel_rounded, color: TG.pause),
+          Icon(Icons.hotel_rounded, color: TG.pause),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -530,11 +530,11 @@ class _ShiftDetailPageState extends State<ShiftDetailPage> {
                     has
                         ? tr('Local: {0}, {1}', [s.endLat!.toStringAsFixed(5), s.endLon!.toStringAsFixed(5)])
                         : tr('Local não gravado (sem GPS ao encerrar)'),
-                    style: const TextStyle(color: TG.muted, fontSize: 12.5)),
+                    style: TextStyle(color: TG.muted, fontSize: 12.5)),
               ],
             ),
           ),
-          if (has) const Icon(Icons.map_rounded, color: TG.muted, size: 20),
+          if (has) Icon(Icons.map_rounded, color: TG.muted, size: 20),
         ]),
       ),
     );
@@ -600,7 +600,7 @@ class _ShiftDetailPageState extends State<ShiftDetailPage> {
                       Border.all(color: TG.danger.withValues(alpha: 0.6)),
                 ),
                 child: Row(children: [
-                  const Icon(Icons.warning_amber_rounded, color: TG.danger),
+                  Icon(Icons.warning_amber_rounded, color: TG.danger),
                   const SizedBox(width: 12),
                   Expanded(child: Text(i)),
                 ]),
@@ -847,7 +847,7 @@ class _ReportsPageState extends State<ReportsPage> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Row(children: [
-                          const Icon(Icons.bluetooth_connected,
+                          Icon(Icons.bluetooth_connected,
                               color: TG.drive, size: 20),
                           const SizedBox(width: 8),
                           Expanded(
@@ -870,14 +870,14 @@ class _ReportsPageState extends State<ReportsPage> {
                           const SizedBox(height: 6),
                           Text(
                               tr('Para a bissemanal, toque em "Indicar a bissemanal do tacógrafo" no ecrã Hoje.'),
-                              style: const TextStyle(
+                              style: TextStyle(
                                   color: TG.muted, fontSize: 12.5)),
                         ],
                         if (_kind == ReportKind.month) ...[
                           const SizedBox(height: 6),
                           Text(
                               tr('O tacógrafo não dá o total do mês; o mês vem do Histórico (ao vivo e .DDD).'),
-                              style: const TextStyle(
+                              style: TextStyle(
                                   color: TG.muted, fontSize: 12.5)),
                         ],
                       ]),
@@ -1129,7 +1129,7 @@ class _SettingsPageState extends State<SettingsPage> {
   Widget _title(String t) => Padding(
         padding: const EdgeInsets.only(left: 4, top: 18, bottom: 8),
         child: Text(t,
-            style: const TextStyle(
+            style: TextStyle(
                 color: TG.muted, fontSize: 13, fontWeight: FontWeight.w700)),
       );
 
@@ -1158,6 +1158,76 @@ class _SettingsPageState extends State<SettingsPage> {
                 if (mounted) setState(() {});
               },
             ),
+          ),
+        ),
+        // 1.14.0: paleta de cores (modo + cor de destaque).
+        _title(tr('Cores')),
+        TCard(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(tr('Tema'),
+                  style: const TextStyle(fontWeight: FontWeight.w600)),
+              const SizedBox(height: 10),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  for (final e in kThemeModes.entries)
+                    ChoiceChip(
+                      label: Text(tr(e.value)),
+                      avatar: Icon(
+                          switch (e.key) {
+                            'auto' => Icons.brightness_auto_rounded,
+                            'light' => Icons.light_mode_rounded,
+                            'night' => Icons.nightlight_round,
+                            _ => Icons.dark_mode_rounded,
+                          },
+                          size: 18),
+                      selected: themeModeChoice == e.key,
+                      onSelected: (_) async {
+                        await setThemeChoice(mode: e.key);
+                        if (mounted) setState(() {});
+                      },
+                    ),
+                ],
+              ),
+              const SizedBox(height: 18),
+              Text(tr('Cor de destaque'),
+                  style: const TextStyle(fontWeight: FontWeight.w600)),
+              const SizedBox(height: 12),
+              Wrap(
+                spacing: 12,
+                runSpacing: 12,
+                children: [
+                  for (final e in kAccents.entries)
+                    _AccentDot(
+                      color: TG.isLight ? e.value.light : e.value.dark,
+                      label: tr(e.value.name),
+                      selected: accentChoice == e.key,
+                      onTap: () async {
+                        await setThemeChoice(accent: e.key);
+                        if (mounted) setState(() {});
+                      },
+                    ),
+                ],
+              ),
+              const SizedBox(height: 14),
+              // Amostra das cores das atividades com a paleta escolhida.
+              Wrap(
+                spacing: 14,
+                runSpacing: 6,
+                children: [
+                  for (final a in [Act.drive, Act.pause, Act.work, Act.load])
+                    Row(mainAxisSize: MainAxisSize.min, children: [
+                      ActIcon(a, color: TG.act(a), size: 18),
+                      const SizedBox(width: 4),
+                      Text(actLabel(a),
+                          style: TextStyle(color: TG.muted, fontSize: 12.5)),
+                    ]),
+                ],
+              ),
+            ],
           ),
         ),
         _title(tr('Velocidade')),
@@ -1204,7 +1274,7 @@ class _SettingsPageState extends State<SettingsPage> {
               ),
               // 1.9.6: volume do bip.
               Row(children: [
-                const Icon(Icons.volume_down_rounded, color: TG.muted),
+                Icon(Icons.volume_down_rounded, color: TG.muted),
                 Expanded(
                   child: Slider(
                     value: _t.speedBeepVol.toDouble(),
@@ -1221,12 +1291,12 @@ class _SettingsPageState extends State<SettingsPage> {
                     },
                   ),
                 ),
-                const Icon(Icons.volume_up_rounded, color: TG.muted),
+                Icon(Icons.volume_up_rounded, color: TG.muted),
               ]),
               Text(
                   tr('Volume do bip: {0}%. O máximo depende também do volume de alarme do telefone.',
                       [_t.speedBeepVol]),
-                  style: const TextStyle(color: TG.muted, fontSize: 12.5)),
+                  style: TextStyle(color: TG.muted, fontSize: 12.5)),
               Align(
                 alignment: Alignment.centerRight,
                 child: TextButton.icon(
@@ -1336,7 +1406,7 @@ class _SettingsPageState extends State<SettingsPage> {
               ]),
               Text(
                   tr('Usa as vozes do telefone. Se não houver voz do sexo escolhido no idioma, o tom da voz muda.'),
-                  style: const TextStyle(color: TG.muted, fontSize: 12.5)),
+                  style: TextStyle(color: TG.muted, fontSize: 12.5)),
             ],
           ),
         ),
@@ -1353,7 +1423,7 @@ class _SettingsPageState extends State<SettingsPage> {
               const SizedBox(height: 4),
               Text(
                   tr('Importe o ficheiro .DDD da descarga do seu cartão (dado pela empresa ou tirado com um leitor de cartões). As atividades dos últimos dias entram no Histórico e nos relatórios.'),
-                  style: const TextStyle(color: TG.muted, fontSize: 12.5)),
+                  style: TextStyle(color: TG.muted, fontSize: 12.5)),
               const SizedBox(height: 10),
               OutlinedButton.icon(
                 onPressed: _importDdd,
@@ -1459,7 +1529,7 @@ class _SettingsPageState extends State<SettingsPage> {
                               fontSize: 17, fontWeight: FontWeight.w800)),
                       Text(tr('Desenvolvido por Luiz Alberto Cardoso'),
                           style: TextStyle(color: TG.muted, fontSize: 13)),
-                      const Text('tecsattv@gmail.com',
+                      Text('tecsattv@gmail.com',
                           style: TextStyle(color: TG.muted, fontSize: 13)),
                     ],
                   ),
@@ -1484,4 +1554,47 @@ class _SettingsPageState extends State<SettingsPage> {
       ],
     );
   }
+}
+
+
+/// 1.14.0: bolinha de cor para escolher o destaque nos Ajustes.
+class _AccentDot extends StatelessWidget {
+  final Color color;
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+  const _AccentDot(
+      {required this.color,
+      required this.label,
+      required this.selected,
+      required this.onTap});
+
+  @override
+  Widget build(BuildContext context) => Tooltip(
+        message: label,
+        child: Semantics(
+          button: true,
+          selected: selected,
+          label: label,
+          child: InkWell(
+            customBorder: const CircleBorder(),
+            onTap: onTap,
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 180),
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: color,
+                shape: BoxShape.circle,
+                border: Border.all(
+                    color: selected ? TG.text : TG.line,
+                    width: selected ? 3 : 1),
+              ),
+              child: selected
+                  ? Icon(Icons.check_rounded, color: TG.on(color), size: 24)
+                  : null,
+            ),
+          ),
+        ),
+      );
 }
