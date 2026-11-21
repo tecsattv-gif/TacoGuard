@@ -176,9 +176,9 @@ class TachoHelpPage extends StatelessWidget {
       ('No tacógrafo (VDO DTCO 4.1)', [
         'Camião parado, ignição ligada e o seu cartão no leitor 1.',
         'Carregue em OK para abrir o menu.',
-        'Com ▲/▼ vá até ao menu Bluetooth (símbolo ᛒ) e carregue em OK.',
-        'Se o Bluetooth estiver desligado, ligue-o.',
-        'Escolha "Emparelhar" (novo aparelho) e carregue em OK. O tacógrafo fica visível com o nome DTCO-número de série.',
+        'Carregue em ▼ até "Entrada condutor 1" e carregue em OK.',
+        'Carregue em ▼ até "Bluetooth" e carregue em OK.',
+        'Escolha "Emparelhamento" e carregue em OK. O tacógrafo fica visível com o nome DTCO-número de série.',
       ]),
       ('No telemóvel', [
         'Abra Definições → Bluetooth e procure aparelhos.',
@@ -200,7 +200,7 @@ class TachoHelpPage extends StatelessWidget {
         'Em "Teste e registo" → "Partilhar registo" pode mandar o registo para análise.',
       ]),
       ('Importante', [
-        'Os nomes dos menus podem variar um pouco conforme a versão e o idioma do tacógrafo.',
+        'Caminho no DTCO 4.1 em português: OK → Entrada condutor 1 → Bluetooth → Emparelhamento. Noutros idiomas os nomes mudam.',
         'Sem ligação ao tacógrafo, o TacoGuard continua a funcionar pelo GPS como sempre.',
       ]),
     ],
@@ -208,9 +208,9 @@ class TachoHelpPage extends StatelessWidget {
       ('On the tachograph (VDO DTCO 4.1)', [
         'Truck stopped, ignition on and your card in slot 1.',
         'Press OK to open the menu.',
-        'Use ▲/▼ to reach the Bluetooth menu (ᛒ symbol) and press OK.',
-        'If Bluetooth is off, switch it on.',
-        'Choose "Pairing" (new device) and press OK. The tachograph becomes visible as DTCO-serial number.',
+        'Press ▼ until "Input driver 1" and press OK.',
+        'Press ▼ until "Bluetooth" and press OK.',
+        'Choose "Pairing" and press OK. The tachograph becomes visible as DTCO-serial number.',
       ]),
       ('On the phone', [
         'Open Settings → Bluetooth and scan for devices.',
@@ -232,7 +232,7 @@ class TachoHelpPage extends StatelessWidget {
         'In "Test and log" → "Share log" you can send the log for analysis.',
       ]),
       ('Important', [
-        'Menu names may vary slightly with the tachograph version and language.',
+        'Path on the DTCO 4.1: OK → Input driver 1 → Bluetooth → Pairing. Names change with the tachograph language.',
         'Without a tachograph connection, TacoGuard keeps working by GPS as always.',
       ]),
     ],
@@ -240,9 +240,9 @@ class TachoHelpPage extends StatelessWidget {
       ('En el tacógrafo (VDO DTCO 4.1)', [
         'Camión parado, contacto puesto y su tarjeta en la ranura 1.',
         'Pulse OK para abrir el menú.',
-        'Con ▲/▼ vaya al menú Bluetooth (símbolo ᛒ) y pulse OK.',
-        'Si el Bluetooth está apagado, enciéndalo.',
-        'Elija "Emparejar" (nuevo dispositivo) y pulse OK. El tacógrafo queda visible como DTCO-número de serie.',
+        'Pulse ▼ hasta "Entrada conductor 1" y pulse OK.',
+        'Pulse ▼ hasta "Bluetooth" y pulse OK.',
+        'Elija "Emparejamiento" y pulse OK. El tacógrafo queda visible como DTCO-número de serie.',
       ]),
       ('En el móvil', [
         'Abra Ajustes → Bluetooth y busque dispositivos.',
@@ -264,7 +264,7 @@ class TachoHelpPage extends StatelessWidget {
         'En "Prueba y registro" → "Compartir registro" puede enviar el registro para análisis.',
       ]),
       ('Importante', [
-        'Los nombres de los menús pueden variar algo según la versión y el idioma del tacógrafo.',
+        'Ruta en el DTCO 4.1: OK → Entrada conductor 1 → Bluetooth → Emparejamiento. Los nombres cambian según el idioma del tacógrafo.',
         'Sin conexión al tacógrafo, TacoGuard sigue funcionando por GPS como siempre.',
       ]),
     ],
@@ -272,9 +272,9 @@ class TachoHelpPage extends StatelessWidget {
       ('Sur le chronotachygraphe (VDO DTCO 4.1)', [
         'Camion à l\'arrêt, contact mis et votre carte dans le lecteur 1.',
         'Appuyez sur OK pour ouvrir le menu.',
-        'Avec ▲/▼ allez au menu Bluetooth (symbole ᛒ) et appuyez sur OK.',
-        'Si le Bluetooth est désactivé, activez-le.',
-        'Choisissez « Appairer » (nouvel appareil) et appuyez sur OK. Le tachygraphe devient visible sous le nom DTCO-numéro de série.',
+        'Appuyez sur ▼ jusqu\'à « Saisie conducteur 1 » et appuyez sur OK.',
+        'Appuyez sur ▼ jusqu\'à « Bluetooth » et appuyez sur OK.',
+        'Choisissez « Appairage » et appuyez sur OK. Le tachygraphe devient visible sous le nom DTCO-numéro de série.',
       ]),
       ('Sur le téléphone', [
         'Ouvrez Paramètres → Bluetooth et recherchez les appareils.',
@@ -296,7 +296,7 @@ class TachoHelpPage extends StatelessWidget {
         'Dans « Test et journal » → « Partager le journal » vous pouvez envoyer le journal pour analyse.',
       ]),
       ('Important', [
-        'Les noms des menus peuvent varier selon la version et la langue du tachygraphe.',
+        'Chemin sur le DTCO 4.1 : OK → Saisie conducteur 1 → Bluetooth → Appairage. Les noms changent selon la langue du tachygraphe.',
         'Sans connexion au tachygraphe, TacoGuard continue de fonctionner par GPS comme toujours.',
       ]),
     ],
