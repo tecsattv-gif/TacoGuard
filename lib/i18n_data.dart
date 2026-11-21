@@ -3,6 +3,7 @@
 
 const Map<String, Map<String, String>> kTr = {
   'en': {
+    'Como ligar (passo a passo)': 'How to connect (step by step)',
     'Descanso': 'Rest',
     'Disponibilidade': 'Availability',
     'Outro trabalho': 'Other work',
@@ -348,6 +349,7 @@ const Map<String, Map<String, String>> kTr = {
     'Última jornada: {0} {1}, {2} às {3}  •  condução {4}  •  {5}': 'Last shift: {0} {1}, {2} to {3}  •  driving {4}  •  {5}',
   },
   'es': {
+    'Como ligar (passo a passo)': 'Cómo conectar (paso a paso)',
     'Descanso': 'Descanso',
     'Disponibilidade': 'Disponibilidad',
     'Outro trabalho': 'Otro trabajo',
@@ -693,6 +695,7 @@ const Map<String, Map<String, String>> kTr = {
     'Última jornada: {0} {1}, {2} às {3}  •  condução {4}  •  {5}': 'Última jornada: {0} {1}, de {2} a {3}  •  conducción {4}  •  {5}',
   },
   'fr': {
+    'Como ligar (passo a passo)': 'Comment se connecter (pas à pas)',
     'Descanso': 'Repos',
     'Disponibilidade': 'Disponibilité',
     'Outro trabalho': 'Autre travail',

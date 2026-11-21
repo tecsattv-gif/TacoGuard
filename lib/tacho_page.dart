@@ -156,8 +156,195 @@ class _TachoCardState extends State<TachoCard> {
                   MaterialPageRoute(builder: (_) => const TachoTestPage())),
               icon: const Icon(Icons.bug_report_outlined),
               label: Text(tr('Teste e registo'))),
+          FilledButton.tonalIcon(
+              onPressed: () => Navigator.push(context,
+                  MaterialPageRoute(builder: (_) => const TachoHelpPage())),
+              icon: const Icon(Icons.menu_book_rounded),
+              label: Text(tr('Como ligar (passo a passo)'))),
         ]),
       ]),
+    );
+  }
+}
+
+/// 1.11.9: mini tutorial para emparelhar e ligar ao tacógrafo.
+class TachoHelpPage extends StatelessWidget {
+  const TachoHelpPage({super.key});
+
+  static const _txt = <String, List<(String, List<String>)>>{
+    'pt': [
+      ('No tacógrafo (VDO DTCO 4.1)', [
+        'Camião parado, ignição ligada e o seu cartão no leitor 1.',
+        'Carregue em OK para abrir o menu.',
+        'Com ▲/▼ vá até ao menu Bluetooth (símbolo ᛒ) e carregue em OK.',
+        'Se o Bluetooth estiver desligado, ligue-o.',
+        'Escolha "Emparelhar" (novo aparelho) e carregue em OK. O tacógrafo fica visível com o nome DTCO-número de série.',
+      ]),
+      ('No telemóvel', [
+        'Abra Definições → Bluetooth e procure aparelhos.',
+        'Toque em DTCO-… (ex.: DTCO-20876740).',
+        'Aparece um código de 6 números no telemóvel e no tacógrafo. Se forem iguais, toque em Emparelhar no telemóvel e carregue em OK no tacógrafo.',
+        'O DTCO fica em "Aparelhos emparelhados". Só é preciso fazer isto uma vez.',
+      ]),
+      ('No TacoGuard', [
+        'Ajustes → Tacógrafo: ligue "Ligar ao tacógrafo (Bluetooth)".',
+        'Permita "Aparelhos próximos" quando o Android perguntar.',
+        'Toque em "Escolher tacógrafo" e escolha o DTCO-….',
+        'Espere uns segundos: o estado passa a "Ligado" e no ecrã Hoje aparece o cartão Tacógrafo com os tempos (os dados chegam um a um, ~1 minuto para todos).',
+      ]),
+      ('Se não ligar', [
+        'Confirme que a ignição está ligada (com ela desligada o Bluetooth do tacógrafo desliga).',
+        'Feche outras apps ligadas ao tacógrafo: ele só aceita uma ligação de cada vez.',
+        'Toque em "Tentar ligar". O app também volta a tentar sozinho a cada 30 s.',
+        'Se continuar, desemparelhe o DTCO no Bluetooth do telemóvel e repita os passos.',
+        'Em "Teste e registo" → "Partilhar registo" pode mandar o registo para análise.',
+      ]),
+      ('Importante', [
+        'Os nomes dos menus podem variar um pouco conforme a versão e o idioma do tacógrafo.',
+        'Sem ligação ao tacógrafo, o TacoGuard continua a funcionar pelo GPS como sempre.',
+      ]),
+    ],
+    'en': [
+      ('On the tachograph (VDO DTCO 4.1)', [
+        'Truck stopped, ignition on and your card in slot 1.',
+        'Press OK to open the menu.',
+        'Use ▲/▼ to reach the Bluetooth menu (ᛒ symbol) and press OK.',
+        'If Bluetooth is off, switch it on.',
+        'Choose "Pairing" (new device) and press OK. The tachograph becomes visible as DTCO-serial number.',
+      ]),
+      ('On the phone', [
+        'Open Settings → Bluetooth and scan for devices.',
+        'Tap DTCO-… (e.g. DTCO-20876740).',
+        'A 6-digit code appears on the phone and on the tachograph. If they match, tap Pair on the phone and press OK on the tachograph.',
+        'The DTCO now shows under "Paired devices". You only need to do this once.',
+      ]),
+      ('In TacoGuard', [
+        'Settings → Tachograph: turn on "Connect to tachograph (Bluetooth)".',
+        'Allow "Nearby devices" when Android asks.',
+        'Tap "Choose tachograph" and pick the DTCO-….',
+        'Wait a few seconds: the status becomes "Connected" and the Tachograph card appears on the Today screen (data arrives one item at a time, about 1 minute for all).',
+      ]),
+      ('If it does not connect', [
+        'Check the ignition is on (with it off the tachograph Bluetooth switches off).',
+        'Close other apps connected to the tachograph: it accepts only one connection at a time.',
+        'Tap "Try to connect". The app also retries by itself every 30 s.',
+        'If it still fails, unpair the DTCO in the phone Bluetooth settings and repeat the steps.',
+        'In "Test and log" → "Share log" you can send the log for analysis.',
+      ]),
+      ('Important', [
+        'Menu names may vary slightly with the tachograph version and language.',
+        'Without a tachograph connection, TacoGuard keeps working by GPS as always.',
+      ]),
+    ],
+    'es': [
+      ('En el tacógrafo (VDO DTCO 4.1)', [
+        'Camión parado, contacto puesto y su tarjeta en la ranura 1.',
+        'Pulse OK para abrir el menú.',
+        'Con ▲/▼ vaya al menú Bluetooth (símbolo ᛒ) y pulse OK.',
+        'Si el Bluetooth está apagado, enciéndalo.',
+        'Elija "Emparejar" (nuevo dispositivo) y pulse OK. El tacógrafo queda visible como DTCO-número de serie.',
+      ]),
+      ('En el móvil', [
+        'Abra Ajustes → Bluetooth y busque dispositivos.',
+        'Toque DTCO-… (p. ej. DTCO-20876740).',
+        'Aparece un código de 6 números en el móvil y en el tacógrafo. Si coinciden, toque Emparejar en el móvil y pulse OK en el tacógrafo.',
+        'El DTCO queda en "Dispositivos emparejados". Solo hay que hacerlo una vez.',
+      ]),
+      ('En TacoGuard', [
+        'Ajustes → Tacógrafo: active "Conectar al tacógrafo (Bluetooth)".',
+        'Permita "Dispositivos cercanos" cuando Android lo pida.',
+        'Toque "Elegir tacógrafo" y elija el DTCO-….',
+        'Espere unos segundos: el estado pasa a "Conectado" y en la pantalla Hoy aparece la tarjeta Tacógrafo con los tiempos (los datos llegan uno a uno, ~1 minuto para todos).',
+      ]),
+      ('Si no conecta', [
+        'Compruebe que el contacto está puesto (sin él, el Bluetooth del tacógrafo se apaga).',
+        'Cierre otras apps conectadas al tacógrafo: solo acepta una conexión a la vez.',
+        'Toque "Intentar conectar". La app también reintenta sola cada 30 s.',
+        'Si sigue sin conectar, desempareje el DTCO en el Bluetooth del móvil y repita los pasos.',
+        'En "Prueba y registro" → "Compartir registro" puede enviar el registro para análisis.',
+      ]),
+      ('Importante', [
+        'Los nombres de los menús pueden variar algo según la versión y el idioma del tacógrafo.',
+        'Sin conexión al tacógrafo, TacoGuard sigue funcionando por GPS como siempre.',
+      ]),
+    ],
+    'fr': [
+      ('Sur le chronotachygraphe (VDO DTCO 4.1)', [
+        'Camion à l\'arrêt, contact mis et votre carte dans le lecteur 1.',
+        'Appuyez sur OK pour ouvrir le menu.',
+        'Avec ▲/▼ allez au menu Bluetooth (symbole ᛒ) et appuyez sur OK.',
+        'Si le Bluetooth est désactivé, activez-le.',
+        'Choisissez « Appairer » (nouvel appareil) et appuyez sur OK. Le tachygraphe devient visible sous le nom DTCO-numéro de série.',
+      ]),
+      ('Sur le téléphone', [
+        'Ouvrez Paramètres → Bluetooth et recherchez les appareils.',
+        'Touchez DTCO-… (ex. : DTCO-20876740).',
+        'Un code à 6 chiffres apparaît sur le téléphone et sur le tachygraphe. S\'ils sont identiques, touchez Appairer sur le téléphone et appuyez sur OK sur le tachygraphe.',
+        'Le DTCO apparaît dans « Appareils associés ». À faire une seule fois.',
+      ]),
+      ('Dans TacoGuard', [
+        'Réglages → Tachygraphe : activez « Se connecter au tachygraphe (Bluetooth) ».',
+        'Autorisez « Appareils à proximité » quand Android le demande.',
+        'Touchez « Choisir le tachygraphe » et choisissez le DTCO-….',
+        'Attendez quelques secondes : l\'état passe à « Connecté » et la carte Tachygraphe apparaît sur l\'écran Aujourd\'hui (les données arrivent une par une, ~1 minute pour toutes).',
+      ]),
+      ('Si la connexion échoue', [
+        'Vérifiez que le contact est mis (sans contact, le Bluetooth du tachygraphe s\'éteint).',
+        'Fermez les autres applis connectées au tachygraphe : il n\'accepte qu\'une connexion à la fois.',
+        'Touchez « Réessayer ». L\'appli réessaie aussi toute seule toutes les 30 s.',
+        'Sinon, dissociez le DTCO dans le Bluetooth du téléphone et refaites les étapes.',
+        'Dans « Test et journal » → « Partager le journal » vous pouvez envoyer le journal pour analyse.',
+      ]),
+      ('Important', [
+        'Les noms des menus peuvent varier selon la version et la langue du tachygraphe.',
+        'Sans connexion au tachygraphe, TacoGuard continue de fonctionner par GPS comme toujours.',
+      ]),
+    ],
+  };
+
+  @override
+  Widget build(BuildContext context) {
+    final secs = _txt[langNotifier.value] ?? _txt['pt']!;
+    final cs = Theme.of(context).colorScheme;
+    var n = 0;
+    return Scaffold(
+      appBar: AppBar(title: Text(tr('Como ligar (passo a passo)'))),
+      body: ListView(
+        padding: EdgeInsets.fromLTRB(
+            16, 8, 16, 24 + MediaQuery.paddingOf(context).bottom),
+        children: [
+          for (final sec in secs) ...[
+            Padding(
+              padding: const EdgeInsets.only(top: 14, bottom: 6),
+              child: Text(sec.$1,
+                  style: TextStyle(
+                      fontWeight: FontWeight.w800,
+                      fontSize: 17,
+                      color: cs.primary)),
+            ),
+            for (final step in sec.$2)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4),
+                child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      CircleAvatar(
+                          radius: 12,
+                          backgroundColor: cs.primaryContainer,
+                          child: Text('${++n}',
+                              style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w800,
+                                  color: cs.onPrimaryContainer))),
+                      const SizedBox(width: 10),
+                      Expanded(
+                          child: Text(step,
+                              style: const TextStyle(fontSize: 15, height: 1.3))),
+                    ]),
+              ),
+          ],
+        ],
+      ),
     );
   }
 }
