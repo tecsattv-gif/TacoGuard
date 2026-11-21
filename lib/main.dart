@@ -660,52 +660,34 @@ class _TodayPageState extends State<TodayPage> {
       // caber na altura. A direita rola sozinha (avisos, dia, limites,
       // linha do tempo e botões).
       if (box.maxWidth >= 700 && box.maxWidth > box.maxHeight && cut > 0) {
-        // 1.13.1: o cartão do tacógrafo é comprido; na coluna fixa obrigava
-        // a encolher tudo para caber na altura. Vai sempre para a direita.
-        final second =
-            cut > 1 && items[cut - 1] is! TachoLiveCard ? cut - 1 : -1;
-        final fixed = <Widget>[
-          items.first,
-          if (second > 0) ...[const SizedBox(height: 12), items[second]],
-        ];
-        final moved = [
-          for (var i = 1; i < cut; i++)
-            if (i != second &&
-                !(items[i] is SizedBox && (items[i] as SizedBox).child == null))
-              items[i]
-        ];
-        final right = [
-          for (final w in moved) ...[w, const SizedBox(height: 10)],
-          ...items.sublist(cut + 1),
+        // 1.13.2: deitado, as duas colunas rolam cada uma por si (antes a
+        // esquerda era fixa e encolhia tudo para caber na altura).
+        // Esquerda: o estado, o tacógrafo ao vivo e o anel; direita: o dia,
+        // os limites e o resto.
+        final bottom = 28 + MediaQuery.paddingOf(context).bottom;
+        final left = [
+          for (final w in items.sublist(0, cut))
+            if (!(w is SizedBox && w.child == null)) ...[
+              w,
+              const SizedBox(height: 10),
+            ],
         ];
         return Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Expanded(
             flex: 5,
-            child: Padding(
-              padding: EdgeInsets.fromLTRB(16, 4, 0,
-                  12 + MediaQuery.paddingOf(context).bottom),
-              child: LayoutBuilder(
-                builder: (context, lb) => FittedBox(
-                  fit: BoxFit.scaleDown,
-                  alignment: Alignment.topCenter,
-                  child: SizedBox(
-                    width: lb.maxWidth,
-                    child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: fixed),
-                  ),
-                ),
-              ),
+            child: ListView(
+              primary: false,
+              padding: EdgeInsets.fromLTRB(16, 4, 0, bottom),
+              children: left,
             ),
           ),
           const SizedBox(width: 16),
           Expanded(
             flex: 6,
             child: ListView(
-              padding: EdgeInsets.fromLTRB(
-                  0, 4, 16, 28 + MediaQuery.paddingOf(context).bottom),
-              children: right,
+              primary: false,
+              padding: EdgeInsets.fromLTRB(0, 4, 16, bottom),
+              children: items.sublist(cut + 1),
             ),
           ),
         ]);
