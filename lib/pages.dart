@@ -17,6 +17,7 @@ import 'models.dart';
 import 'popup.dart';
 import 'report.dart';
 import 'rules.dart';
+import 'tacho_page.dart';
 import 'theme.dart';
 import 'tracker.dart';
 import 'update_service.dart';
@@ -1206,6 +1207,9 @@ class _SettingsPageState extends State<SettingsPage> {
             ],
           ),
         ),
+        // 1.11.0: ligação ao tacógrafo por Bluetooth (opcional).
+        _title(tr('Tacógrafo')),
+        const TachoCard(),
         _title(tr('Funcionar com a tela apagada')),
         TCard(
           child: Column(

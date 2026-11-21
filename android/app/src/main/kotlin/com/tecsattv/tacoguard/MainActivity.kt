@@ -16,9 +16,11 @@ class MainActivity : FlutterActivity() {
     private var bipId = 0
     private var loaded = false
     private var tone: ToneGenerator? = null
+    private var tacho: TachoBt? = null // 1.11.0: ligação ao tacógrafo
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
+        tacho = TachoBt(this, flutterEngine.dartExecutor.binaryMessenger)
         try {
             val attrs = AudioAttributes.Builder()
                 .setUsage(AudioAttributes.USAGE_ALARM)
@@ -76,6 +78,7 @@ class MainActivity : FlutterActivity() {
     }
 
     override fun onDestroy() {
+        tacho?.close()
         pool?.release()
         pool = null
         tone?.release()

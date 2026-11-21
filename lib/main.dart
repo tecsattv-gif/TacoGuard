@@ -17,6 +17,7 @@ import 'pages.dart';
 import 'popup.dart';
 import 'rules.dart';
 import 'theme.dart';
+import 'tacho_link.dart';
 import 'tracker.dart';
 import 'update_service.dart';
 
@@ -43,6 +44,7 @@ Future<void> main() async {
   ));
   await loadLang();
   await Tracker.I.load();
+  await TachoLink.I.load(); // 1.11.0: ligação ao tacógrafo (se ligada)
   runApp(const TacoApp());
 }
 
