@@ -2,6 +2,7 @@ import 'dart:ui' show FontFeature;
 import 'package:flutter/material.dart';
 import 'package:share_plus/share_plus.dart';
 
+import 'charts_page.dart';
 import 'i18n.dart';
 import 'tacho_link.dart';
 import 'theme.dart';
@@ -507,7 +508,7 @@ class TachoLiveCard extends StatelessWidget {
 
   /// Valor de uma linha: DID do tacógrafo, ou calculado (−1 bissemanal,
   /// −2 falta na semana, −3 falta em 2 semanas).
-  static int? _val(TachoLink t, int code) {
+  static int? value(TachoLink t, int code) {
     final fn = t.fortnightDrive?.inMinutes;
     final leftFn = fn == null ? null : (90 * 60 - fn).clamp(0, 90 * 60);
     switch (code) {
@@ -572,6 +573,18 @@ class TachoLiveCard extends StatelessWidget {
                       if (t.live)
                         Text(tr('ao vivo'),
                             style: TextStyle(color: cs.primary, fontSize: 12)),
+                      // 1.13.0: atalho para a tela de gráficos.
+                      const SizedBox(width: 4),
+                      IconButton(
+                        tooltip: tr('Gráficos'),
+                        visualDensity: VisualDensity.compact,
+                        style: IconButton.styleFrom(
+                            backgroundColor: cs.primary.withValues(alpha: 0.15)),
+                        icon: Icon(Icons.bar_chart_rounded, color: cs.primary),
+                        onPressed: () => Navigator.of(context).push(
+                            MaterialPageRoute(
+                                builder: (_) => const ChartsPage())),
+                      ),
                     ]),
                     const SizedBox(height: 6),
                     // 1.12.6: bissemanal sem a semana passada: pedir ao
@@ -586,13 +599,13 @@ class TachoLiveCard extends StatelessWidget {
                         ),
                       ),
                     for (final r in rows)
-                      if (_val(t, r.$2) != null)
+                      if (value(t, r.$2) != null)
                         Padding(
                           padding: const EdgeInsets.symmetric(vertical: 2),
                           child: Row(children: [
                             Expanded(child: Text(r.$1)),
                             Text(
-                                _hm(_val(t, r.$2)),
+                                _hm(value(t, r.$2)),
                                 style: const TextStyle(
                                     fontWeight: FontWeight.w700,
                                     fontFeatures: [FontFeature.tabularFigures()])),

@@ -12,6 +12,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 
 import 'i18n.dart';
 import 'assistant.dart';
+import 'charts_page.dart';
 import 'law.dart';
 import 'models.dart';
 import 'pages.dart';
@@ -386,6 +387,16 @@ class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
             ),
           Text(titles[_tab]),
         ]),
+        // 1.13.0: atalho para os gráficos (também sem tacógrafo ligado).
+        actions: [
+          if (_tab <= 1)
+            IconButton(
+              tooltip: tr('Gráficos'),
+              icon: const Icon(Icons.bar_chart_rounded),
+              onPressed: () => Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const ChartsPage())),
+            ),
+        ],
       ),
       body: wide
           ? Row(children: [
