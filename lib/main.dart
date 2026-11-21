@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:math' as math;
 import 'dart:ui' show FontFeature;
+import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -115,20 +116,29 @@ class _SplashScreenState extends State<SplashScreen> {
       body: Stack(
         fit: StackFit.expand,
         children: [
-          Image.asset('assets/splash.jpg',
-              fit: BoxFit.cover, alignment: const Alignment(-0.35, 0)),
+          // 1.11.10: fundo = a imagem desfocada e escura a encher o ecrã;
+          // por cima, a imagem inteira (sem cortar), no meio.
+          ImageFiltered(
+            imageFilter: ui.ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+            child: Image.asset('assets/splash.jpg', fit: BoxFit.cover),
+          ),
+          const ColoredBox(color: Color(0x88000000)),
+          Center(
+            child: Image.asset('assets/splash.jpg',
+                fit: BoxFit.fitWidth, width: double.infinity),
+          ),
           const DecoratedBox(
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: [
-                  Color(0x66000000),
-                  Color(0x22000000),
-                  Color(0xCC000000),
+                  Color(0x99000000),
+                  Color(0x00000000),
+                  Color(0x00000000),
                   Color(0xF2000000),
                 ],
-                stops: [0, 0.35, 0.72, 1],
+                stops: [0, 0.32, 0.62, 1],
               ),
             ),
           ),

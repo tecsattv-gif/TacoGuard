@@ -569,6 +569,9 @@ class Tracker extends ChangeNotifier {
         notificationTitle: tr('TacoGuard ativo'),
         notificationText: tr('Controlando a jornada pelo GPS'),
         enableWakeLock: true,
+        // 1.11.10: ícone de tacógrafo na barra de estado (perto das horas).
+        notificationIcon:
+            const AndroidResource(name: 'ic_stat_tacho', defType: 'drawable'),
       ),
     );
     _sub = Geolocator.getPositionStream(locationSettings: settings).listen(
