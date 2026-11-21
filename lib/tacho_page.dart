@@ -228,6 +228,11 @@ class _TachoTestPageState extends State<TachoTestPage> {
           OutlinedButton(
               onPressed: _t.listen, child: Text(tr('Esperar o tacógrafo'))),
           OutlinedButton(onPressed: _t.disconnect, child: Text(tr('Desligar'))),
+          for (var i = 0; i < _t.channels; i++)
+            ChoiceChip(
+                label: Text('${tr('Canal')} ${i + 1}'),
+                selected: _t.channel == i,
+                onSelected: (_) => _t.setChannel(i)),
           for (final e in TachoLink.trtpNames.entries)
             OutlinedButton(
                 onPressed: () => _t.requestData(e.key),

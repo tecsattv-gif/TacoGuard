@@ -56,6 +56,9 @@ class TachoLink extends ChangeNotifier {
   String deviceName = '';
   String deviceAddress = '';
   int itsId = 0xA0;
+  int channels = 0; // 1.11.3: canais Bluetooth LE do tacógrafo
+  int channel = 0; // canal por onde enviar
+  bool _gotReply = false;
   String state = 'disconnected';
   bool get connected => state == 'connected';
   bool needPin = false;
@@ -193,8 +196,9 @@ class TachoLink extends ChangeNotifier {
       if (connected) {
         lastError = null;
         _buf.clear();
-        // Primeiro pedido logo; depois de 15 em 15 s.
-        requestAll();
+        // Primeiro pedido logo; depois de 15 em 15 s. (No Bluetooth LE
+        // quem começa é a procura do canal, ver _probe.)
+        if (channels == 0) requestAll();
         _poll?.cancel();
         _poll = Timer.periodic(const Duration(seconds: 15), (_) => requestAll());
       } else if (state == 'disconnected') {
@@ -207,12 +211,17 @@ class TachoLink extends ChangeNotifier {
         }
       }
       notifyListeners();
+    } else if (type == 'channels') {
+      channels = (d as num).toInt();
+      _log('$channels canais; a procurar o que responde');
+      _probe();
     } else if (type == 'info') {
       _log('$d');
     } else if (type == 'error') {
       lastError = '$d';
       _log('erro: $d');
     } else if (type == 'data' && d is Uint8List) {
+      _gotReply = true;
       _log('<- ${hex(d)}');
       _buf.addAll(d);
       _parse();
@@ -237,6 +246,33 @@ class TachoLink extends ChangeNotifier {
     } catch (e) {
       _log('erro ao enviar: $e');
     }
+  }
+
+  /// 1.11.3: escolhe o canal por onde enviar.
+  Future<void> setChannel(int i) async {
+    channel = i;
+    try {
+      await _ch.invokeMethod('target', {'index': i});
+    } catch (_) {}
+    notifyListeners();
+  }
+
+  /// 1.11.3: manda o pedido por cada canal até um responder.
+  Future<void> _probe() async {
+    for (var i = 0; i < channels; i++) {
+      if (!connected) return;
+      _gotReply = false;
+      await setChannel(i);
+      await requestData(0x01);
+      for (var k = 0; k < 6 && !_gotReply; k++) {
+        await Future.delayed(const Duration(milliseconds: 500));
+      }
+      if (_gotReply) {
+        _log('o tacógrafo respondeu: canal ${i + 1}');
+        return;
+      }
+    }
+    _log('nenhum canal respondeu ao pedido');
   }
 
   /// Pede os dados normais e os pessoais (tempos do motorista).

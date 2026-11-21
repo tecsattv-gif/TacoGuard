@@ -78,6 +78,15 @@ class TachoBt(private val activity: Activity, messenger: BinaryMessenger) {
                             result.success(socket != null)
                         }
                     }
+                    "target" -> {
+                        val i = call.argument<Int>("index") ?: 0
+                        val c = chars.getOrNull(i)
+                        if (c != null) {
+                            txChar = c
+                            emit("info", "enviar pelo canal ${i + 1} (${c.uuid})")
+                        }
+                        result.success(c != null)
+                    }
                     "disconnect" -> {
                         close()
                         result.success(true)
@@ -239,6 +248,8 @@ class TachoBt(private val activity: Activity, messenger: BinaryMessenger) {
     @Volatile private var gatt: BluetoothGatt? = null
     private var rxChar: BluetoothGattCharacteristic? = null
     private var txChar: BluetoothGattCharacteristic? = null
+    private val chars = mutableListOf<BluetoothGattCharacteristic>()
+    private val toEnable = ArrayDeque<BluetoothGattCharacteristic>()
     private val bleQueue = LinkedBlockingQueue<ByteArray>()
     private val writeDone = Semaphore(0)
     private var mtu = 23
@@ -302,64 +313,46 @@ class TachoBt(private val activity: Activity, messenger: BinaryMessenger) {
                         emit("info", "  car. ${c.uuid} [${props(c.properties)}]")
                     }
                 }
-                // Escolhe o serviço não padrão que tenha um "notify" e um "write".
+                // 1.11.3: todos os canais dos serviços não padrão que
+                // recebem (notify/indicate). Liga os avisos em todos (um de
+                // cada vez) e o app testa por qual deles o tacógrafo responde.
+                chars.clear()
                 for (sv in g.services) {
                     if (isStd(sv.uuid)) continue
-                    val n = sv.characteristics.firstOrNull {
-                        it.properties and (BluetoothGattCharacteristic.PROPERTY_NOTIFY or
-                            BluetoothGattCharacteristic.PROPERTY_INDICATE) != 0
-                    }
-                    val w = sv.characteristics.firstOrNull {
-                        it.properties and (BluetoothGattCharacteristic.PROPERTY_WRITE or
-                            BluetoothGattCharacteristic.PROPERTY_WRITE_NO_RESPONSE) != 0
-                    }
-                    if (n != null && w != null) {
-                        rx = n
-                        tx = w
-                        break
+                    for (c in sv.characteristics) {
+                        if (c.properties and (BluetoothGattCharacteristic.PROPERTY_NOTIFY or
+                                BluetoothGattCharacteristic.PROPERTY_INDICATE) != 0) chars.add(c)
                     }
                 }
-                if (rx == null || tx == null) {
+                if (chars.isEmpty()) {
                     emit("error", "LE: não achei o canal de dados (ver lista de serviços)")
                     return
                 }
-                rxChar = rx
-                txChar = tx
-                emit("info", "dados por: recebe ${rx.uuid}, envia ${tx.uuid}")
-                g.setCharacteristicNotification(rx, true)
-                val d = rx.getDescriptor(cccd)
-                if (d != null) {
-                    val v = if (rx.properties and BluetoothGattCharacteristic.PROPERTY_INDICATE != 0 &&
-                        rx.properties and BluetoothGattCharacteristic.PROPERTY_NOTIFY == 0)
-                        BluetoothGattDescriptor.ENABLE_INDICATION_VALUE
-                    else BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE
-                    if (Build.VERSION.SDK_INT >= 33) {
-                        g.writeDescriptor(d, v)
-                    } else {
-                        @Suppress("DEPRECATION")
-                        d.value = v
-                        @Suppress("DEPRECATION")
-                        g.writeDescriptor(d)
-                    }
-                } else {
-                    ready()
-                }
+                for ((i, c) in chars.withIndex()) emit("info", "canal ${i + 1}: ${c.uuid}")
+                rxChar = chars[0]
+                txChar = chars.firstOrNull {
+                    it.properties and (BluetoothGattCharacteristic.PROPERTY_WRITE or
+                        BluetoothGattCharacteristic.PROPERTY_WRITE_NO_RESPONSE) != 0
+                } ?: chars[0]
+                toEnable.clear()
+                toEnable.addAll(chars)
+                enableNext(g)
             }
 
             override fun onDescriptorWrite(g: BluetoothGatt, d: BluetoothGattDescriptor, status: Int) {
-                emit("info", "avisos ligados (status $status)")
-                ready()
+                emit("info", "avisos ligados em ${d.characteristic.uuid} (status $status)")
+                enableNext(g)
             }
 
             @Deprecated("Android < 13")
             override fun onCharacteristicChanged(g: BluetoothGatt, c: BluetoothGattCharacteristic) {
                 @Suppress("DEPRECATION")
                 val v = c.value ?: return
-                emit("data", v.copyOf())
+                got(c, v)
             }
 
             override fun onCharacteristicChanged(g: BluetoothGatt, c: BluetoothGattCharacteristic, value: ByteArray) {
-                emit("data", value.copyOf())
+                got(c, value)
             }
 
             override fun onCharacteristicWrite(g: BluetoothGatt, c: BluetoothGattCharacteristic, status: Int) {
@@ -374,6 +367,40 @@ class TachoBt(private val activity: Activity, messenger: BinaryMessenger) {
         } catch (e: Exception) {
             emit("error", "LE: ${e.message}")
             emit("state", "disconnected")
+        }
+    }
+
+    private fun got(c: BluetoothGattCharacteristic, v: ByteArray) {
+        val i = chars.indexOfFirst { it.uuid == c.uuid }
+        emit("info", "recebido no canal ${i + 1}")
+        emit("data", v.copyOf())
+    }
+
+    /** Liga os avisos do próximo canal; no fim, fica pronto. */
+    private fun enableNext(g: BluetoothGatt) {
+        val c = toEnable.removeFirstOrNull()
+        if (c == null) {
+            emit("channels", chars.size)
+            ready()
+            return
+        }
+        g.setCharacteristicNotification(c, true)
+        val d = c.getDescriptor(cccd)
+        if (d == null) {
+            enableNext(g)
+            return
+        }
+        val v = if (c.properties and BluetoothGattCharacteristic.PROPERTY_INDICATE != 0 &&
+            c.properties and BluetoothGattCharacteristic.PROPERTY_NOTIFY == 0)
+            BluetoothGattDescriptor.ENABLE_INDICATION_VALUE
+        else BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE
+        if (Build.VERSION.SDK_INT >= 33) {
+            g.writeDescriptor(d, v)
+        } else {
+            @Suppress("DEPRECATION")
+            d.value = v
+            @Suppress("DEPRECATION")
+            g.writeDescriptor(d)
         }
     }
 
