@@ -255,6 +255,9 @@ class _TachoTestPageState extends State<TachoTestPage> {
                 style: const TextStyle(fontFamily: 'monospace', fontSize: 11.5)),
         ],
         const SizedBox(height: 12),
+        OutlinedButton(
+            onPressed: () => TachoLink.I.resetBadDids(),
+            child: Text(tr('Voltar a pedir todos os dados'))),
         FilledButton.icon(
             onPressed: _share,
             icon: const Icon(Icons.share_rounded),

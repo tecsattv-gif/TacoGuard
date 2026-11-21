@@ -3,6 +3,7 @@
 
 const Map<String, Map<String, String>> kTr = {
   'en': {
+    'Voltar a pedir todos os dados': 'Request all data again',
     'Dados recebidos do tacógrafo': 'Data received from the tachograph',
     'Canal': 'Channel',
     'PIN do tacógrafo': 'Tachograph PIN',
@@ -333,6 +334,7 @@ const Map<String, Map<String, String>> kTr = {
     'Última jornada: {0} {1}, {2} às {3}  •  condução {4}  •  {5}': 'Last shift: {0} {1}, {2} to {3}  •  driving {4}  •  {5}',
   },
   'es': {
+    'Voltar a pedir todos os dados': 'Volver a pedir todos los datos',
     'Dados recebidos do tacógrafo': 'Datos recibidos del tacógrafo',
     'Canal': 'Canal',
     'PIN do tacógrafo': 'PIN del tacógrafo',
@@ -663,6 +665,7 @@ const Map<String, Map<String, String>> kTr = {
     'Última jornada: {0} {1}, {2} às {3}  •  condução {4}  •  {5}': 'Última jornada: {0} {1}, de {2} a {3}  •  conducción {4}  •  {5}',
   },
   'fr': {
+    'Voltar a pedir todos os dados': 'Redemander toutes les données',
     'Dados recebidos do tacógrafo': 'Données reçues du tachygraphe',
     'Canal': 'Canal',
     'PIN do tacógrafo': 'PIN du tachygraphe',

@@ -83,6 +83,8 @@ class TachoLink extends ChangeNotifier {
       deviceName = p.getString('tacho_name') ?? '';
       deviceAddress = p.getString('tacho_addr') ?? '';
       itsId = p.getInt('tacho_itsid') ?? 0xA0;
+      _bad.addAll((p.getStringList('tacho_bad_dids') ?? const [])
+          .map((e) => int.tryParse(e) ?? 0));
     } catch (_) {}
     _sub ??= _ev.receiveBroadcastStream().listen(_onEvent, onError: (_) {});
     if (enabled && deviceAddress.isNotEmpty) connect();
@@ -203,6 +205,16 @@ class TachoLink extends ChangeNotifier {
         _poll = Timer.periodic(const Duration(seconds: 15), (_) => requestAll());
       } else if (state == 'disconnected') {
         _poll?.cancel();
+        // Desligou logo depois de um pedido: esse dado não é permitido
+        // neste tacógrafo; não volta a ser pedido.
+        if (_v2 && _lastDid != null &&
+            DateTime.now().difference(_lastAt).inMilliseconds < 2500) {
+          _bad.add(_lastDid!);
+          _log('o tacógrafo desligou depois de ${dids[_lastDid] ?? _lastDid}; esse dado fica de fora');
+          SharedPreferences.getInstance().then((p) => p.setStringList(
+              'tacho_bad_dids', _bad.map((e) => '$e').toList()));
+        }
+        _lastDid = null;
         _v2 = false;
         _txCredits = 0;
         _firstPoll = true;
@@ -409,7 +421,6 @@ class TachoLink extends ChangeNotifier {
   /// Dados do motorista 1 (códigos DID da ISO 16844-7).
   static const dids = <int, String>{
     0xF903: 'Driver1WorkingState',
-    0xF906: 'Driver1TimeRelatedStates',
     0xF902: 'TachographVehicleSpeed',
     0xF923: 'Driver1ContinuousDrivingTime',
     0xF925: 'Driver1CumulativeBreakTime',
@@ -430,6 +441,7 @@ class TachoLink extends ChangeNotifier {
     0xF9AB: 'Driver1NumberOfUsedReducedDailyRestPeriods',
     0xF9A0: 'Driver1NumberOfTimes9hDailyDrivingTimesExceeded',
     0xF90B: 'TimeDate',
+    0xF906: 'Driver1TimeRelatedStates',
   };
 
   /// Últimas respostas por DID (em bruto).
@@ -442,6 +454,17 @@ class TachoLink extends ChangeNotifier {
   int _msgTotal = 0, _msgGot = 0;
   int _rxSinceCredit = 0;
   int _txCredits = 0; // créditos que o tacógrafo nos deu
+  final Set<int> _bad = {};
+  int? _lastDid;
+  DateTime _lastAt = DateTime(2000);
+
+  /// Esquece a lista de dados recusados (tela de teste).
+  Future<void> resetBadDids() async {
+    _bad.clear();
+    final p = await SharedPreferences.getInstance();
+    await p.remove('tacho_bad_dids');
+    _log('lista de dados recusados apagada');
+  }
   bool _firstPoll = true;
   Completer<void>? _wait;
 
@@ -450,7 +473,7 @@ class TachoLink extends ChangeNotifier {
       for (var i = 0; i < 30 && _txCredits <= 0 && _v2 && connected; i++) {
         await Future.delayed(const Duration(milliseconds: 100));
       }
-      if (_txCredits > 0) _txCredits--;
+      if (_txCredits > 0) _txCredits--; // até o DTCO confirmar o novo total
     }
     _log('-> [${uuid.substring(0, 8)}] ${hex(data)}');
     try {
@@ -487,6 +510,18 @@ class TachoLink extends ChangeNotifier {
     try {
       for (final did in dids.keys) {
         if (!_v2 || !connected) break;
+        if (_bad.contains(did)) continue;
+        // Espera os créditos do tacógrafo (ele devolve-os aos poucos).
+        for (var i = 0; i < 50 && _txCredits <= 0 && _v2 && connected; i++) {
+          await Future.delayed(const Duration(milliseconds: 100));
+        }
+        if (_txCredits <= 0) {
+          _log('sem créditos do tacógrafo; espera o próximo ciclo');
+          break;
+        }
+        await Future.delayed(const Duration(milliseconds: 400));
+        _lastDid = did;
+        _lastAt = DateTime.now();
         final req = [0x22, did >> 8, did & 0xFF];
         _wait = Completer<void>();
         await _writeChar(diagFifo, _hdr ? [0x01, 0x01, ...req] : req);
@@ -529,9 +564,10 @@ class TachoLink extends ChangeNotifier {
         _log('o tacógrafo recusou a ligação (créditos FF)');
         return;
       }
-      if (uuid == diagCredits && v > 0) {
-        final first = _txCredits == 0 && _firstPoll;
-        _txCredits += v;
+      if (uuid == diagCredits) {
+        // O DTCO manda o total de créditos que temos (2, 1, 0…).
+        final first = _firstPoll && v > 0;
+        _txCredits = v;
         if (first) {
           _firstPoll = false;
           _v2Poll();
