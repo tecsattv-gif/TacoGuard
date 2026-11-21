@@ -819,15 +819,26 @@ class _ReportsPageState extends State<ReportsPage> {
               String hm(int? m) => m == null
                   ? '—'
                   : '${m ~/ 60}h${(m % 60).toString().padLeft(2, '0')}';
+              // 1.12.7: o DTCO 4.1 não dá o que falta; o app calcula
+              // (semana: 56 h e 90 h nas 2 semanas, o que vier primeiro).
+              final wk = t.minutes(0xF99B);
+              final fn = t.fortnightDrive?.inMinutes;
+              final leftFn = fn == null ? null : (90 * 60 - fn).clamp(0, 90 * 60);
+              final leftWk = wk == null
+                  ? null
+                  : [56 * 60 - wk, if (leftFn != null) leftFn]
+                      .reduce((a, b) => a < b ? a : b)
+                      .clamp(0, 56 * 60);
               final rows = <(String, String)>[
-                if (_kind == ReportKind.day)
+                if (_kind == ReportKind.day && t.minutes(0xF99A) != null)
                   (tr('Condução hoje'), hm(t.minutes(0xF99A))),
-                (tr('Condução na semana'),
-                    '${hm(t.minutes(0xF99B))} / 56h'),
-                (tr('Condução bissemanal'),
-                    '${hm(t.fortnightDrive?.inMinutes)} / 90h'),
-                (tr('Falta conduzir na semana'), hm(t.minutes(0xF9B1))),
-                (tr('Falta conduzir em 2 semanas'), hm(t.minutes(0xF9B3))),
+                if (wk != null) (tr('Condução na semana'), '${hm(wk)} / 56h'),
+                if (fn != null)
+                  (tr('Condução bissemanal'), '${hm(fn)} / 90h'),
+                if (leftWk != null)
+                  (tr('Falta conduzir na semana'), hm(leftWk)),
+                if (leftFn != null)
+                  (tr('Falta conduzir em 2 semanas'), hm(leftFn)),
               ];
               return Padding(
                 padding: const EdgeInsets.only(top: 12),
@@ -855,6 +866,13 @@ class _ReportsPageState extends State<ReportsPage> {
                                       fontWeight: FontWeight.w700)),
                             ]),
                           ),
+                        if (fn == null && wk != null) ...[
+                          const SizedBox(height: 6),
+                          Text(
+                              tr('Para a bissemanal, toque em "Indicar a bissemanal do tacógrafo" no ecrã Hoje.'),
+                              style: const TextStyle(
+                                  color: TG.muted, fontSize: 12.5)),
+                        ],
                         if (_kind == ReportKind.month) ...[
                           const SizedBox(height: 6),
                           Text(

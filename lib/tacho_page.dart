@@ -505,6 +505,27 @@ class TachoLiveCard extends StatelessWidget {
     await t.setPrevWeek(total - week);
   }
 
+  /// Valor de uma linha: DID do tacógrafo, ou calculado (−1 bissemanal,
+  /// −2 falta na semana, −3 falta em 2 semanas).
+  static int? _val(TachoLink t, int code) {
+    final fn = t.fortnightDrive?.inMinutes;
+    final leftFn = fn == null ? null : (90 * 60 - fn).clamp(0, 90 * 60);
+    switch (code) {
+      case -1:
+        return fn;
+      case -2:
+        final wk = t.minutes(0xF99B);
+        if (wk == null) return null;
+        var l = 56 * 60 - wk;
+        if (leftFn != null && leftFn < l) l = leftFn;
+        return l.clamp(0, 56 * 60);
+      case -3:
+        return leftFn;
+      default:
+        return t.minutes(code);
+    }
+  }
+
   static String _hm(int? m) =>
       m == null ? '—' : '${m ~/ 60}h${(m % 60).toString().padLeft(2, '0')}';
 
@@ -529,10 +550,8 @@ class TachoLiveCard extends StatelessWidget {
             (tr('Condução hoje'), 0xF99A),
             (tr('Condução na semana'), 0xF99B),
             (tr('Condução bissemanal'), -1), // 90 h − o que falta (F9B3)
-            (tr('Falta conduzir até a pausa'), 0xF9AD),
-            (tr('Falta conduzir hoje'), 0xF9AF),
-            (tr('Falta conduzir na semana'), 0xF9B1),
-            (tr('Falta conduzir em 2 semanas'), 0xF9B3),
+            (tr('Falta conduzir na semana'), -2),
+            (tr('Falta conduzir em 2 semanas'), -3),
             (tr('Até ao descanso diário'), 0xF99C),
             (tr('Até ao descanso semanal'), 0xF9A1),
           ];
@@ -567,18 +586,13 @@ class TachoLiveCard extends StatelessWidget {
                         ),
                       ),
                     for (final r in rows)
-                      if ((r.$2 == -1
-                              ? t.fortnightDrive?.inMinutes
-                              : t.minutes(r.$2)) !=
-                          null)
+                      if (_val(t, r.$2) != null)
                         Padding(
                           padding: const EdgeInsets.symmetric(vertical: 2),
                           child: Row(children: [
                             Expanded(child: Text(r.$1)),
                             Text(
-                                _hm(r.$2 == -1
-                                    ? t.fortnightDrive?.inMinutes
-                                    : t.minutes(r.$2)),
+                                _hm(_val(t, r.$2)),
                                 style: const TextStyle(
                                     fontWeight: FontWeight.w700,
                                     fontFeatures: [FontFeature.tabularFigures()])),
