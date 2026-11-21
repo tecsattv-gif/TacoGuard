@@ -207,6 +207,8 @@ class TachoLink extends ChangeNotifier {
         }
       }
       notifyListeners();
+    } else if (type == 'info') {
+      _log('$d');
     } else if (type == 'error') {
       lastError = '$d';
       _log('erro: $d');

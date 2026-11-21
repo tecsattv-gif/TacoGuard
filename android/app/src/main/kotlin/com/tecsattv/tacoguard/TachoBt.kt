@@ -49,7 +49,7 @@ class TachoBt(private val activity: Activity, messenger: BinaryMessenger) {
                         result.success(true)
                     }
                     "listen" -> {
-                        Thread { listen() }.start()
+                        Thread { listen(120000) }.start()
                         result.success(true)
                     }
                     "write" -> {
@@ -100,54 +100,89 @@ class TachoBt(private val activity: Activity, messenger: BinaryMessenger) {
         }
     }
 
-    /** O telefone liga ao tacógrafo (3 tentativas diferentes). */
+    @Volatile private var busy = false
+
+    /**
+     * O telefone liga ao tacógrafo. 1.11.1: pergunta ao tacógrafo que
+     * serviços tem (SDP) e tenta cada um; depois a porta série padrão e os
+     * canais 1 a 6 direto. Se nada der, fica 90 s à espera de que o
+     * tacógrafo ligue (na especificação ele é o "mestre").
+     */
     private fun connect(address: String) {
-        close()
-        val ad = BluetoothAdapter.getDefaultAdapter()
-        if (ad == null) {
-            emit("error", "sem Bluetooth")
+        if (busy) {
+            emit("info", "já está a tentar ligar")
             return
         }
+        busy = true
         try {
-            ad.cancelDiscovery()
-        } catch (_: Exception) {
-        }
-        val dev = ad.getRemoteDevice(address)
-        val tries = listOf<() -> BluetoothSocket>(
-            { dev.createRfcommSocketToServiceRecord(spp) },
-            { dev.createInsecureRfcommSocketToServiceRecord(spp) },
-            {
-                dev.javaClass.getMethod("createRfcommSocket", Int::class.javaPrimitiveType)
-                    .invoke(dev, 1) as BluetoothSocket
-            },
-        )
-        var last = ""
-        for ((i, make) in tries.withIndex()) {
-            try {
-                emit("state", "a ligar (${i + 1}/3)")
-                val s = make()
-                s.connect()
-                socket = s
-                emit("state", "connected")
-                read(s)
+            close()
+            val ad = BluetoothAdapter.getDefaultAdapter()
+            if (ad == null) {
+                emit("error", "sem Bluetooth")
                 return
-            } catch (e: Exception) {
-                last = e.message ?: e.javaClass.simpleName
             }
+            try {
+                ad.cancelDiscovery()
+            } catch (_: Exception) {
+            }
+            val dev = ad.getRemoteDevice(address)
+            // Serviços que o tacógrafo anuncia.
+            try {
+                dev.fetchUuidsWithSdp()
+                Thread.sleep(2500)
+            } catch (_: Exception) {
+            }
+            val uuids = (dev.uuids ?: emptyArray()).map { it.uuid }
+            emit("info", "serviços do tacógrafo: " +
+                if (uuids.isEmpty()) "nenhum anunciado" else uuids.joinToString(", "))
+            emit("info", "tipo: ${dev.type}  emparelhado: ${dev.bondState == 12}")
+            val tries = mutableListOf<Pair<String, () -> BluetoothSocket>>()
+            for (u in uuids.distinct()) {
+                tries.add("serviço $u" to { dev.createRfcommSocketToServiceRecord(u) })
+                tries.add("serviço $u (inseguro)" to { dev.createInsecureRfcommSocketToServiceRecord(u) })
+            }
+            if (!uuids.contains(spp)) {
+                tries.add("porta série" to { dev.createRfcommSocketToServiceRecord(spp) })
+                tries.add("porta série (inseguro)" to { dev.createInsecureRfcommSocketToServiceRecord(spp) })
+            }
+            for (ch in 1..6) {
+                tries.add("canal $ch" to {
+                    dev.javaClass.getMethod("createRfcommSocket", Int::class.javaPrimitiveType)
+                        .invoke(dev, ch) as BluetoothSocket
+                })
+            }
+            for ((i, t) in tries.withIndex()) {
+                try {
+                    emit("state", "a ligar (${i + 1}/${tries.size})")
+                    val s = t.second()
+                    s.connect()
+                    socket = s
+                    emit("info", "ligado por: ${t.first}")
+                    emit("state", "connected")
+                    busy = false
+                    read(s)
+                    return
+                } catch (e: Exception) {
+                    emit("info", "${t.first}: ${e.message ?: e.javaClass.simpleName}")
+                }
+            }
+            emit("error", "o tacógrafo não aceitou a ligação; à espera de que ele ligue")
+        } finally {
+            busy = false
         }
-        emit("error", "connect: $last")
-        emit("state", "disconnected")
+        listen(90000)
     }
 
     /** O tacógrafo liga ao telefone (ele é o "mestre" na especificação). */
-    private fun listen() {
+    private fun listen(ms: Int = 120000) {
         close()
         try {
             val ad = BluetoothAdapter.getDefaultAdapter() ?: return
             val srv = ad.listenUsingRfcommWithServiceRecord("TacoGuard", spp)
             server = srv
             emit("state", "à espera do tacógrafo")
-            val s = srv.accept(120000)
+            emit("info", "o telefone está visível como TacoGuard; ligue a partir do menu do tacógrafo, se houver")
+            val s = srv.accept(ms)
             try {
                 srv.close()
             } catch (_: Exception) {

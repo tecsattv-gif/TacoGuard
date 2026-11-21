@@ -1,7 +1,7 @@
 name: tacoguard
 description: TacoGuard - controle da jornada do motorista pela lei do tacógrafo (CE 561/2006).
 publish_to: 'none'
-version: 1.11.0+50
+version: 1.11.1+51
 
 environment:
   sdk: '>=3.4.0 <4.0.0'
