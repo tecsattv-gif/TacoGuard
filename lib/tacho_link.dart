@@ -204,6 +204,8 @@ class TachoLink extends ChangeNotifier {
       } else if (state == 'disconnected') {
         _poll?.cancel();
         _v2 = false;
+        _txCredits = 0;
+        _firstPoll = true;
         // Volta a tentar sozinho daqui a 30 s, se a opção estiver ligada.
         if (enabled && deviceAddress.isNotEmpty) {
           Future.delayed(const Duration(seconds: 30), () {
@@ -439,9 +441,17 @@ class TachoLink extends ChangeNotifier {
   final List<int> _msg = [];
   int _msgTotal = 0, _msgGot = 0;
   int _rxSinceCredit = 0;
+  int _txCredits = 0; // créditos que o tacógrafo nos deu
+  bool _firstPoll = true;
   Completer<void>? _wait;
 
   Future<void> _writeChar(String uuid, List<int> data) async {
+    if (uuid == diagFifo) {
+      for (var i = 0; i < 30 && _txCredits <= 0 && _v2 && connected; i++) {
+        await Future.delayed(const Duration(milliseconds: 100));
+      }
+      if (_txCredits > 0) _txCredits--;
+    }
     _log('-> [${uuid.substring(0, 8)}] ${hex(data)}');
     try {
       await _ch.invokeMethod(
@@ -456,11 +466,17 @@ class TachoLink extends ChangeNotifier {
     _poll?.cancel();
     await Future.delayed(const Duration(milliseconds: 300));
     // Dá créditos ao tacógrafo (quantos pacotes pode mandar).
-    await _writeChar(diagCredits, [0x10]);
-    await _writeChar(dlCredits, [0x10]);
-    await Future.delayed(const Duration(milliseconds: 800));
-    _v2Poll();
-    _poll = Timer.periodic(const Duration(seconds: 20), (_) => _v2Poll());
+    // Só o serviço de diagnóstico: o de Download é para empresa/controlo
+    // e mexer nele fazia o tacógrafo desligar (1.11.4).
+    _txCredits = 0;
+    await _writeChar(diagCredits, [0x02]);
+    // Os pedidos começam quando o tacógrafo devolve os créditos dele.
+    Future.delayed(const Duration(seconds: 3), () {
+      if (_v2 && connected && _txCredits == 0) {
+        _log('o tacógrafo não deu créditos; a pedir mesmo assim');
+        _v2Poll();
+      }
+    });
   }
 
   bool _polling = false;
@@ -509,16 +525,26 @@ class TachoLink extends ChangeNotifier {
     if (uuid == diagCredits || uuid == dlCredits) {
       final v = d.isEmpty ? -1 : d.first;
       _log('créditos do tacógrafo (${uuid == diagCredits ? 'diagnóstico' : 'download'}): $v');
-      if (v == 0xFF) _log('o tacógrafo recusou a ligação (créditos FF)');
+      if (v == 0xFF) {
+        _log('o tacógrafo recusou a ligação (créditos FF)');
+        return;
+      }
+      if (uuid == diagCredits && v > 0) {
+        final first = _txCredits == 0 && _firstPoll;
+        _txCredits += v;
+        if (first) {
+          _firstPoll = false;
+          _v2Poll();
+          _poll?.cancel();
+          _poll = Timer.periodic(const Duration(seconds: 20), (_) => _v2Poll());
+        }
+      }
       return;
     }
     _log('<- [${uuid.substring(0, 8)}] ${hex(d)}');
     if (uuid != diagFifo) return;
     // Devolve créditos de vez em quando.
-    if (++_rxSinceCredit >= 8) {
-      _rxSinceCredit = 0;
-      _writeChar(diagCredits, [0x08]);
-    }
+    _writeChar(diagCredits, [0x01]);
     List<int> body = d;
     if (_hdr && d.length >= 2) {
       final a = d[0], b = d[1];
