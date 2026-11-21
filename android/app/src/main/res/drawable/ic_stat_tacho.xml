@@ -1,13 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Ícone pequeno da barra de estado: um tacógrafo (corpo, visor com
-     números, botões e ranhura do cartão). Branco, o Android pinta. -->
+<!-- Ícone pequeno da barra de estado (perto das horas): o escudo do
+     TacoGuard com o volante dentro, igual ao ícone do app.
+     Branco, o Android pinta. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="24dp" android:height="24dp"
     android:viewportWidth="24" android:viewportHeight="24">
+    <!-- escudo (contorno) -->
     <path android:fillColor="#FFFFFFFF" android:fillType="evenOdd"
-        android:pathData="M4,5H20A2,2 0 0 1 22,7V17A2,2 0 0 1 20,19H4A2,2 0 0 1 2,17V7A2,2 0 0 1 4,5Z
-            M4,7.2H15.6V12.8H4Z
-            M5.4,8.6H7V11.4H5.4Z M8,8.6H9.6V11.4H8Z M11.2,8.6H14.2V11.4H11.2Z
-            M17.2,7.4H20V9.6H17.2Z M17.2,10.6H20V12.8H17.2Z
-            M4,14.8H13V16.6H4Z M14.6,14.8H20V16.6H14.6Z" />
+        android:pathData="M12,1.5 C14.5,2.9 17,3.4 20.5,3.5 C20.7,12 17.5,18.5 12,22.5 C6.5,18.5 3.3,12 3.5,3.5 C7,3.4 9.5,2.9 12,1.5 Z
+            M12,3.5 C14.1,4.6 16.3,5.1 18.8,5.2 C18.7,11.9 16.1,17 12,20.3 C7.9,17 5.3,11.9 5.2,5.2 C7.7,5.1 9.9,4.6 12,3.5 Z" />
+    <!-- aro do volante -->
+    <path android:fillColor="#FFFFFFFF" android:fillType="evenOdd"
+        android:pathData="M7.3,11 A4.7,4.7 0 1,0 16.7,11 A4.7,4.7 0 1,0 7.3,11 Z
+            M8.75,11 A3.25,3.25 0 1,0 15.25,11 A3.25,3.25 0 1,0 8.75,11 Z" />
+    <!-- raios do volante -->
+    <path android:fillColor="#FFFFFFFF"
+        android:pathData="M8.2,10.35 H15.8 V11.55 H12.65 V15 H11.35 V11.55 H8.2 Z" />
 </vector>

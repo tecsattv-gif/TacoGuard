@@ -66,7 +66,7 @@ class TacoApp extends StatelessWidget {
       );
 }
 
-/// Tela de abertura: velocímetro + nome + créditos, por 2,5 segundos.
+/// Tela de abertura: escudo do TacoGuard + frase + créditos, por 2,5 segundos.
 class SplashScreen extends StatefulWidget {
   final Widget next;
   const SplashScreen({super.key, required this.next});
@@ -116,57 +116,39 @@ class _SplashScreenState extends State<SplashScreen> {
       body: Stack(
         fit: StackFit.expand,
         children: [
-          // 1.11.10: fundo = a imagem desfocada e escura a encher o ecrã;
-          // por cima, a imagem inteira (sem cortar), no meio.
-          ImageFiltered(
-            imageFilter: ui.ImageFilter.blur(sigmaX: 18, sigmaY: 18),
-            child: Image.asset('assets/splash.jpg', fit: BoxFit.cover),
-          ),
-          const ColoredBox(color: Color(0x88000000)),
-          Center(
-            child: Image.asset('assets/splash.jpg',
-                fit: BoxFit.fitWidth, width: double.infinity),
-          ),
-          const DecoratedBox(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  Color(0x99000000),
-                  Color(0x00000000),
-                  Color(0x00000000),
-                  Color(0xF2000000),
-                ],
-                stops: [0, 0.32, 0.62, 1],
+          // 1.12.9: splash nova (escudo + disco 24 h + volante + estrada),
+          // feita em pé. Em pé enche o ecrã; deitado/tablet largo mostra a
+          // imagem inteira sobre ela mesma desfocada.
+          LayoutBuilder(builder: (context, c) {
+            if (c.maxHeight >= c.maxWidth) {
+              return Image.asset('assets/splash.jpg',
+                  fit: BoxFit.cover, alignment: Alignment.topCenter);
+            }
+            return Stack(fit: StackFit.expand, children: [
+              ImageFiltered(
+                imageFilter: ui.ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+                child: Image.asset('assets/splash.jpg', fit: BoxFit.cover),
               ),
-            ),
-          ),
+              const ColoredBox(color: Color(0x88000000)),
+              Image.asset('assets/splash.jpg', fit: BoxFit.contain),
+            ]);
+          }),
           SafeArea(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(24, 36, 24, 28),
               child: Column(
                 children: [
-                  const Text('TacoGuard',
-                      style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 44,
-                          fontWeight: FontWeight.w900,
-                          letterSpacing: 0.5,
-                          shadows: [
-                            Shadow(color: Colors.black, blurRadius: 18)
-                          ])),
-                  const SizedBox(height: 6),
+                  const Spacer(),
                   Text(tr('Sua jornada dentro da lei do tacógrafo'),
                       textAlign: TextAlign.center,
-                      style: TextStyle(
+                      style: const TextStyle(
                           color: Colors.white,
                           fontSize: 15,
                           fontWeight: FontWeight.w600,
                           shadows: [
                             Shadow(color: Colors.black, blurRadius: 12)
                           ])),
-                  const Spacer(),
+                  const SizedBox(height: 12),
                   // Créditos, em destaque no rodapé da abertura.
                   Container(
                     width: double.infinity,
