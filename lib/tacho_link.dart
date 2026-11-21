@@ -84,6 +84,13 @@ class TachoLink extends ChangeNotifier with WidgetsBindingObserver {
       deviceName = p.getString('tacho_name') ?? '';
       deviceAddress = p.getString('tacho_addr') ?? '';
       itsId = p.getInt('tacho_itsid') ?? 0xA0;
+      for (final e in p.getStringList('tacho_weeks') ?? const <String>[]) {
+        final kv = e.split(':');
+        if (kv.length == 2) {
+          final k = int.tryParse(kv[0]), v = int.tryParse(kv[1]);
+          if (k != null && v != null) _weeks[k] = v;
+        }
+      }
       _bad.addAll((p.getStringList('tacho_bad_dids') ?? const [])
           .map((e) => int.tryParse(e) ?? 0));
     } catch (_) {}
@@ -496,8 +503,59 @@ class TachoLink extends ChangeNotifier with WidgetsBindingObserver {
   Duration? get fortnightDrive {
     if (!connected) return null;
     final left = minutes(0xF9B3);
-    if (left == null || left > 90 * 60) return null;
-    return Duration(minutes: 90 * 60 - left);
+    if (left != null && left <= 90 * 60) {
+      return Duration(minutes: 90 * 60 - left);
+    }
+    // 1.12.6: o DTCO 4.1 não dá F9B3. Bissemanal = semana atual do
+    // tacógrafo + semana anterior (guardada pelo app ou escrita à mão).
+    final w = minutes(0xF99B);
+    final p = prevWeekMinutes;
+    if (w == null || p == null) return null;
+    return Duration(minutes: w + p);
+  }
+
+  // ---------- 1.12.6: condução por semana (para a bissemanal) ----------
+  /// Segunda-feira 00:00 UTC da semana de [t] (a semana do tacógrafo).
+  static DateTime weekStart(DateTime t) {
+    final u = t.toUtc();
+    final d = DateTime.utc(u.year, u.month, u.day);
+    return d.subtract(Duration(days: d.weekday - 1));
+  }
+
+  final Map<int, int> _weeks = {}; // início da semana (ms) → minutos
+
+  int? get prevWeekMinutes => _weeks[weekStart(DateTime.now())
+      .subtract(const Duration(days: 7))
+      .millisecondsSinceEpoch];
+
+  /// Escreve à mão a condução da semana passada (ex.: tirada do ecrã do
+  /// DTCO: bissemanal menos a semana atual).
+  Future<void> setPrevWeek(int minutes) async {
+    _weeks[weekStart(DateTime.now())
+        .subtract(const Duration(days: 7))
+        .millisecondsSinceEpoch] = minutes;
+    await _saveWeeks();
+    notifyListeners();
+  }
+
+  void _noteWeek(int minutes) {
+    final k = weekStart(DateTime.now()).millisecondsSinceEpoch;
+    if (_weeks[k] == minutes) return;
+    _weeks[k] = minutes;
+    // Guarda só as últimas 8 semanas.
+    final keys = _weeks.keys.toList()..sort();
+    while (keys.length > 8) {
+      _weeks.remove(keys.removeAt(0));
+    }
+    _saveWeeks();
+  }
+
+  Future<void> _saveWeeks() async {
+    try {
+      final p = await SharedPreferences.getInstance();
+      await p.setStringList(
+          'tacho_weeks', [for (final e in _weeks.entries) '${e.key}:${e.value}']);
+    } catch (_) {}
   }
 
   /// Há dados recentes do tacógrafo (menos de 3 minutos).
@@ -512,10 +570,29 @@ class TachoLink extends ChangeNotifier with WidgetsBindingObserver {
     if (did == 0xF902) return '${(n / 256).toStringAsFixed(0)} km/h';
     if (did == 0xF903) return '$n';
     if (did == 0xF9AB || did == 0xF9A0) return '$n';
+    if ((did == 0xF90B || did == 0xF997 || did == 0xF998) && v.length >= 6) {
+      final t = j1939Time(v);
+      if (t != null) {
+        final l = t.toLocal();
+        String two(int x) => x.toString().padLeft(2, '0');
+        return '${two(l.day)}/${two(l.month)}/${l.year} ${two(l.hour)}:${two(l.minute)}';
+      }
+    }
     if (v.length == 2 && n < 0xFB00) {
       return '${n ~/ 60}h${(n % 60).toString().padLeft(2, '0')}';
     }
     return hex(v);
+  }
+
+  /// Data/hora no formato J1939 (seg×0,25, min, hora, mês, dia×0,25,
+  /// ano−1985), em UTC.
+  static DateTime? j1939Time(Uint8List v) {
+    final sec = v[0] ~/ 4, min = v[1], hour = v[2], mon = v[3];
+    final day = (v[4] + 3) ~/ 4, year = 1985 + v[5];
+    if (min > 59 || hour > 23 || mon < 1 || mon > 12 || day < 1 || day > 31) {
+      return null;
+    }
+    return DateTime.utc(year, mon, day, hour, min, sec);
   }
 
   /// Últimas respostas por DID (em bruto).
@@ -544,12 +621,9 @@ class TachoLink extends ChangeNotifier with WidgetsBindingObserver {
   Completer<void>? _wait;
 
   Future<void> _writeChar(String uuid, List<int> data) async {
-    if (uuid == diagFifo) {
-      for (var i = 0; i < 30 && _txCredits <= 0 && _v2 && connected; i++) {
-        await Future.delayed(const Duration(milliseconds: 100));
-      }
-      if (_txCredits > 0) _txCredits--; // até o DTCO confirmar o novo total
-    }
+    // 1.12.6: o DTCO aceita os pedidos mesmo a mostrar 0 créditos (o
+    // número desce a cada pacote nos dois sentidos); não esperar por eles,
+    // só manter um intervalo entre pedidos.
     _log('-> [${uuid.substring(0, 8)}] ${hex(data)}');
     try {
       await _ch.invokeMethod(
@@ -595,15 +669,7 @@ class TachoLink extends ChangeNotifier with WidgetsBindingObserver {
       for (final did in order) {
         if (!_v2 || !connected) break;
         if (_bad.contains(did)) continue;
-        // Espera os créditos do tacógrafo (ele devolve-os aos poucos).
-        for (var i = 0; i < 50 && _txCredits <= 0 && _v2 && connected; i++) {
-          await Future.delayed(const Duration(milliseconds: 100));
-        }
-        if (_txCredits <= 0) {
-          _log('sem créditos do tacógrafo; espera o próximo ciclo');
-          break;
-        }
-        await Future.delayed(const Duration(milliseconds: 400));
+        await Future.delayed(const Duration(milliseconds: 1200));
         _lastDid = did;
         _lastAt = DateTime.now();
         final req = [0x22, did >> 8, did & 0xFF];
@@ -698,6 +764,7 @@ class TachoLink extends ChangeNotifier with WidgetsBindingObserver {
       final v = Uint8List.fromList(m.sublist(3));
       didData[did] = v;
       didTime[did] = DateTime.now();
+      if (did == 0xF99B && v.length == 2) _noteWeek((v[0] << 8) | v[1]);
       didAt = DateTime.now();
       lastData = didAt;
       final n = v.length == 1
@@ -721,6 +788,12 @@ class TachoLink extends ChangeNotifier with WidgetsBindingObserver {
         0x33: 'acesso negado (segurança)',
       };
       _log('recusado: ${hex(m)} ${why[m[2]] ?? ''}');
+      if (m[2] == 0x31 && _lastDid != null) {
+        // Não existe neste tacógrafo: não volta a ser pedido.
+        _bad.add(_lastDid!);
+        SharedPreferences.getInstance().then((p) => p.setStringList(
+            'tacho_bad_dids', _bad.map((e) => '$e').toList()));
+      }
       if (!(_wait?.isCompleted ?? true)) _wait!.complete();
     } else {
       _log('resposta: ${hex(m)}');

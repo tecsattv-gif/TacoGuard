@@ -3,6 +3,10 @@
 
 const Map<String, Map<String, String>> kTr = {
   'en': {
+    'semana do tacógrafo + semana anterior do app': 'tachograph week + previous week from the app',
+    'Indicar a bissemanal do tacógrafo': 'Enter the two-week total from the tachograph',
+    'Escreva a condução das 2 semanas que o tacógrafo mostra (menu do motorista 1, ex.: 67h12). Só é preciso uma vez: depois o app guarda as semanas sozinho.': 'Type the two-week driving shown on the tachograph (driver 1 menu, e.g. 67h12). Only needed once: then the app keeps the weeks by itself.',
+    'Guardar': 'Save',
     'Tacógrafo (agora)': 'Tachograph (now)',
     'O tacógrafo não dá o total do mês; o mês vem do Histórico (ao vivo e .DDD).': "The tachograph doesn't give a monthly total; the month comes from History (live and .DDD).",
     'Condução bissemanal': 'Two-week driving',
@@ -361,6 +365,10 @@ const Map<String, Map<String, String>> kTr = {
     'Última jornada: {0} {1}, {2} às {3}  •  condução {4}  •  {5}': 'Last shift: {0} {1}, {2} to {3}  •  driving {4}  •  {5}',
   },
   'es': {
+    'semana do tacógrafo + semana anterior do app': 'semana del tacógrafo + semana anterior de la app',
+    'Indicar a bissemanal do tacógrafo': 'Indicar la bisemanal del tacógrafo',
+    'Escreva a condução das 2 semanas que o tacógrafo mostra (menu do motorista 1, ex.: 67h12). Só é preciso uma vez: depois o app guarda as semanas sozinho.': 'Escriba la conducción de 2 semanas que muestra el tacógrafo (menú del conductor 1, p. ej. 67h12). Solo hace falta una vez: después la app guarda las semanas sola.',
+    'Guardar': 'Guardar',
     'Tacógrafo (agora)': 'Tacógrafo (ahora)',
     'O tacógrafo não dá o total do mês; o mês vem do Histórico (ao vivo e .DDD).': 'El tacógrafo no da el total del mes; el mes viene del Historial (en vivo y .DDD).',
     'Condução bissemanal': 'Conducción bisemanal',
@@ -719,6 +727,10 @@ const Map<String, Map<String, String>> kTr = {
     'Última jornada: {0} {1}, {2} às {3}  •  condução {4}  •  {5}': 'Última jornada: {0} {1}, de {2} a {3}  •  conducción {4}  •  {5}',
   },
   'fr': {
+    'semana do tacógrafo + semana anterior do app': "semaine du tachygraphe + semaine précédente de l'appli",
+    'Indicar a bissemanal do tacógrafo': 'Indiquer le total 2 semaines du tachygraphe',
+    'Escreva a condução das 2 semanas que o tacógrafo mostra (menu do motorista 1, ex.: 67h12). Só é preciso uma vez: depois o app guarda as semanas sozinho.': "Saisissez la conduite sur 2 semaines affichée par le tachygraphe (menu conducteur 1, ex. : 67h12). Une seule fois : ensuite l'appli garde les semaines toute seule.",
+    'Guardar': 'Enregistrer',
     'Tacógrafo (agora)': 'Tachygraphe (maintenant)',
     'O tacógrafo não dá o total do mês; o mês vem do Histórico (ao vivo e .DDD).': "Le tachygraphe ne donne pas le total du mois ; le mois vient de l'Historique (en direct et .DDD).",
     'Condução bissemanal': 'Conduite sur 2 semaines',

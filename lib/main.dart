@@ -827,9 +827,16 @@ class _TodayPageState extends State<TodayPage> {
       _LimitList(rows: [
         _Limit(tr('Semanal'), TachoLink.I.weekDrive ?? week, Limits.weeklyDrive,
             note: TachoLink.I.weekDrive != null ? tr('do tacógrafo') : null),
-        _Limit(tr('Bissemanal'),
-            TachoLink.I.fortnightDrive ?? (week + prev), Limits.fortnightDrive,
-            note: TachoLink.I.fortnightDrive != null ? tr('do tacógrafo') : null),
+        _Limit(
+            tr('Bissemanal'),
+            TachoLink.I.fortnightDrive ??
+                ((TachoLink.I.weekDrive ?? week) + prev),
+            Limits.fortnightDrive,
+            note: TachoLink.I.fortnightDrive != null
+                ? tr('do tacógrafo')
+                : TachoLink.I.weekDrive != null
+                    ? tr('semana do tacógrafo + semana anterior do app')
+                    : null),
       ]),
       if (ref != null) ...[
         const SizedBox(height: 12),
@@ -1168,7 +1175,12 @@ class _TodayPageState extends State<TodayPage> {
             note: TachoLink.I.weekDrive != null
                 ? tr('do tacógrafo')
                 : tr('pode conduzir {0}', [fmtDur(st.weekLeft)])),
-        _Limit(tr('Bissemanal'), TachoLink.I.fortnightDrive ?? st.fortnightDrive,
+        _Limit(
+            tr('Bissemanal'),
+            TachoLink.I.fortnightDrive ??
+                (TachoLink.I.weekDrive != null
+                    ? TachoLink.I.weekDrive! + st.prevWeekDrive
+                    : st.fortnightDrive),
             Limits.fortnightDrive,
             note: TachoLink.I.fortnightDrive != null
                 ? tr('do tacógrafo')

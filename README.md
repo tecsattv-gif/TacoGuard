@@ -67,6 +67,11 @@ Segredos do repositório (Settings > Secrets and variables > Actions):
 
 ## Versões
 
+- **1.12.6**: Registo do DTCO 4.1 mostrou que ele **não tem** os dados de tempo restante (F9AD, F9AF, F9B1, F9B3, F9B9, F9C0, F9C2, F9A1, F9AB → `7F 22 31`). Agora:
+  - dados recusados com `31` ficam de fora (não se pedem mais);
+  - corrigido o ciclo de pedidos que parava com "sem créditos": o DTCO aceita os pedidos mesmo a mostrar 0 créditos, por isso o app só espera 1,2 s entre pedidos;
+  - **bissemanal** = semana atual do tacógrafo (F99B) + semana anterior. O app guarda a condução de cada semana sozinho; para a semana passada, botão "Indicar a bissemanal do tacógrafo" (escreve o total que o DTCO mostra, ex.: 67h12, uma vez só);
+  - datas F90B/F997/F998 decodificadas (formato J1939).
 - **1.12.5**: Jornada segue o tacógrafo: com **cama há 1 h ou mais** no DTCO, o TacoGuard **encerra a jornada** na hora em que o descanso começou. Se **arrancar** (ou passar a trabalho) antes de 9 h de descanso, a mesma jornada é **reaberta** e o tempo parado conta como pausa; com 9 h ou mais, abre jornada nova.
 - **1.12.4**: Relatórios: no período atual e com o tacógrafo ligado aparece o cartão **Tacógrafo (agora)** com a condução da semana (/56 h), bissemanal (/90 h), o que falta na semana e em 2 semanas (e a condução de hoje no Diário). O total do mês não existe no tacógrafo: o Mensal vem do Histórico (ao vivo e .DDD).
 - **1.12.3**: Ligação ao tacógrafo **fica**: um vigia (de 15 em 15 s) volta a ligar sozinho sempre que a ligação cair, ficar presa a "a ligar" mais de 45 s, ou quando o app volta ao ecrã — basta a opção ligada e o tacógrafo escolhido (ficam gravados).

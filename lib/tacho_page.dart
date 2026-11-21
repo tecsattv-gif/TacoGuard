@@ -468,6 +468,43 @@ class _TachoTestPageState extends State<TachoTestPage> {
 class TachoLiveCard extends StatelessWidget {
   const TachoLiveCard({super.key});
 
+  static Future<void> _askFortnight(BuildContext context) async {
+    final t = TachoLink.I;
+    final c = TextEditingController();
+    final v = await showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(tr('Bissemanal')),
+        content: Column(mainAxisSize: MainAxisSize.min, children: [
+          Text(tr('Escreva a condução das 2 semanas que o tacógrafo mostra (menu do motorista 1, ex.: 67h12). Só é preciso uma vez: depois o app guarda as semanas sozinho.')),
+          const SizedBox(height: 10),
+          TextField(
+            controller: c,
+            autofocus: true,
+            keyboardType: TextInputType.datetime,
+            decoration: const InputDecoration(hintText: '67h12'),
+          ),
+        ]),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: Text(tr('Cancelar'))),
+          FilledButton(
+              onPressed: () => Navigator.pop(ctx, c.text),
+              child: Text(tr('Guardar'))),
+        ],
+      ),
+    );
+    if (v == null) return;
+    final m = RegExp(r'(\d+)\D+(\d{1,2})').firstMatch(v.trim());
+    final h = m != null ? int.parse(m.group(1)!) : int.tryParse(v.trim());
+    if (h == null) return;
+    final total = h * 60 + (m != null ? int.parse(m.group(2)!) : 0);
+    final week = t.minutes(0xF99B) ?? 0;
+    if (total < week || total > 90 * 60) return;
+    await t.setPrevWeek(total - week);
+  }
+
   static String _hm(int? m) =>
       m == null ? '—' : '${m ~/ 60}h${(m % 60).toString().padLeft(2, '0')}';
 
@@ -518,6 +555,17 @@ class TachoLiveCard extends StatelessWidget {
                             style: TextStyle(color: cs.primary, fontSize: 12)),
                     ]),
                     const SizedBox(height: 6),
+                    // 1.12.6: bissemanal sem a semana passada: pedir ao
+                    // motorista o total das 2 semanas que o DTCO mostra.
+                    if (t.weekDrive != null && t.fortnightDrive == null)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 6),
+                        child: OutlinedButton.icon(
+                          onPressed: () => _askFortnight(context),
+                          icon: const Icon(Icons.edit_rounded, size: 18),
+                          label: Text(tr('Indicar a bissemanal do tacógrafo')),
+                        ),
+                      ),
                     for (final r in rows)
                       if ((r.$2 == -1
                               ? t.fortnightDrive?.inMinutes
