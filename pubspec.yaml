@@ -1,7 +1,7 @@
 name: tacoguard
 description: TacoGuard - controle da jornada do motorista pela lei do tacógrafo (CE 561/2006).
 publish_to: 'none'
-version: 1.14.0+75
+version: 1.14.1+76
 
 environment:
   sdk: '>=3.4.0 <4.0.0'
@@ -21,6 +21,7 @@ dependencies:
   package_info_plus: ^8.0.0
   open_filex: ^4.5.0
   pdf: ^3.11.1
+  flex_color_scheme: ^8.2.0
 
 dev_dependencies:
   flutter_test:

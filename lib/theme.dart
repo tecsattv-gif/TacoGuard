@@ -1,5 +1,6 @@
 import 'dart:ui' as ui;
 
+import 'package:flex_color_scheme/flex_color_scheme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -278,9 +279,31 @@ class TG {
       outlineVariant: line,
       error: danger,
     );
-    return ThemeData(
-      useMaterial3: true,
-      brightness: b,
+    // 1.14.1: FlexColorScheme dá tema completo a todos os componentes do
+    // Material (botões, interruptores, chips, sliders, menus, caixas de
+    // seleção...) com as cores da paleta. Os temas próprios abaixo (barra,
+    // cartões, diálogos, campos) continuam a valer por cima.
+    const sub = FlexSubThemesData(
+      defaultRadius: 16,
+      interactionEffects: true,
+      tintedDisabledControls: true,
+      alignedDropdown: true,
+      useInputDecoratorThemeInDialogs: true,
+    );
+    final base = b == Brightness.light
+        ? FlexThemeData.light(
+            colorScheme: scheme,
+            scaffoldBackground: bg,
+            subThemesData: sub,
+            useMaterial3: true,
+          )
+        : FlexThemeData.dark(
+            colorScheme: scheme,
+            scaffoldBackground: bg,
+            subThemesData: sub,
+            useMaterial3: true,
+          );
+    return base.copyWith(
       colorScheme: scheme,
       scaffoldBackgroundColor: bg,
       appBarTheme: AppBarTheme(
