@@ -203,6 +203,7 @@ class TachoLink extends ChangeNotifier {
         _poll = Timer.periodic(const Duration(seconds: 15), (_) => requestAll());
       } else if (state == 'disconnected') {
         _poll?.cancel();
+        _v2 = false;
         // Volta a tentar sozinho daqui a 30 s, se a opção estiver ligada.
         if (enabled && deviceAddress.isNotEmpty) {
           Future.delayed(const Duration(seconds: 30), () {
@@ -213,8 +214,11 @@ class TachoLink extends ChangeNotifier {
       notifyListeners();
     } else if (type == 'channels') {
       channels = (d as num).toInt();
-      _log('$channels canais; a procurar o que responde');
-      _probe();
+      _log('$channels canais (tacógrafo versão 2, Bluetooth LE)');
+      _v2Start();
+    } else if (type == 'rx' && d is Map) {
+      _gotReply = true;
+      _v2Rx('${d['uuid']}'.toLowerCase(), d['data'] as Uint8List);
     } else if (type == 'info') {
       _log('$d');
     } else if (type == 'error') {
@@ -386,6 +390,200 @@ class TachoLink extends ChangeNotifier {
     notifyListeners();
   }
 
+
+  // ---------- Tacógrafo versão 2 (Bluetooth LE) — 1.11.4 ----------
+  // "Smart tachograph version 2 – Transport protocol for ITS" (JRC, v1.0):
+  //  - serviço de Diagnóstico fa213def…: FIFO e413960c… (dados) e
+  //    Credits e168d1a6… (controlo de fluxo: sem créditos não há dados);
+  //  - serviço de Download eef90782…: FIFO 29d3a479…, Credits db9c4128….
+  // Cada pacote começa com 2 bytes: no 1.º o total de pacotes e 01; nos
+  // seguintes 00 e o número do pacote. Por dentro vai o diagnóstico
+  // ISO 14229: ReadDataByIdentifier 22 DID → resposta 62 DID dados.
+  static const diagFifo = 'e413960c-75ba-4ca9-8a67-99bc052a1b13';
+  static const diagCredits = 'e168d1a6-304f-42b4-ab96-4cd1d4efebd9';
+  static const dlFifo = '29d3a479-1592-47df-80a4-afa742d369bb';
+  static const dlCredits = 'db9c4128-bff3-41fe-a306-fb6f9a8aeb2d';
+
+  /// Dados do motorista 1 (códigos DID da ISO 16844-7).
+  static const dids = <int, String>{
+    0xF903: 'Driver1WorkingState',
+    0xF906: 'Driver1TimeRelatedStates',
+    0xF902: 'TachographVehicleSpeed',
+    0xF923: 'Driver1ContinuousDrivingTime',
+    0xF925: 'Driver1CumulativeBreakTime',
+    0xF927: 'Driver1CurrentDurationOfSelectedActivity',
+    0xF99A: 'Driver1CurrentDailyDrivingTime',
+    0xF99B: 'Driver1CurrentWeeklyDrivingTime',
+    0xF99C: 'Driver1TimeLeftUntilNewDailyRestPeriod',
+    0xF9A1: 'Driver1TimeLeftUntilNewWeeklyRestPeriod',
+    0xF9AD: 'Driver1RemainingCurrentDrivingTime',
+    0xF9AF: 'Driver1RemainingDrivingTimeOnCurrentShift',
+    0xF9B1: 'Driver1RemainingDrivingTimeOfCurrentWeek',
+    0xF9B3: 'Driver1Remaining2WeeksDrivingTime',
+    0xF9B9: 'Driver1DurationOfNextBreakRest',
+    0xF9C0: 'Driver1RemainingTimeOfCurrentBreakRest',
+    0xF9C2: 'Driver1RemainingTimeUntilNextBreakOrRest',
+    0xF997: 'Driver1EndOfLastDailyRestPeriod',
+    0xF998: 'Driver1EndOfLastWeeklyRestPeriod',
+    0xF9AB: 'Driver1NumberOfUsedReducedDailyRestPeriods',
+    0xF9A0: 'Driver1NumberOfTimes9hDailyDrivingTimesExceeded',
+    0xF90B: 'TimeDate',
+  };
+
+  /// Últimas respostas por DID (em bruto).
+  final Map<int, Uint8List> didData = {};
+  DateTime? didAt;
+
+  bool _v2 = false;
+  bool _hdr = true; // pacote com os 2 bytes de cabeçalho (troca se não houver resposta)
+  final List<int> _msg = [];
+  int _msgTotal = 0, _msgGot = 0;
+  int _rxSinceCredit = 0;
+  Completer<void>? _wait;
+
+  Future<void> _writeChar(String uuid, List<int> data) async {
+    _log('-> [${uuid.substring(0, 8)}] ${hex(data)}');
+    try {
+      await _ch.invokeMethod(
+          'writeChar', {'uuid': uuid, 'data': Uint8List.fromList(data)});
+    } catch (e) {
+      _log('erro ao enviar: $e');
+    }
+  }
+
+  Future<void> _v2Start() async {
+    _v2 = true;
+    _poll?.cancel();
+    await Future.delayed(const Duration(milliseconds: 300));
+    // Dá créditos ao tacógrafo (quantos pacotes pode mandar).
+    await _writeChar(diagCredits, [0x10]);
+    await _writeChar(dlCredits, [0x10]);
+    await Future.delayed(const Duration(milliseconds: 800));
+    _v2Poll();
+    _poll = Timer.periodic(const Duration(seconds: 20), (_) => _v2Poll());
+  }
+
+  bool _polling = false;
+  Future<void> _v2Poll() async {
+    if (!_v2 || !connected || _polling) return;
+    _polling = true;
+    var answered = 0;
+    try {
+      for (final did in dids.keys) {
+        if (!_v2 || !connected) break;
+        final req = [0x22, did >> 8, did & 0xFF];
+        _wait = Completer<void>();
+        await _writeChar(diagFifo, _hdr ? [0x01, 0x01, ...req] : req);
+        try {
+          await _wait!.future.timeout(const Duration(seconds: 3));
+          answered++;
+        } catch (_) {}
+        // Se o 1.º pedido não teve resposta, tenta do outro jeito.
+        if (answered == 0 && did == dids.keys.first) {
+          _hdr = !_hdr;
+          _log(_hdr
+              ? 'sem resposta: a tentar com cabeçalho de pacote'
+              : 'sem resposta: a tentar sem cabeçalho de pacote');
+          _wait = Completer<void>();
+          await _writeChar(diagFifo, _hdr ? [0x01, 0x01, ...req] : req);
+          try {
+            await _wait!.future.timeout(const Duration(seconds: 3));
+            answered++;
+          } catch (_) {
+            _log('o tacógrafo não respondeu ao pedido de dados');
+            break;
+          }
+        }
+      }
+    } finally {
+      _polling = false;
+    }
+    if (answered > 0) {
+      didAt = DateTime.now();
+      lastData = didAt;
+      notifyListeners();
+    }
+  }
+
+  void _v2Rx(String uuid, Uint8List d) {
+    if (uuid == diagCredits || uuid == dlCredits) {
+      final v = d.isEmpty ? -1 : d.first;
+      _log('créditos do tacógrafo (${uuid == diagCredits ? 'diagnóstico' : 'download'}): $v');
+      if (v == 0xFF) _log('o tacógrafo recusou a ligação (créditos FF)');
+      return;
+    }
+    _log('<- [${uuid.substring(0, 8)}] ${hex(d)}');
+    if (uuid != diagFifo) return;
+    // Devolve créditos de vez em quando.
+    if (++_rxSinceCredit >= 8) {
+      _rxSinceCredit = 0;
+      _writeChar(diagCredits, [0x08]);
+    }
+    List<int> body = d;
+    if (_hdr && d.length >= 2) {
+      final a = d[0], b = d[1];
+      if (b == 0x01 && a >= 1) {
+        // 1.º pacote: a = total de pacotes
+        _msg
+          ..clear()
+          ..addAll(d.sublist(2));
+        _msgTotal = a;
+        _msgGot = 1;
+      } else if (a == 0x00) {
+        _msg.addAll(d.sublist(2));
+        _msgGot++;
+      } else {
+        _msg
+          ..clear()
+          ..addAll(d);
+        _msgTotal = 1;
+        _msgGot = 1;
+      }
+      if (_msgGot < _msgTotal) return;
+      body = List<int>.from(_msg);
+    }
+    _uds(Uint8List.fromList(body));
+  }
+
+  void _uds(Uint8List m) {
+    if (m.isEmpty) return;
+    if (m[0] == 0x62 && m.length >= 3) {
+      final did = (m[1] << 8) | m[2];
+      final v = Uint8List.fromList(m.sublist(3));
+      didData[did] = v;
+      final n = v.length == 1
+          ? '${v[0]}'
+          : v.length == 2
+              ? '${(v[0] << 8) | v[1]}'
+              : '';
+      _log('${dids[did] ?? hex([m[1], m[2]])} = ${hex(v)}${n.isEmpty ? '' : ' ($n)'}');
+      if (!(_wait?.isCompleted ?? true)) _wait!.complete();
+    } else if (m[0] == 0x7F && m.length >= 3) {
+      if (m[2] == 0x78) {
+        _log('o tacógrafo pede para esperar');
+        return;
+      }
+      const why = {
+        0x11: 'serviço não suportado',
+        0x13: 'tamanho errado',
+        0x22: 'condições não corretas (falta autorizar/ cartão?)',
+        0x31: 'dado não existe neste tacógrafo',
+        0x33: 'acesso negado (segurança)',
+      };
+      _log('recusado: ${hex(m)} ${why[m[2]] ?? ''}');
+      if (!(_wait?.isCompleted ?? true)) _wait!.complete();
+    } else {
+      _log('resposta: ${hex(m)}');
+      if (!(_wait?.isCompleted ?? true)) _wait!.complete();
+    }
+  }
+
+  /// Pede um DID à mão (tela de teste).
+  Future<void> readDid(int did) async {
+    final req = [0x22, did >> 8, did & 0xFF];
+    await _writeChar(diagFifo, _hdr ? [0x01, 0x01, ...req] : req);
+  }
+
   /// Grava o registo num arquivo de texto (para partilhar).
   Future<File> exportLog() async {
     final dir = await AppDirs.temp();
@@ -397,6 +595,9 @@ class TachoLink extends ChangeNotifier {
       ..writeln();
     for (final e in data.entries) {
       sb.writeln('Dados ${trtpNames[e.key] ?? e.key}: ${hex(e.value)}');
+    }
+    for (final e in didData.entries) {
+      sb.writeln('${dids[e.key] ?? e.key.toRadixString(16)}: ${hex(e.value)}');
     }
     sb
       ..writeln()

@@ -64,7 +64,7 @@ class TachoBt(private val activity: Activity, messenger: BinaryMessenger) {
                     "write" -> {
                         val data = call.argument<ByteArray>("data") ?: ByteArray(0)
                         if (gatt != null) {
-                            bleQueue.offer(data)
+                            bleQueue.offer(Pair(null, data))
                             result.success(true)
                         } else {
                             Thread {
@@ -77,6 +77,13 @@ class TachoBt(private val activity: Activity, messenger: BinaryMessenger) {
                             }.start()
                             result.success(socket != null)
                         }
+                    }
+                    // 1.11.4: escreve num canal LE pelo UUID (créditos ou dados).
+                    "writeChar" -> {
+                        val u = UUID.fromString(call.argument<String>("uuid") ?: "")
+                        val data = call.argument<ByteArray>("data") ?: ByteArray(0)
+                        bleQueue.offer(Pair(u, data))
+                        result.success(gatt != null)
                     }
                     "target" -> {
                         val i = call.argument<Int>("index") ?: 0
@@ -250,7 +257,7 @@ class TachoBt(private val activity: Activity, messenger: BinaryMessenger) {
     private var txChar: BluetoothGattCharacteristic? = null
     private val chars = mutableListOf<BluetoothGattCharacteristic>()
     private val toEnable = ArrayDeque<BluetoothGattCharacteristic>()
-    private val bleQueue = LinkedBlockingQueue<ByteArray>()
+    private val bleQueue = LinkedBlockingQueue<Pair<UUID?, ByteArray>>()
     private val writeDone = Semaphore(0)
     private var mtu = 23
     private var writer: Thread? = null
@@ -371,9 +378,8 @@ class TachoBt(private val activity: Activity, messenger: BinaryMessenger) {
     }
 
     private fun got(c: BluetoothGattCharacteristic, v: ByteArray) {
-        val i = chars.indexOfFirst { it.uuid == c.uuid }
-        emit("info", "recebido no canal ${i + 1}")
-        emit("data", v.copyOf())
+        // 1.11.4: vai com o canal (UUID) de onde veio.
+        emit("rx", mapOf("uuid" to c.uuid.toString(), "data" to v.copyOf()))
     }
 
     /** Liga os avisos do próximo canal; no fim, fica pronto. */
@@ -410,9 +416,11 @@ class TachoBt(private val activity: Activity, messenger: BinaryMessenger) {
         writer = Thread {
             try {
                 while (true) {
-                    val data = bleQueue.take()
+                    val item = bleQueue.take()
+                    val data = item.second
                     val g = gatt ?: break
-                    val c = txChar ?: break
+                    val c = (if (item.first != null) chars.firstOrNull { it.uuid == item.first } else null)
+                        ?: txChar ?: break
                     val size = (mtu - 3).coerceAtLeast(20)
                     var i = 0
                     while (i < data.size) {

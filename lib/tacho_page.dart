@@ -228,15 +228,12 @@ class _TachoTestPageState extends State<TachoTestPage> {
           OutlinedButton(
               onPressed: _t.listen, child: Text(tr('Esperar o tacógrafo'))),
           OutlinedButton(onPressed: _t.disconnect, child: Text(tr('Desligar'))),
-          for (var i = 0; i < _t.channels; i++)
-            ChoiceChip(
-                label: Text('${tr('Canal')} ${i + 1}'),
-                selected: _t.channel == i,
-                onSelected: (_) => _t.setChannel(i)),
-          for (final e in TachoLink.trtpNames.entries)
-            OutlinedButton(
-                onPressed: () => _t.requestData(e.key),
-                child: Text('${e.key}: ${e.value}')),
+
+          if (_t.channels == 0)
+            for (final e in TachoLink.trtpNames.entries)
+              OutlinedButton(
+                  onPressed: () => _t.requestData(e.key),
+                  child: Text('${e.key}: ${e.value}')),
         ]),
         const SizedBox(height: 8),
         Row(children: [
@@ -249,6 +246,14 @@ class _TachoTestPageState extends State<TachoTestPage> {
           ),
           IconButton(onPressed: _sendRaw, icon: const Icon(Icons.send_rounded)),
         ]),
+        if (_t.didData.isNotEmpty) ...[
+          const SizedBox(height: 12),
+          Text(tr('Dados recebidos do tacógrafo'),
+              style: const TextStyle(fontWeight: FontWeight.w800)),
+          for (final e in _t.didData.entries)
+            Text('${TachoLink.dids[e.key] ?? e.key.toRadixString(16)}: ${TachoLink.hex(e.value)}',
+                style: const TextStyle(fontFamily: 'monospace', fontSize: 11.5)),
+        ],
         const SizedBox(height: 12),
         FilledButton.icon(
             onPressed: _share,

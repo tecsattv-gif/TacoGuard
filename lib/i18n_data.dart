@@ -3,6 +3,7 @@
 
 const Map<String, Map<String, String>> kTr = {
   'en': {
+    'Dados recebidos do tacógrafo': 'Data received from the tachograph',
     'Canal': 'Channel',
     'PIN do tacógrafo': 'Tachograph PIN',
     'Escreva o PIN de 4 algarismos que aparece no ecrã do tacógrafo.': 'Type the 4-digit PIN shown on the tachograph screen.',
@@ -332,6 +333,7 @@ const Map<String, Map<String, String>> kTr = {
     'Última jornada: {0} {1}, {2} às {3}  •  condução {4}  •  {5}': 'Last shift: {0} {1}, {2} to {3}  •  driving {4}  •  {5}',
   },
   'es': {
+    'Dados recebidos do tacógrafo': 'Datos recibidos del tacógrafo',
     'Canal': 'Canal',
     'PIN do tacógrafo': 'PIN del tacógrafo',
     'Escreva o PIN de 4 algarismos que aparece no ecrã do tacógrafo.': 'Escribe el PIN de 4 cifras que aparece en la pantalla del tacógrafo.',
@@ -661,6 +663,7 @@ const Map<String, Map<String, String>> kTr = {
     'Última jornada: {0} {1}, {2} às {3}  •  condução {4}  •  {5}': 'Última jornada: {0} {1}, de {2} a {3}  •  conducción {4}  •  {5}',
   },
   'fr': {
+    'Dados recebidos do tacógrafo': 'Données reçues du tachygraphe',
     'Canal': 'Canal',
     'PIN do tacógrafo': 'PIN du tachygraphe',
     'Escreva o PIN de 4 algarismos que aparece no ecrã do tacógrafo.': 'Saisissez le PIN à 4 chiffres affiché sur l\'écran du tachygraphe.',
