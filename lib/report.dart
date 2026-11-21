@@ -7,6 +7,7 @@ import 'app_dirs.dart';
 import 'i18n.dart';
 import 'models.dart';
 import 'rules.dart';
+import 'tacho_link.dart';
 
 enum ReportKind { day, week, twoWeeks, month }
 
@@ -164,6 +165,34 @@ Future<File> buildReport(ReportKind kind, DateTime ref, List<Shift> all,
     ]),
     pw.SizedBox(height: 12),
   ];
+
+  // 1.12.8: período atual com o tacógrafo ligado: os totais do DTCO.
+  final t = TachoLink.I;
+  if (t.connected && !now.isBefore(from) && now.isBefore(to)) {
+    String hm(int? m) =>
+        m == null ? '—' : '${m ~/ 60}h${(m % 60).toString().padLeft(2, '0')}';
+    final wk = t.minutes(0xF99B);
+    final fn = t.fortnightDrive?.inMinutes;
+    final boxes = <pw.Widget>[
+      if (kind == ReportKind.day && t.minutes(0xF99A) != null)
+        _box(tr('Condução hoje'), hm(t.minutes(0xF99A))),
+      if (wk != null) _box(tr('Condução na semana'), '${hm(wk)} / 56h'),
+      if (fn != null) _box(tr('Condução bissemanal'), '${hm(fn)} / 90h'),
+      if (t.leftWeekMinutes != null)
+        _box(tr('Falta conduzir na semana'), hm(t.leftWeekMinutes)),
+      if (t.leftFortnightMinutes != null)
+        _box(tr('Falta conduzir em 2 semanas'), hm(t.leftFortnightMinutes)),
+    ];
+    if (boxes.isNotEmpty) {
+      content.add(pw.Text(
+          '${tr('Tacógrafo (agora)')} - ${fmtDateTime(now)}',
+          style: pw.TextStyle(
+              fontSize: 12, fontWeight: pw.FontWeight.bold, color: _blue)));
+      content.add(pw.SizedBox(height: 4));
+      content.add(pw.Row(children: boxes));
+      content.add(pw.SizedBox(height: 12));
+    }
+  }
 
   if (list.isEmpty) {
     content.add(pw.Padding(

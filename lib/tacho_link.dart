@@ -514,6 +514,21 @@ class TachoLink extends ChangeNotifier with WidgetsBindingObserver {
     return Duration(minutes: w + p);
   }
 
+  /// 1.12.8: o que falta conduzir (calculado; o DTCO 4.1 não o dá).
+  int? get leftFortnightMinutes {
+    final fn = fortnightDrive?.inMinutes;
+    return fn == null ? null : (90 * 60 - fn).clamp(0, 90 * 60);
+  }
+
+  int? get leftWeekMinutes {
+    final wk = minutes(0xF99B);
+    if (!connected || wk == null) return null;
+    var l = 56 * 60 - wk;
+    final f = leftFortnightMinutes;
+    if (f != null && f < l) l = f;
+    return l.clamp(0, 56 * 60);
+  }
+
   // ---------- 1.12.6: condução por semana (para a bissemanal) ----------
   /// Segunda-feira 00:00 UTC da semana de [t] (a semana do tacógrafo).
   static DateTime weekStart(DateTime t) {

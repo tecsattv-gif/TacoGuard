@@ -67,6 +67,7 @@ Segredos do repositório (Settings > Secrets and variables > Actions):
 
 ## Versões
 
+- **1.12.8**: PDF dos relatórios com a secção **Tacógrafo (agora)** (período atual e tacógrafo ligado): condução da semana /56 h, bissemanal /90 h, o que falta na semana e em 2 semanas (e a condução de hoje no diário).
 - **1.12.7**: "Falta conduzir na semana / em 2 semanas" calculados pelo app (o DTCO 4.1 não os dá): semana = o menor entre 56 h − semana e 90 h − bissemanal; 2 semanas = 90 h − bissemanal. Linhas sem valor deixam de aparecer com "—"; nos Relatórios, aviso para indicar a bissemanal no ecrã Hoje.
 - **1.12.6**: Registo do DTCO 4.1 mostrou que ele **não tem** os dados de tempo restante (F9AD, F9AF, F9B1, F9B3, F9B9, F9C0, F9C2, F9A1, F9AB → `7F 22 31`). Agora:
   - dados recusados com `31` ficam de fora (não se pedem mais);
