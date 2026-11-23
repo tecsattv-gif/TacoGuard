@@ -955,7 +955,13 @@ class _TodayPageState extends State<TodayPage> {
             ),
           ),
           Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
-            Text(_t.gpsStale ? '--' : '${_t.speedKmh.round()}',
+            // 1.14.4: sem GPS, mostra a velocidade do tacógrafo (se ligado).
+            Text(
+                !_t.gpsStale
+                    ? '${_t.speedKmh.round()}'
+                    : TachoLink.I.speedKmh != null
+                        ? '${TachoLink.I.speedKmh!.round()}'
+                        : '--',
                 style: const TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.w800,

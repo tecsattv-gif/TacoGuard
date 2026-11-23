@@ -487,6 +487,17 @@ class TachoLink extends ChangeNotifier with WidgetsBindingObserver {
     return v == null || v.isEmpty ? null : v.first;
   }
 
+  /// 1.14.4: velocidade do tacógrafo (F902, 1/256 km/h), se recente.
+  double? get speedKmh {
+    final v = didData[0xF902];
+    final t = didTime[0xF902];
+    if (!connected || v == null || v.length != 2 || t == null) return null;
+    if (DateTime.now().difference(t).inSeconds > 30) return null;
+    final n = (v[0] << 8) | v[1];
+    if (n >= 0xFB00) return null;
+    return n / 256;
+  }
+
   /// O dado chegou há menos de 2 minutos.
   bool fresh(int did) {
     final t = didTime[did];

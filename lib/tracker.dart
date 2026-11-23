@@ -61,7 +61,10 @@ class Tracker extends ChangeNotifier {
   double? _stopLat, _stopLon; // onde parou
 
   /// Parado desde quando (ainda contando para virar parada), ou null.
-  DateTime? get stoppedSince => currentAct == Act.drive ? _stopSince : null;
+  // 1.14.4: com o tacógrafo ao vivo, é ele que diz se parou (o GPS sem
+  // sinal fazia aparecer "Parado há…" a 91 km/h).
+  DateTime? get stoppedSince =>
+      currentAct == Act.drive && !tachoLive ? _stopSince : null;
 
   /// 1.1.0 "De carro": o motorista deixou o caminhão parado e saiu de
   /// carro (ex.: almoçar na pausa). O movimento é ignorado e a parada
@@ -812,7 +815,12 @@ class Tracker extends ChangeNotifier {
     }
     _prevAt = now;
     // 1.12.0: com o tacógrafo ligado, é ele que diz a atividade.
-    if (!tachoLive) _motion(still, speedKmh, now);
+    if (!tachoLive) {
+      _motion(still, speedKmh, now);
+    } else {
+      _stopSince = null;
+      _moveSince = null;
+    }
     _speedCheck(now);
     notifyListeners();
   }
