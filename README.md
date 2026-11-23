@@ -69,7 +69,7 @@ Segredos do repositório (Settings > Secrets and variables > Actions):
 
 ## Versões
 
-- **1.12.9**: PDF: o quadro do resumo mostrava a **soma** das amplitudes de todas as jornadas (ex.: 7h02 + 12h15 + 1h20 = 20h37), o que não tem sentido. Agora mostra **Amplitude máx.** (a maior amplitude de uma jornada no período). A amplitude de cada jornada na tabela continua igual.
+- **1.14.2**: PDF: o quadro do resumo mostrava a **soma** das amplitudes de todas as jornadas (ex.: 7h02 + 12h15 + 1h20 = 20h37), o que não tem sentido. Agora mostra **Amplitude máx.** (a maior amplitude de uma jornada no período). A amplitude de cada jornada na tabela continua igual.
 - **1.14.1**: Componentes com tema completo pelo **FlexColorScheme** (pacote `flex_color_scheme`, open source, MIT): botões, interruptores, chips, controles deslizantes, menus, caixas de seleção e campos dos diálogos seguem a paleta e a cor de destaque escolhidas, com cantos arredondados iguais e efeitos de toque. A paleta (Automático, Escuro, Claro, Noite e as 8 cores) e o visual das telas não mudam. Código: `TG.theme()` em `lib/theme.dart`.
 - **1.14.0**: **Paleta de cores** nos Ajustes (Ajustes → Cores): tema Automático, Escuro, Claro ou Noite (preto) e 8 cores de destaque. O app inteiro, o pop-up por cima dos outros apps e as barras do sistema seguem a escolha; no tema claro as cores das atividades e dos avisos ficam mais fortes para lerem bem no branco.
 - **1.13.2**: Telefone deitado: as **duas colunas rolam cada uma por si**. A esquerda (estado, tacógrafo ao vivo e anel da pausa) deixou de ser fixa e já não encolhe para caber na altura; a direita (dia, limites e o resto) continua a rolar.
