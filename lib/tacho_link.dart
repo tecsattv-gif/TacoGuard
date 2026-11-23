@@ -691,6 +691,9 @@ class TachoLink extends ChangeNotifier with WidgetsBindingObserver {
       var k = 0;
       for (final d in dids.keys) {
         if (k > 0 && k % 4 == 0) order.add(0xF903);
+        // 1.14.6: a velocidade (F902) a cada 2 pedidos, para o aviso de
+        // velocidade sem GPS.
+        if (k > 0 && k % 2 == 0 && d != 0xF902) order.add(0xF902);
         order.add(d);
         k++;
       }

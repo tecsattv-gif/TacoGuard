@@ -976,7 +976,14 @@ class Tracker extends ChangeNotifier {
     final c = current;
     if (c == null) return;
     _watchdog(now);
-    if (gpsStale && _overSince != null) _endOver(lastFix ?? now);
+    // 1.14.6: sem GPS, o aviso de velocidade usa a do tacógrafo.
+    if (gpsStale) {
+      if (_tachoKmh != null) {
+        _speedCheck(now);
+      } else if (_overSince != null) {
+        _endOver(lastFix ?? now);
+      }
+    }
     // Sem leitura há 20 s (garagem, túnel): se vinha devagar, está parado.
     // 1.0.1: vale também quando o GPS ainda não deu nenhuma leitura boa.
     // 1.14.5: com o tacógrafo ao vivo, não (era isto que punha "Parado
@@ -1028,18 +1035,22 @@ class Tracker extends ChangeNotifier {
     }
   }
 
+  /// 1.14.6: velocidade do tacógrafo (só com ele ao vivo).
+  double? get _tachoKmh => tachoLive ? TachoLink.I.speedKmh : null;
+
   void _speedCheck(DateTime now) {
     final c = current;
+    final tk = gpsStale ? _tachoKmh : null;
     final on = speedAlert &&
         c != null &&
         !carMode &&
         currentAct == Act.drive &&
-        !gpsStale;
+        (!gpsStale || tk != null);
     // 1.9.1: o aviso usa a leitura mais recente (a mediana da tela atrasa
     // 1 a 2 s) e começa JÁ ao chegar ao limite do seletor (menos a margem
     // escolhida, porque o tacógrafo mede pela roda e costuma marcar um pouco
     // mais que o GPS).
-    final kmh = _rawKmh > speedKmh ? _rawKmh : speedKmh;
+    final kmh = tk ?? (_rawKmh > speedKmh ? _rawKmh : speedKmh);
     final trigger = speedLimit - speedMargin;
     if (!on || kmh < trigger) {
       _overCand = null;
@@ -1049,9 +1060,13 @@ class Tracker extends ChangeNotifier {
     // 1.9.5: confirma com 2 leituras seguidas acima do limite (1 a 2 s).
     // Uma leitura sozinha pode ser erro do GPS (na serra disparava a 60
     // km/h). A contagem começa na hora da 1ª leitura, sem perder tempo.
+    if (_overSince == null && tk != null) {
+      // Do tacógrafo (pela roda): uma leitura chega.
+      _overCand = now;
+    }
     if (_overSince == null) {
       final cand = _overCand;
-      if (cand == null || now.difference(cand).inSeconds > 4) {
+      if (tk == null && (cand == null || now.difference(cand).inSeconds > 4)) {
         _overCand = now;
         return;
       }

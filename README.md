@@ -69,6 +69,7 @@ Segredos do repositório (Settings > Secrets and variables > Actions):
 
 ## Versões
 
+- **1.14.6**: **Aviso de velocidade sem GPS**: com o tacógrafo ao vivo e o GPS sem sinal, o bip, o cartão vermelho e a contagem de 60 s usam a velocidade do tacógrafo (uma leitura chega, é medida pela roda). A velocidade F902 passa a ser pedida a cada 2 pedidos (~5 s).
 - **1.14.5**: A causa real do "Parado há…" a conduzir: sem sinal de GPS há 20 s, o relógio do app considerava o camião parado e, aos 5 min, punha martelo. Com o tacógrafo ao vivo isso já não acontece (a atividade é a do tacógrafo).
 - **1.14.4**: Com o tacógrafo ao vivo, o "Parado há…" do GPS deixa de aparecer (aparecia a 91 km/h quando o GPS perdia o sinal); a paragem é a do tacógrafo. Sem sinal de GPS, a velocidade mostrada passa a ser a do tacógrafo (F902, 1/256 km/h), se ligado.
 - **1.14.3**: Cartão Tacógrafo **parado** a conduzir (condução contínua 0h04 com 0h34 reais, "Tacógrafo: —"): quando a ligação caía (ex.: o rádio a ligar-se) logo após um pedido, esse dado ficava na lista de recusados — e o estado F903 deixava de ser pedido. Agora a queda de ligação não marca nada; os dados principais (F903, F902, F923, F925, F927, F99A, F99B, F99C) nunca ficam de fora (e são tirados da lista ao abrir o app); um dado com mais de 2 min deixa de ser mostrado como atual, e "ao vivo" só aparece com o estado recente.
