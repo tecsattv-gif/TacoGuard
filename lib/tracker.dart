@@ -979,9 +979,15 @@ class Tracker extends ChangeNotifier {
     if (gpsStale && _overSince != null) _endOver(lastFix ?? now);
     // Sem leitura há 20 s (garagem, túnel): se vinha devagar, está parado.
     // 1.0.1: vale também quando o GPS ainda não deu nenhuma leitura boa.
+    // 1.14.5: com o tacógrafo ao vivo, não (era isto que punha "Parado
+    // há…" e, aos 5 min, martelo a conduzir sem sinal de GPS).
     if (gpsStale && speedKmh < 15) {
       speedKmh = 0;
-      _motion(true, 0, now);
+      if (tachoLive) {
+        _stopSince = null;
+      } else {
+        _motion(true, 0, now);
+      }
     }
     _checkAutoAsk(now);
     _checkPopupAnswer();
