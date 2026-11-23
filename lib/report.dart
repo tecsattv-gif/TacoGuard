@@ -138,7 +138,9 @@ Future<File> buildReport(ReportKind kind, DateTime ref, List<Shift> all,
     pause += s.total(Act.pause, now) + s.total(Act.unknown, now);
     work += s.total(Act.work, now);
     load += s.total(Act.load, now);
-    amp += s.amplitude(now);
+    // 1.12.9: amplitude não se soma (é de cada jornada): mostra a maior.
+    final a = s.amplitude(now);
+    if (a > amp) amp = a;
     for (final i in shiftIssues(all, s, now)) {
       issues.add('${fmtDate(s.start)}: $i');
     }
@@ -160,7 +162,7 @@ Future<File> buildReport(ReportKind kind, DateTime ref, List<Shift> all,
       _box(tr('Pausa'), fmtDur(pause)),
       _box(tr('Martelo'), fmtDur(work)),
       _box(tr('Carga/Descarga'), fmtDur(load)),
-      _box(tr('Amplitude'), fmtDur(amp)),
+      _box(tr('Amplitude máx.'), fmtDur(amp)),
       _box(tr('Km'), fmtKm(km)),
     ]),
     pw.SizedBox(height: 12),
