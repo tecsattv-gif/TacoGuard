@@ -524,7 +524,7 @@ class TachoLiveCard extends StatelessWidget {
         return leftFn;
       default:
         // 1.14.3: dado com mais de 2 min não aparece (não fica parado).
-        return t.fresh(code) ? t.minutes(code) : null;
+        return t.fresh(code, seconds: 300) ? t.minutes(code) : null;
     }
   }
 

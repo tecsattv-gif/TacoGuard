@@ -499,9 +499,9 @@ class TachoLink extends ChangeNotifier with WidgetsBindingObserver {
   }
 
   /// O dado chegou há menos de 2 minutos.
-  bool fresh(int did) {
+  bool fresh(int did, {int seconds = 120}) {
     final t = didTime[did];
-    return t != null && DateTime.now().difference(t).inSeconds < 120;
+    return t != null && DateTime.now().difference(t).inSeconds < seconds;
   }
 
   /// 1.11.11: condução da semana segundo o tacógrafo (só ligado).
@@ -700,7 +700,7 @@ class TachoLink extends ChangeNotifier with WidgetsBindingObserver {
       for (final did in order) {
         if (!_v2 || !connected) break;
         if (_bad.contains(did)) continue;
-        await Future.delayed(const Duration(milliseconds: 1200));
+        await Future.delayed(const Duration(milliseconds: 700));
         _lastDid = did;
         _lastAt = DateTime.now();
         final req = [0x22, did >> 8, did & 0xFF];
@@ -753,7 +753,7 @@ class TachoLink extends ChangeNotifier with WidgetsBindingObserver {
           _firstPoll = false;
           _v2Poll();
           _poll?.cancel();
-          _poll = Timer.periodic(const Duration(seconds: 20), (_) => _v2Poll());
+          _poll = Timer.periodic(const Duration(seconds: 5), (_) => _v2Poll());
         }
       }
       return;
