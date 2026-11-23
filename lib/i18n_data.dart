@@ -3,6 +3,7 @@
 
 const Map<String, Map<String, String>> kTr = {
   'en': {
+    'à espera de dados': 'waiting for data',
     'Amplitude máx.': 'Max. spread',
     'Gráficos': 'Charts',
     'Ainda não há jornadas registadas no app.': 'There are no shifts recorded in the app yet.',
@@ -394,6 +395,7 @@ const Map<String, Map<String, String>> kTr = {
     'Última jornada: {0} {1}, {2} às {3}  •  condução {4}  •  {5}': 'Last shift: {0} {1}, {2} to {3}  •  driving {4}  •  {5}',
   },
   'es': {
+    'à espera de dados': 'esperando datos',
     'Amplitude máx.': 'Amplitud máx.',
     'Gráficos': 'Gráficos',
     'Ainda não há jornadas registadas no app.': 'Todavía no hay jornadas registradas en la app.',
@@ -785,6 +787,7 @@ const Map<String, Map<String, String>> kTr = {
     'Última jornada: {0} {1}, {2} às {3}  •  condução {4}  •  {5}': 'Última jornada: {0} {1}, de {2} a {3}  •  conducción {4}  •  {5}',
   },
   'fr': {
+    'à espera de dados': 'en attente de données',
     'Amplitude máx.': 'Amplitude max.',
     'Gráficos': 'Graphiques',
     'Ainda não há jornadas registadas no app.': 'Aucune journée enregistrée dans l\'app pour l\'instant.',

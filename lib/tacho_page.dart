@@ -523,7 +523,8 @@ class TachoLiveCard extends StatelessWidget {
       case -3:
         return leftFn;
       default:
-        return t.minutes(code);
+        // 1.14.3: dado com mais de 2 min não aparece (não fica parado).
+        return t.fresh(code) ? t.minutes(code) : null;
     }
   }
 
@@ -542,7 +543,7 @@ class TachoLiveCard extends StatelessWidget {
             1 => tr('Disponibilidade'),
             2 => tr('Outro trabalho'),
             3 => tr('Condução'),
-            _ => '—',
+            _ => tr('à espera de dados'),
           };
           final rows = <(String, int)>[
             (tr('Condução contínua'), 0xF923),

@@ -93,6 +93,7 @@ class TachoLink extends ChangeNotifier with WidgetsBindingObserver {
       }
       _bad.addAll((p.getStringList('tacho_bad_dids') ?? const [])
           .map((e) => int.tryParse(e) ?? 0));
+      _bad.removeAll(core);
     } catch (_) {}
     _sub ??= _ev.receiveBroadcastStream().listen(_onEvent, onError: (_) {});
     if (enabled && deviceAddress.isNotEmpty) connect();
@@ -243,15 +244,8 @@ class TachoLink extends ChangeNotifier with WidgetsBindingObserver {
         _poll = Timer.periodic(const Duration(seconds: 15), (_) => requestAll());
       } else if (state == 'disconnected') {
         _poll?.cancel();
-        // Desligou logo depois de um pedido: esse dado não é permitido
-        // neste tacógrafo; não volta a ser pedido.
-        if (_v2 && _lastDid != null &&
-            DateTime.now().difference(_lastAt).inMilliseconds < 2500) {
-          _bad.add(_lastDid!);
-          _log('o tacógrafo desligou depois de ${dids[_lastDid] ?? _lastDid}; esse dado fica de fora');
-          SharedPreferences.getInstance().then((p) => p.setStringList(
-              'tacho_bad_dids', _bad.map((e) => '$e').toList()));
-        }
+        // 1.14.3: já não se marca um dado como recusado só porque a ligação
+        // caiu (o rádio a ligar-se fazia cair e o F903 ficava de fora).
         _lastDid = null;
         _v2 = false;
         _txCredits = 0;
@@ -488,8 +482,15 @@ class TachoLink extends ChangeNotifier with WidgetsBindingObserver {
 
   /// Atividade do motorista 1: 0 descanso, 1 disponível, 2 trabalho, 3 condução.
   int? get workingState {
+    if (!fresh(0xF903)) return null;
     final v = didData[0xF903];
     return v == null || v.isEmpty ? null : v.first;
+  }
+
+  /// O dado chegou há menos de 2 minutos.
+  bool fresh(int did) {
+    final t = didTime[did];
+    return t != null && DateTime.now().difference(t).inSeconds < 120;
   }
 
   /// 1.11.11: condução da semana segundo o tacógrafo (só ligado).
@@ -574,9 +575,7 @@ class TachoLink extends ChangeNotifier with WidgetsBindingObserver {
   }
 
   /// Há dados recentes do tacógrafo (menos de 3 minutos).
-  bool get live =>
-      connected && didAt != null &&
-      DateTime.now().difference(didAt!).inMinutes < 3;
+  bool get live => connected && fresh(0xF903);
 
 
   /// Texto legível de um dado (tempos em minutos, 2 bytes → h:mm).
@@ -622,6 +621,9 @@ class TachoLink extends ChangeNotifier with WidgetsBindingObserver {
   int _rxSinceCredit = 0;
   int _txCredits = 0; // créditos que o tacógrafo nos deu
   final Set<int> _bad = {};
+
+  /// Dados principais: nunca ficam de fora.
+  static const core = {0xF903, 0xF902, 0xF923, 0xF925, 0xF927, 0xF99A, 0xF99B, 0xF99C};
   int? _lastDid;
   DateTime _lastAt = DateTime(2000);
 
@@ -803,7 +805,7 @@ class TachoLink extends ChangeNotifier with WidgetsBindingObserver {
         0x33: 'acesso negado (segurança)',
       };
       _log('recusado: ${hex(m)} ${why[m[2]] ?? ''}');
-      if (m[2] == 0x31 && _lastDid != null) {
+      if (m[2] == 0x31 && _lastDid != null && !core.contains(_lastDid)) {
         // Não existe neste tacógrafo: não volta a ser pedido.
         _bad.add(_lastDid!);
         SharedPreferences.getInstance().then((p) => p.setStringList(
