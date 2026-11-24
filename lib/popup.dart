@@ -336,9 +336,9 @@ class _SpeedPopupWindowState extends State<SpeedPopupWindow>
     super.initState();
     _load();
     _tick = Timer.periodic(const Duration(milliseconds: 500), (_) {
-      // 1.14.19: 15 s sem notícias do app: o aviso fecha-se sozinho (não
+      // 1.14.19/1.14.20: 30 s sem notícias do app: o aviso fecha-se sozinho (não
       // fica preso no ecrã com "--").
-      if (DateTime.now().difference(_lastData).inSeconds > 15) {
+      if (DateTime.now().difference(_lastData).inSeconds > 30) {
         try {
           FlutterOverlayWindow.closeOverlay();
         } catch (_) {}

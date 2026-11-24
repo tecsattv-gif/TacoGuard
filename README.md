@@ -69,6 +69,7 @@ Segredos do repositório (Settings > Secrets and variables > Actions):
 
 ## Versões
 
+- **1.14.20**: O aviso de velocidade por cima dos apps desaparecia a meio da contagem (~45 s): sem leituras novas do GPS, deixava de receber notícias e fechava-se sozinho (regra da 1.14.19). Agora o app manda a velocidade e a contagem a cada volta do relógio enquanto estiver acima do limite, e o aviso só se fecha sozinho após 30 s sem notícias.
 - **1.14.19**: Aviso de velocidade por cima dos outros apps **ficava preso** no ecrã com "--" (até por cima do próprio TacoGuard): se o app mandava fechar enquanto o aviso ainda abria, ele ficava. Agora fecha mesmo nesse caso, o aviso fecha-se sozinho após 15 s sem notícias do app, e sem GPS a velocidade do tacógrafo é enviada a cada leitura.
 - **1.14.18**: Pedidos ao tacógrafo mais espaçados (2 s entre pedidos, nova volta a cada 15 s). Suspeita: o GPS piorou (precisão de 500 m a 3 km) desde que o Bluetooth passou a falar com o tacógrafo sem parar — em muitos telemóveis o GPS e o Bluetooth estão no mesmo chip.
 - **1.14.17**: Velocidade mostrava **0** a andar a 91 logo a seguir a o GPS voltar. Agora, com o tacógrafo ligado, se o GPS discordar da velocidade do tacógrafo em mais de 15 km/h, mostra a do tacógrafo.

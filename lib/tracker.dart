@@ -1067,6 +1067,12 @@ class Tracker extends ChangeNotifier {
       _tachoKmAt = null;
     }
     if (_overSince == null && SpeedPopup.shown) SpeedPopup.close();
+    // 1.14.20: enquanto acima do limite, o aviso por cima dos apps recebe
+    // notícias a cada volta do relógio (senão, sem leituras novas do GPS,
+    // fechava-se sozinho a meio da contagem).
+    if (_overSince != null) {
+      SpeedPopup.speed(_tachoKmh ?? speedKmh, overSecondsLeft);
+    }
     // 1.14.6: sem GPS, o aviso de velocidade usa a do tacógrafo.
     if (gpsStale) {
       if (_tachoKmh != null) {
