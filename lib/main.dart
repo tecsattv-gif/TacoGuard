@@ -667,7 +667,7 @@ class _TodayPageState extends State<TodayPage> {
     final at = _t.rawAt;
     if (at == null) {
       final err = _t.gpsStreamError;
-      return '${tr('GPS: nenhuma leitura recebida.')} (${_t.gpsRestarts}×${_t.gpsRestarts.isOdd ? ' A' : ''})${err == null ? '' : '\n$err'}';
+      return '${tr('GPS: nenhuma leitura recebida.')} (${_t.gpsRestarts}×)${err == null ? '' : '\n$err'}';
     }
     final secs = DateTime.now().difference(at).inSeconds;
     return tr('GPS: última leitura há {0} s, precisão {1} m, {2} de {3} recusadas.', [

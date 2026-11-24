@@ -69,6 +69,7 @@ Segredos do repositório (Settings > Secrets and variables > Actions):
 
 ## Versões
 
+- **1.14.16**: O diagnóstico mostrou leituras a chegar a cada segundo mas com **precisão de 500 m a 3 km** (posição da rede de telemóvel, não do satélite): vinham do "GPS direto do Android" que a 1.14.11 alternava a cada religação. Volta a usar sempre o GPS fundido (o mesmo do Google Maps).
 - **1.14.15**: Frase do aviso de velocidade corrigida: "Reduza em 57 s, senão vira infração." (antes: "Reduza: em 57 s vira infração."), nos 4 idiomas, na tela e no pop-up.
 - **1.14.14**: Ao atualizar/abrir o app a conduzir sem GPS, o tacógrafo ainda não estava ligado e o app achava em 5 s que o camião tinha parado — a condução ficava partida em duas ("desde 13:06" em vez de 12:31). Agora, com um tacógrafo escolhido, o app espera 2 min por ele antes de considerar o camião parado sem GPS, e trechos iguais seguidos voltam a juntar-se.
 - **1.14.13**: Localização estava só "durante o uso do app": com o TacoGuard atrás do Google Maps, o Android deixava de dar o GPS quando o app religava a leitura. Agora o app pede **"Permitir o tempo todo"** (Ajustes → Funcionar com a tela apagada, e botão no aviso "Sem sinal"), e sem essa permissão não religa o GPS enquanto está escondido.

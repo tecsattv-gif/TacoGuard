@@ -712,7 +712,9 @@ class Tracker extends ChangeNotifier {
     _gps.reset();
     // 1.14.11: se o GPS "fundido" do Google não manda nada, alterna a cada
     // religação com o GPS direto do Android (LocationManager).
-    final direct = gpsRestarts.isOdd;
+    // 1.14.16: o GPS direto do Android dava só posições da rede (500 m a
+    // 3 km de precisão, todas inúteis) — volta a usar sempre o fundido.
+    const direct = false;
     final settings = AndroidSettings(
       accuracy: LocationAccuracy.bestForNavigation,
       distanceFilter: 0,
