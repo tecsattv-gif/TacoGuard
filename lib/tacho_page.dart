@@ -554,7 +554,7 @@ class TachoLiveCard extends StatelessWidget {
             (tr('Condução bissemanal'), -1), // 90 h − o que falta (F9B3)
             (tr('Falta conduzir na semana'), -2),
             (tr('Falta conduzir em 2 semanas'), -3),
-            (tr('Até ao descanso diário'), 0xF99C),
+            (tr('Amplitude restante'), 0xF99C),
             (tr('Até ao descanso semanal'), 0xF9A1),
           ];
           final cs = Theme.of(context).colorScheme;
