@@ -662,6 +662,17 @@ class _TodayPageState extends State<TodayPage> {
     }
   }
 
+  /// 1.14.17: velocidade mostrada. GPS normalmente; sem GPS, ou se o GPS
+  /// discordar do tacógrafo em mais de 15 km/h (ex.: 0 a andar a 91, logo a
+  /// seguir a o GPS voltar), vale a do tacógrafo.
+  String _shownSpeed() {
+    final tk = TachoLink.I.speedKmh;
+    if (_t.gpsStale) return tk != null ? '${tk.round()}' : '--';
+    final g = _t.speedKmh;
+    if (tk != null && (g - tk).abs() > 15) return '${tk.round()}';
+    return '${g.round()}';
+  }
+
   /// 1.14.9: o que o GPS está a mandar (para saber porque não há sinal).
   String _gpsDiag() {
     final at = _t.rawAt;
@@ -973,11 +984,7 @@ class _TodayPageState extends State<TodayPage> {
           Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
             // 1.14.4: sem GPS, mostra a velocidade do tacógrafo (se ligado).
             Text(
-                !_t.gpsStale
-                    ? '${_t.speedKmh.round()}'
-                    : TachoLink.I.speedKmh != null
-                        ? '${TachoLink.I.speedKmh!.round()}'
-                        : '--',
+                _shownSpeed(),
                 style: const TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.w800,
