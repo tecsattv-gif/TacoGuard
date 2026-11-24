@@ -998,6 +998,22 @@ class Tracker extends ChangeNotifier {
     final c = current;
     if (c == null) return;
     _watchdog(now);
+    // 1.14.10: sem GPS e com o tacógrafo ao vivo, os km continuam a contar
+    // pela velocidade do tacógrafo (velocidade × tempo, a cada segundo).
+    final tkm = _tachoKmh;
+    final sg = currentSegment;
+    if (gpsStale && tkm != null && sg != null && sg.act == Act.drive) {
+      final last = _tachoKmAt;
+      if (last != null) {
+        final dt = now.difference(last).inMilliseconds / 1000;
+        if (dt > 0 && dt <= 10) sg.km += tkm * dt / 3600;
+      }
+      _tachoKmAt = now;
+      // Quando o GPS voltar, não somar outra vez a linha reta do buraco.
+      _prevAt = null;
+    } else {
+      _tachoKmAt = null;
+    }
     // 1.14.6: sem GPS, o aviso de velocidade usa a do tacógrafo.
     if (gpsStale) {
       if (_tachoKmh != null) {
@@ -1056,6 +1072,8 @@ class Tracker extends ChangeNotifier {
       } catch (_) {}
     }
   }
+
+  DateTime? _tachoKmAt;
 
   /// 1.14.6: velocidade do tacógrafo (só com ele ao vivo).
   double? get _tachoKmh => tachoLive ? TachoLink.I.speedKmh : null;

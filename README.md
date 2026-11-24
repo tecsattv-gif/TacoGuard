@@ -69,6 +69,7 @@ Segredos do repositório (Settings > Secrets and variables > Actions):
 
 ## Versões
 
+- **1.14.10**: **Km sem GPS**: com o tacógrafo ao vivo e o GPS sem sinal, os km continuam a contar pela velocidade do tacógrafo (velocidade × tempo, a cada segundo). Quando o GPS volta, a linha reta do buraco não é somada outra vez.
 - **1.14.9**: O aviso "Sem sinal de GPS" mostra o diagnóstico: há quanto tempo veio a última leitura do GPS, a precisão dela e quantas foram recusadas (para saber se o GPS não manda nada, manda leituras imprecisas ou se é o filtro).
 - **1.14.8**: "Sem sinal de GPS" a andar com o GPS a funcionar: o filtro jogava fora toda leitura com hora igual ou anterior à última — se uma leitura vinha com a hora adiantada, todas as seguintes eram rejeitadas. Agora no máximo 5 seguidas; e se o GPS manda leituras boas (≤ 50 m) mas o filtro rejeita tudo há 15 s, o filtro recomeça.
 - **1.14.7**: Cartão Tacógrafo ficava só com o título a conduzir: a volta completa de pedidos demorava mais de 2 min e as linhas eram escondidas por "antigas". Agora os pedidos seguem sem pausa (novo ciclo a cada 5 s, 0,7 s entre pedidos) e as linhas aparecem enquanto tiverem menos de 5 min.
