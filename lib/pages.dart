@@ -1447,6 +1447,19 @@ class _SettingsPageState extends State<SettingsPage> {
                 icon: const Icon(Icons.battery_saver_rounded),
                 label: Fit(tr('Abrir ajustes de bateria')),
               ),
+              // 1.14.13: localização "o tempo todo".
+              const SizedBox(height: 12),
+              Text(
+                  tr('E em Localização escolha "Permitir o tempo todo", para o GPS não parar com o TacoGuard atrás de outro app (ex.: Google Maps).'),
+                  style: TextStyle(fontSize: 14, height: 1.35)),
+              const SizedBox(height: 10),
+              OutlinedButton.icon(
+                onPressed: () => _t.askLocationAlways(),
+                icon: const Icon(Icons.location_on_rounded),
+                label: Fit(_t.locationAlways
+                    ? tr('Localização: o tempo todo ✓')
+                    : tr('Permitir localização o tempo todo')),
+              ),
             ],
           ),
         ),

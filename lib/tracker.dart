@@ -5,6 +5,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_tts/flutter_tts.dart';
+import 'package:flutter/widgets.dart' show WidgetsBinding, AppLifecycleState;
 import 'package:geolocator/geolocator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -677,6 +678,7 @@ class Tracker extends ChangeNotifier {
             perm == LocationPermission.deniedForever) {
           gpsError = tr('Permissão de localização negada. Libere nas configurações do celular.');
         }
+        locationAlways = perm == LocationPermission.always;
       }
     } catch (e) {
       gpsError = tr('Erro no GPS: {0}', [e]);
@@ -743,6 +745,12 @@ class Tracker extends ChangeNotifier {
     // 1.14.11: espera 30 s (o 1.º sinal pode demorar) antes de religar.
     if (now.difference(_lastRaw).inSeconds < 30) return;
     if (now.difference(_lastRestart).inSeconds < 35) return;
+    // 1.14.13: com só "durante o uso", religar com o app escondido faz o
+    // Android cortar o GPS de vez: espera o app voltar ao ecrã.
+    if (!locationAlways &&
+        WidgetsBinding.instance.lifecycleState != AppLifecycleState.resumed) {
+      return;
+    }
     _lastRestart = now;
     gpsRestarts++;
     _hist.clear();
@@ -787,6 +795,30 @@ class Tracker extends ChangeNotifier {
   DateTime? rawAt;
   double? rawAcc;
   int rawCount = 0, rawRejected = 0, gpsRestarts = 0;
+  /// 1.14.13: localização "o tempo todo" (senão, com o app atrás de outro,
+  /// o Android pode deixar de dar o GPS ao religar).
+  bool locationAlways = true;
+
+  /// Pede "Permitir o tempo todo" (abre os ajustes do app se preciso).
+  Future<void> askLocationAlways() async {
+    try {
+      var perm = await Geolocator.requestPermission();
+      if (perm != LocationPermission.always) {
+        await Geolocator.openAppSettings();
+        perm = await Geolocator.checkPermission();
+      }
+      locationAlways = perm == LocationPermission.always;
+    } catch (_) {}
+    notifyListeners();
+  }
+
+  Future<void> checkLocationAlways() async {
+    try {
+      locationAlways =
+          await Geolocator.checkPermission() == LocationPermission.always;
+      notifyListeners();
+    } catch (_) {}
+  }
   String? gpsStreamError;
 
   void _onPosition(Position raw) {
@@ -1043,6 +1075,7 @@ class Tracker extends ChangeNotifier {
         _motion(true, 0, now);
       }
     }
+    if (!locationAlways && now.second < 5) checkLocationAlways();
     _checkAutoAsk(now);
     _checkPopupAnswer();
     _alerts(c, now);

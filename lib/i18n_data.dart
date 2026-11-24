@@ -3,6 +3,10 @@
 
 const Map<String, Map<String, String>> kTr = {
   'en': {
+    'E em Localização escolha "Permitir o tempo todo", para o GPS não parar com o TacoGuard atrás de outro app (ex.: Google Maps).': 'And under Location choose "Allow all the time", so the GPS does not stop with TacoGuard behind another app (e.g. Google Maps).',
+    'Localização: o tempo todo ✓': 'Location: all the time ✓',
+    'Permitir localização o tempo todo': 'Allow location all the time',
+    'Localização o tempo todo': 'Location all the time',
     'GPS: nenhuma leitura recebida.': 'GPS: no reading received.',
     'GPS: última leitura há {0} s, precisão {1} m, {2} de {3} recusadas.': 'GPS: last reading {0} s ago, accuracy {1} m, {2} of {3} rejected.',
     'à espera de dados': 'waiting for data',
@@ -397,6 +401,10 @@ const Map<String, Map<String, String>> kTr = {
     'Última jornada: {0} {1}, {2} às {3}  •  condução {4}  •  {5}': 'Last shift: {0} {1}, {2} to {3}  •  driving {4}  •  {5}',
   },
   'es': {
+    'E em Localização escolha "Permitir o tempo todo", para o GPS não parar com o TacoGuard atrás de outro app (ex.: Google Maps).': 'Y en Ubicación elija "Permitir todo el tiempo", para que el GPS no se detenga con TacoGuard detrás de otra app (p. ej. Google Maps).',
+    'Localização: o tempo todo ✓': 'Ubicación: todo el tiempo ✓',
+    'Permitir localização o tempo todo': 'Permitir ubicación todo el tiempo',
+    'Localização o tempo todo': 'Ubicación todo el tiempo',
     'GPS: nenhuma leitura recebida.': 'GPS: ninguna lectura recibida.',
     'GPS: última leitura há {0} s, precisão {1} m, {2} de {3} recusadas.': 'GPS: última lectura hace {0} s, precisión {1} m, {2} de {3} rechazadas.',
     'à espera de dados': 'esperando datos',
@@ -791,6 +799,10 @@ const Map<String, Map<String, String>> kTr = {
     'Última jornada: {0} {1}, {2} às {3}  •  condução {4}  •  {5}': 'Última jornada: {0} {1}, de {2} a {3}  •  conducción {4}  •  {5}',
   },
   'fr': {
+    'E em Localização escolha "Permitir o tempo todo", para o GPS não parar com o TacoGuard atrás de outro app (ex.: Google Maps).': "Et dans Localisation choisissez « Toujours autoriser », pour que le GPS ne s'arrête pas avec TacoGuard derrière une autre appli (ex. : Google Maps).",
+    'Localização: o tempo todo ✓': 'Localisation : toujours ✓',
+    'Permitir localização o tempo todo': 'Toujours autoriser la localisation',
+    'Localização o tempo todo': 'Localisation toujours',
     'GPS: nenhuma leitura recebida.': 'GPS : aucune lecture reçue.',
     'GPS: última leitura há {0} s, precisão {1} m, {2} de {3} recusadas.': 'GPS : dernière lecture il y a {0} s, précision {1} m, {2} sur {3} rejetées.',
     'à espera de dados': 'en attente de données',

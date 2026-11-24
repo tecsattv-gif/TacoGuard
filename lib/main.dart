@@ -1011,7 +1011,9 @@ class _TodayPageState extends State<TodayPage> {
         _Banner(
             icon: Icons.gps_not_fixed_rounded,
             color: TG.warn,
-            text: '${tr('Sem sinal de GPS no momento. Perto da janela ou do para-brisa o sinal volta.')}\n${_gpsDiag()}'),
+            text: '${tr('Sem sinal de GPS no momento. Perto da janela ou do para-brisa o sinal volta.')}\n${_gpsDiag()}',
+            action: _t.locationAlways ? null : tr('Localização o tempo todo'),
+            onAction: _t.locationAlways ? null : () => _t.askLocationAlways()),
       ],
       if (_t.gpsError != null) ...[
         const SizedBox(height: 10),
