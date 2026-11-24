@@ -231,6 +231,9 @@ class Tracker extends ChangeNotifier {
     _tachoBusy = true;
     final c0m = current;
     if (c0m != null) _mergeSame(c0m);
+    // 1.14.19: sem GPS, o aviso de velocidade segue cada leitura do
+    // tacógrafo (não só de 5 em 5 s).
+    if (gpsStale && _tachoKmh != null) _speedCheck(DateTime.now());
     try {
       final now = DateTime.now();
       final act = _tachoAct(st);
@@ -1063,6 +1066,7 @@ class Tracker extends ChangeNotifier {
     } else {
       _tachoKmAt = null;
     }
+    if (_overSince == null && SpeedPopup.shown) SpeedPopup.close();
     // 1.14.6: sem GPS, o aviso de velocidade usa a do tacógrafo.
     if (gpsStale) {
       if (_tachoKmh != null) {

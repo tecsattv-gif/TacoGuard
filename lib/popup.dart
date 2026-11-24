@@ -193,6 +193,7 @@ const double kSpeedW = 330, kSpeedH = 176;
 
 class SpeedPopup {
   static bool shown = false;
+  static int _gen = 0;
 
   static Future<void> show({
     required int limit,
@@ -200,7 +201,10 @@ class SpeedPopup {
     required double screenWidthDp,
   }) async {
     try {
+      // 1.14.19: o aviso pode ter-se fechado sozinho.
+      if (shown && !await FlutterOverlayWindow.isActive()) shown = false;
       if (shown || StopPopup.shown) return;
+      final g = ++_gen;
       if (!await StopPopup.hasPermission()) return;
       final p = await SharedPreferences.getInstance();
       await p.setString('popup_mode', 'speed');
@@ -220,6 +224,11 @@ class SpeedPopup {
         overlayTitle: 'TacoGuard',
         overlayContent: tr('Acima de {0} km/h', [limit]),
       );
+      // 1.14.19: mandaram fechar enquanto abria: fecha já.
+      if (g != _gen) {
+        await FlutterOverlayWindow.closeOverlay();
+        return;
+      }
       shown = true;
     } catch (_) {}
   }
@@ -236,9 +245,18 @@ class SpeedPopup {
   }
 
   static Future<void> close() async {
-    if (!shown) return;
+    _gen++;
+    final was = shown;
     shown = false;
     try {
+      // 1.14.19: fecha mesmo que o app ache que não está aberto (ficava
+      // preso no ecrã), desde que seja o aviso de velocidade.
+      if (!was) {
+        if (StopPopup.shown) return;
+        final p = await SharedPreferences.getInstance();
+        if (p.getString('popup_mode') != 'speed') return;
+        if (!await FlutterOverlayWindow.isActive()) return;
+      }
       await FlutterOverlayWindow.closeOverlay();
     } catch (_) {}
   }
@@ -311,18 +329,28 @@ class _SpeedPopupWindowState extends State<SpeedPopupWindow>
   DateTime _leftAt = DateTime.now();
   Timer? _tick;
   StreamSubscription? _sub;
+  DateTime _lastData = DateTime.now();
 
   @override
   void initState() {
     super.initState();
     _load();
     _tick = Timer.periodic(const Duration(milliseconds: 500), (_) {
+      // 1.14.19: 15 s sem notícias do app: o aviso fecha-se sozinho (não
+      // fica preso no ecrã com "--").
+      if (DateTime.now().difference(_lastData).inSeconds > 15) {
+        try {
+          FlutterOverlayWindow.closeOverlay();
+        } catch (_) {}
+        return;
+      }
       if (mounted) setState(() {});
     });
     try {
       _sub = FlutterOverlayWindow.overlayListener.listen((e) {
         try {
           final m = jsonDecode(e.toString()) as Map;
+          _lastData = DateTime.now();
           final v = m['kmh'];
           final l = m['left'];
           if (!mounted) return;
