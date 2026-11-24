@@ -229,6 +229,8 @@ class Tracker extends ChangeNotifier {
     }
     if (_tachoBusy) return;
     _tachoBusy = true;
+    final c0m = current;
+    if (c0m != null) _mergeSame(c0m);
     try {
       final now = DateTime.now();
       final act = _tachoAct(st);
@@ -256,6 +258,10 @@ class Tracker extends ChangeNotifier {
         }
         final seg = currentSegment;
         if (seg != null && seg.note.isEmpty) seg.note = note;
+        // 1.14.14: trechos iguais seguidos (ex.: condução partida em dois)
+        // voltam a ser um só.
+        final cm = current;
+        if (cm != null) _mergeSame(cm);
         save();
         notifyListeners();
       }
@@ -1069,7 +1075,7 @@ class Tracker extends ChangeNotifier {
     // há…" e, aos 5 min, martelo a conduzir sem sinal de GPS).
     if (gpsStale && speedKmh < 15) {
       speedKmh = 0;
-      if (tachoLive) {
+      if (tachoLive || _waitTacho(now)) {
         _stopSince = null;
       } else {
         _motion(true, 0, now);
@@ -1116,6 +1122,33 @@ class Tracker extends ChangeNotifier {
   }
 
   DateTime? _tachoKmAt;
+  final DateTime _startedAt = DateTime.now();
+
+  /// 1.14.14: com o tacógrafo escolhido, nos primeiros 2 min depois de o
+  /// app abrir espera por ele antes de achar que o camião parou (ao
+  /// atualizar o app a conduzir, sem GPS, partia a condução em dois).
+  bool _waitTacho(DateTime now) =>
+      TachoLink.I.enabled &&
+      TachoLink.I.deviceAddress.isNotEmpty &&
+      now.difference(_startedAt).inSeconds < 120;
+
+  /// Junta trechos seguidos do mesmo tipo na jornada aberta.
+  void _mergeSame(Shift sh) {
+    var i = 0;
+    while (i < sh.segments.length - 1) {
+      final x = sh.segments[i], y = sh.segments[i + 1];
+      if (x.act == y.act &&
+          x.end != null &&
+          y.start.difference(x.end!).inSeconds.abs() <= 60) {
+        x.end = y.end;
+        x.km += y.km;
+        if (x.note.isEmpty) x.note = y.note;
+        sh.segments.removeAt(i + 1);
+      } else {
+        i++;
+      }
+    }
+  }
 
   /// 1.14.6: velocidade do tacógrafo (só com ele ao vivo).
   double? get _tachoKmh => tachoLive ? TachoLink.I.speedKmh : null;

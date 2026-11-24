@@ -69,6 +69,7 @@ Segredos do repositório (Settings > Secrets and variables > Actions):
 
 ## Versões
 
+- **1.14.14**: Ao atualizar/abrir o app a conduzir sem GPS, o tacógrafo ainda não estava ligado e o app achava em 5 s que o camião tinha parado — a condução ficava partida em duas ("desde 13:06" em vez de 12:31). Agora, com um tacógrafo escolhido, o app espera 2 min por ele antes de considerar o camião parado sem GPS, e trechos iguais seguidos voltam a juntar-se.
 - **1.14.13**: Localização estava só "durante o uso do app": com o TacoGuard atrás do Google Maps, o Android deixava de dar o GPS quando o app religava a leitura. Agora o app pede **"Permitir o tempo todo"** (Ajustes → Funcionar com a tela apagada, e botão no aviso "Sem sinal"), e sem essa permissão não religa o GPS enquanto está escondido.
 - **1.14.12**: O diagnóstico do GPS mostra também o erro que o Android devolve à leitura (se houver), para saber porque o app não recebe nada enquanto o Google Maps funciona.
 - **1.14.11**: Diagnóstico mostrou "GPS: nenhuma leitura recebida" — o GPS "fundido" (Google) não mandava nada. O vigia agora espera 30 s pelo 1.º sinal (antes religava a cada 15-20 s, podendo nunca dar tempo) e alterna a cada religação entre o GPS fundido e o **GPS direto do Android** (LocationManager). O diagnóstico mostra quantas religações houve ("A" = a usar o GPS direto).
