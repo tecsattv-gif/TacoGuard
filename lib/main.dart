@@ -1328,7 +1328,7 @@ class _SpeedCountdown extends StatelessWidget {
   Widget build(BuildContext context) {
     final l = left;
     final text = l != null
-        ? tr('Acima de {0} km/h. Reduza: em {1} s vira infração.', [limit, l])
+        ? tr('Acima de {0} km/h. Reduza em {1} s, senão vira infração.', [limit, l])
         : tr('Excesso de velocidade a ser registado. Reduza para {0} km/h.',
             [limit]);
     return Container(

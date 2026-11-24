@@ -371,7 +371,7 @@ class _SpeedPopupWindowState extends State<SpeedPopupWindow>
             : 60 - DateTime.now().difference(_since!).inSeconds;
     final left = secs < 0 ? 0 : secs;
     final text = left > 0
-        ? tr('Acima de {0} km/h. Reduza: em {1} s vira infração.',
+        ? tr('Acima de {0} km/h. Reduza em {1} s, senão vira infração.',
             [_limit, left])
         : tr('Excesso de velocidade a ser registado. Reduza para {0} km/h.',
             [_limit]);
