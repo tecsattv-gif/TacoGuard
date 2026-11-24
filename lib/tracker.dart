@@ -723,10 +723,12 @@ class Tracker extends ChangeNotifier {
       _onPosition,
       // 1.7.7: erro ou fim da leitura: o vigia do _tick religa sozinho.
       onError: (e) {
+        gpsStreamError = '$e';
         _lastRaw = DateTime.fromMillisecondsSinceEpoch(0);
         notifyListeners();
       },
       onDone: () {
+        gpsStreamError = 'fim da leitura';
         _lastRaw = DateTime.fromMillisecondsSinceEpoch(0);
       },
       cancelOnError: false,
@@ -785,6 +787,7 @@ class Tracker extends ChangeNotifier {
   DateTime? rawAt;
   double? rawAcc;
   int rawCount = 0, rawRejected = 0, gpsRestarts = 0;
+  String? gpsStreamError;
 
   void _onPosition(Position raw) {
     var p = raw;

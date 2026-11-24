@@ -69,6 +69,7 @@ Segredos do repositório (Settings > Secrets and variables > Actions):
 
 ## Versões
 
+- **1.14.12**: O diagnóstico do GPS mostra também o erro que o Android devolve à leitura (se houver), para saber porque o app não recebe nada enquanto o Google Maps funciona.
 - **1.14.11**: Diagnóstico mostrou "GPS: nenhuma leitura recebida" — o GPS "fundido" (Google) não mandava nada. O vigia agora espera 30 s pelo 1.º sinal (antes religava a cada 15-20 s, podendo nunca dar tempo) e alterna a cada religação entre o GPS fundido e o **GPS direto do Android** (LocationManager). O diagnóstico mostra quantas religações houve ("A" = a usar o GPS direto).
 - **1.14.10**: **Km sem GPS**: com o tacógrafo ao vivo e o GPS sem sinal, os km continuam a contar pela velocidade do tacógrafo (velocidade × tempo, a cada segundo). Quando o GPS volta, a linha reta do buraco não é somada outra vez.
 - **1.14.9**: O aviso "Sem sinal de GPS" mostra o diagnóstico: há quanto tempo veio a última leitura do GPS, a precisão dela e quantas foram recusadas (para saber se o GPS não manda nada, manda leituras imprecisas ou se é o filtro).
