@@ -700,7 +700,10 @@ class TachoLink extends ChangeNotifier with WidgetsBindingObserver {
       for (final did in order) {
         if (!_v2 || !connected) break;
         if (_bad.contains(did)) continue;
-        await Future.delayed(const Duration(milliseconds: 700));
+        // 1.14.18: 2 s entre pedidos (antes 0,7 s). O GPS e o Bluetooth do
+        // telemóvel partilham o mesmo chip; Bluetooth sem parar parece
+        // estragar a precisão do GPS (500 m a 3 km).
+        await Future.delayed(const Duration(milliseconds: 2000));
         _lastDid = did;
         _lastAt = DateTime.now();
         final req = [0x22, did >> 8, did & 0xFF];
@@ -753,7 +756,7 @@ class TachoLink extends ChangeNotifier with WidgetsBindingObserver {
           _firstPoll = false;
           _v2Poll();
           _poll?.cancel();
-          _poll = Timer.periodic(const Duration(seconds: 5), (_) => _v2Poll());
+          _poll = Timer.periodic(const Duration(seconds: 15), (_) => _v2Poll());
         }
       }
       return;
