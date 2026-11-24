@@ -780,7 +780,15 @@ class Tracker extends ChangeNotifier {
     final now = DateTime.now();
     _lastRaw = now;
     // 1.9.8: filtro do SpeedGuard (leitura ruim volta null: ignora).
-    final f = _gps.accept(p);
+    var f = _gps.accept(p);
+    // 1.14.8: leituras a chegar mas o filtro a rejeitar tudo há 15 s:
+    // recomeça o filtro e aceita esta (não fica "Sem sinal" à toa).
+    if (f == null &&
+        p.accuracy <= 50 &&
+        (lastFix == null || now.difference(lastFix!).inSeconds > 15)) {
+      _gps.reset();
+      f = _gps.accept(p);
+    }
     if (f == null) return;
     p = f;
     // Leitura muito imprecisa (dentro da cabine, antena): ignora.
