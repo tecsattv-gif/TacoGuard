@@ -775,10 +775,18 @@ class Tracker extends ChangeNotifier {
     return (v == 0, v);
   }
 
+  // 1.14.9: diagnóstico do GPS (aparece no aviso "Sem sinal").
+  DateTime? rawAt;
+  double? rawAcc;
+  int rawCount = 0, rawRejected = 0;
+
   void _onPosition(Position raw) {
     var p = raw;
     final now = DateTime.now();
     _lastRaw = now;
+    rawAt = now;
+    rawAcc = raw.accuracy;
+    rawCount++;
     // 1.9.8: filtro do SpeedGuard (leitura ruim volta null: ignora).
     var f = _gps.accept(p);
     // 1.14.8: leituras a chegar mas o filtro a rejeitar tudo há 15 s:
@@ -789,10 +797,16 @@ class Tracker extends ChangeNotifier {
       _gps.reset();
       f = _gps.accept(p);
     }
-    if (f == null) return;
+    if (f == null) {
+      rawRejected++;
+      return;
+    }
     p = f;
     // Leitura muito imprecisa (dentro da cabine, antena): ignora.
-    if (p.accuracy > 100) return;
+    if (p.accuracy > 100) {
+      rawRejected++;
+      return;
+    }
     lastFix = now;
     lat = p.latitude;
     lon = p.longitude;

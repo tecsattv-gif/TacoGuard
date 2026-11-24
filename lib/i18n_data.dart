@@ -3,6 +3,8 @@
 
 const Map<String, Map<String, String>> kTr = {
   'en': {
+    'GPS: nenhuma leitura recebida.': 'GPS: no reading received.',
+    'GPS: última leitura há {0} s, precisão {1} m, {2} de {3} recusadas.': 'GPS: last reading {0} s ago, accuracy {1} m, {2} of {3} rejected.',
     'à espera de dados': 'waiting for data',
     'Amplitude máx.': 'Max. spread',
     'Gráficos': 'Charts',
@@ -395,6 +397,8 @@ const Map<String, Map<String, String>> kTr = {
     'Última jornada: {0} {1}, {2} às {3}  •  condução {4}  •  {5}': 'Last shift: {0} {1}, {2} to {3}  •  driving {4}  •  {5}',
   },
   'es': {
+    'GPS: nenhuma leitura recebida.': 'GPS: ninguna lectura recibida.',
+    'GPS: última leitura há {0} s, precisão {1} m, {2} de {3} recusadas.': 'GPS: última lectura hace {0} s, precisión {1} m, {2} de {3} rechazadas.',
     'à espera de dados': 'esperando datos',
     'Amplitude máx.': 'Amplitud máx.',
     'Gráficos': 'Gráficos',
@@ -787,6 +791,8 @@ const Map<String, Map<String, String>> kTr = {
     'Última jornada: {0} {1}, {2} às {3}  •  condução {4}  •  {5}': 'Última jornada: {0} {1}, de {2} a {3}  •  conducción {4}  •  {5}',
   },
   'fr': {
+    'GPS: nenhuma leitura recebida.': 'GPS : aucune lecture reçue.',
+    'GPS: última leitura há {0} s, precisão {1} m, {2} de {3} recusadas.': 'GPS : dernière lecture il y a {0} s, précision {1} m, {2} sur {3} rejetées.',
     'à espera de dados': 'en attente de données',
     'Amplitude máx.': 'Amplitude max.',
     'Gráficos': 'Graphiques',

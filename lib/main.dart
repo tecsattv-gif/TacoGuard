@@ -662,6 +662,19 @@ class _TodayPageState extends State<TodayPage> {
     }
   }
 
+  /// 1.14.9: o que o GPS está a mandar (para saber porque não há sinal).
+  String _gpsDiag() {
+    final at = _t.rawAt;
+    if (at == null) return tr('GPS: nenhuma leitura recebida.');
+    final secs = DateTime.now().difference(at).inSeconds;
+    return tr('GPS: última leitura há {0} s, precisão {1} m, {2} de {3} recusadas.', [
+      '$secs',
+      (_t.rawAcc ?? 0).round().toString(),
+      '${_t.rawRejected}',
+      '${_t.rawCount}',
+    ]);
+  }
+
   @override
   Widget build(BuildContext context) {
     final c = _t.current;
@@ -995,7 +1008,7 @@ class _TodayPageState extends State<TodayPage> {
         _Banner(
             icon: Icons.gps_not_fixed_rounded,
             color: TG.warn,
-            text: tr('Sem sinal de GPS no momento. Perto da janela ou do para-brisa o sinal volta.')),
+            text: '${tr('Sem sinal de GPS no momento. Perto da janela ou do para-brisa o sinal volta.')}\n${_gpsDiag()}'),
       ],
       if (_t.gpsError != null) ...[
         const SizedBox(height: 10),
