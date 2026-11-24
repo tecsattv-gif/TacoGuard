@@ -1066,7 +1066,9 @@ class Tracker extends ChangeNotifier {
     } else {
       _tachoKmAt = null;
     }
-    if (_overSince == null && SpeedPopup.shown) SpeedPopup.close();
+    // 1.14.21: fora do excesso, garante que o aviso não fica no ecrã
+    // (fecha mesmo que o app ache que já está fechado).
+    if (_overSince == null) SpeedPopup.close();
     // 1.14.20: enquanto acima do limite, o aviso por cima dos apps recebe
     // notícias a cada volta do relógio (senão, sem leituras novas do GPS,
     // fechava-se sozinho a meio da contagem).

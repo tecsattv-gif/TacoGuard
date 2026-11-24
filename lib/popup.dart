@@ -329,28 +329,21 @@ class _SpeedPopupWindowState extends State<SpeedPopupWindow>
   DateTime _leftAt = DateTime.now();
   Timer? _tick;
   StreamSubscription? _sub;
-  DateTime _lastData = DateTime.now();
 
   @override
   void initState() {
     super.initState();
     _load();
     _tick = Timer.periodic(const Duration(milliseconds: 500), (_) {
-      // 1.14.19/1.14.20: 30 s sem notícias do app: o aviso fecha-se sozinho (não
-      // fica preso no ecrã com "--").
-      if (DateTime.now().difference(_lastData).inSeconds > 30) {
-        try {
-          FlutterOverlayWindow.closeOverlay();
-        } catch (_) {}
-        return;
-      }
+      // 1.14.21: sem fecho automático aqui (a janela do aviso é
+      // reaproveitada e, na 2.ª vez, fechava-se logo ao abrir). Quem
+      // fecha é o app.
       if (mounted) setState(() {});
     });
     try {
       _sub = FlutterOverlayWindow.overlayListener.listen((e) {
         try {
           final m = jsonDecode(e.toString()) as Map;
-          _lastData = DateTime.now();
           final v = m['kmh'];
           final l = m['left'];
           if (!mounted) return;
