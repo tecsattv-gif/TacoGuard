@@ -665,7 +665,9 @@ class _TodayPageState extends State<TodayPage> {
   /// 1.14.9: o que o GPS está a mandar (para saber porque não há sinal).
   String _gpsDiag() {
     final at = _t.rawAt;
-    if (at == null) return tr('GPS: nenhuma leitura recebida.');
+    if (at == null) {
+      return '${tr('GPS: nenhuma leitura recebida.')} (${_t.gpsRestarts}×${_t.gpsRestarts.isOdd ? ' A' : ''})';
+    }
     final secs = DateTime.now().difference(at).inSeconds;
     return tr('GPS: última leitura há {0} s, precisão {1} m, {2} de {3} recusadas.', [
       '$secs',

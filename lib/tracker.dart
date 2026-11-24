@@ -702,10 +702,14 @@ class Tracker extends ChangeNotifier {
     _sub?.cancel();
     _lastRaw = DateTime.now();
     _gps.reset();
+    // 1.14.11: se o GPS "fundido" do Google não manda nada, alterna a cada
+    // religação com o GPS direto do Android (LocationManager).
+    final direct = gpsRestarts.isOdd;
     final settings = AndroidSettings(
       accuracy: LocationAccuracy.bestForNavigation,
       distanceFilter: 0,
       intervalDuration: const Duration(seconds: 1),
+      forceLocationManager: direct,
       foregroundNotificationConfig: ForegroundNotificationConfig(
         notificationTitle: tr('TacoGuard ativo'),
         notificationText: tr('Controlando a jornada pelo GPS'),
@@ -734,9 +738,11 @@ class Tracker extends ChangeNotifier {
   /// e a velocidade ficava congelada.
   void _watchdog(DateTime now) {
     if (!gpsOn) return;
-    if (now.difference(_lastRaw).inSeconds < 15) return;
-    if (now.difference(_lastRestart).inSeconds < 20) return;
+    // 1.14.11: espera 30 s (o 1.º sinal pode demorar) antes de religar.
+    if (now.difference(_lastRaw).inSeconds < 30) return;
+    if (now.difference(_lastRestart).inSeconds < 35) return;
     _lastRestart = now;
+    gpsRestarts++;
     _hist.clear();
     _lastKmh.clear();
     _listen();
@@ -778,7 +784,7 @@ class Tracker extends ChangeNotifier {
   // 1.14.9: diagnóstico do GPS (aparece no aviso "Sem sinal").
   DateTime? rawAt;
   double? rawAcc;
-  int rawCount = 0, rawRejected = 0;
+  int rawCount = 0, rawRejected = 0, gpsRestarts = 0;
 
   void _onPosition(Position raw) {
     var p = raw;
