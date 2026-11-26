@@ -69,6 +69,7 @@ Segredos do repositório (Settings > Secrets and variables > Actions):
 
 ## Versões
 
+- **1.14.23**: Aviso de velocidade por cima dos apps não aparecia: se o pop-up da parada tinha ficado "marcado como aberto" sem estar no ecrã, o de velocidade nunca abria — agora isso é verificado. Novo botão em Ajustes → Velocidade **"Testar o aviso por cima dos apps"** (mostra-o 8 s ou diz porque não abriu, e pede a permissão se faltar).
 - **1.14.22**: Cartão Tacógrafo: "Até ao descanso diário" passa a chamar-se **"Amplitude restante"** (o tempo que falta até ter de começar o descanso diário, F99C), para ser mais claro.
 - **1.14.21**: O aviso de velocidade por cima dos apps só aparecia **uma vez**: a janela do aviso é reaproveitada e o fecho automático da 1.14.19 (sem notícias há X s) contava desde a 1.ª vez, fechando-a logo ao abrir na 2.ª. O fecho automático do lado do aviso saiu; agora é o app que fecha, a cada volta do relógio fora do excesso (mesmo que ache que já está fechado).
 - **1.14.20**: O aviso de velocidade por cima dos apps desaparecia a meio da contagem (~45 s): sem leituras novas do GPS, deixava de receber notícias e fechava-se sozinho (regra da 1.14.19). Agora o app manda a velocidade e a contagem a cada volta do relógio enquanto estiver acima do limite, e o aviso só se fecha sozinho após 30 s sem notícias.

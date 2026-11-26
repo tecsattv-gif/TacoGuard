@@ -3,6 +3,10 @@
 
 const Map<String, Map<String, String>> kTr = {
   'en': {
+    'Testar o aviso por cima dos apps': 'Test the alert over other apps',
+    'Falta a permissão "Sobrepor a outros apps". Ligue-a na janela que vai abrir.': 'The "Display over other apps" permission is missing. Turn it on in the window that opens.',
+    'O aviso não abriu': 'The alert did not open',
+    'Aviso de teste por 8 s.': 'Test alert for 8 s.',
     'Amplitude restante': 'Remaining spread',
     'E em Localização escolha "Permitir o tempo todo", para o GPS não parar com o TacoGuard atrás de outro app (ex.: Google Maps).': 'And under Location choose "Allow all the time", so the GPS does not stop with TacoGuard behind another app (e.g. Google Maps).',
     'Localização: o tempo todo ✓': 'Location: all the time ✓',
@@ -402,6 +406,10 @@ const Map<String, Map<String, String>> kTr = {
     'Última jornada: {0} {1}, {2} às {3}  •  condução {4}  •  {5}': 'Last shift: {0} {1}, {2} to {3}  •  driving {4}  •  {5}',
   },
   'es': {
+    'Testar o aviso por cima dos apps': 'Probar el aviso sobre otras apps',
+    'Falta a permissão "Sobrepor a outros apps". Ligue-a na janela que vai abrir.': 'Falta el permiso "Mostrar sobre otras apps". Actívelo en la ventana que se abrirá.',
+    'O aviso não abriu': 'El aviso no se abrió',
+    'Aviso de teste por 8 s.': 'Aviso de prueba durante 8 s.',
     'Amplitude restante': 'Amplitud restante',
     'E em Localização escolha "Permitir o tempo todo", para o GPS não parar com o TacoGuard atrás de outro app (ex.: Google Maps).': 'Y en Ubicación elija "Permitir todo el tiempo", para que el GPS no se detenga con TacoGuard detrás de otra app (p. ej. Google Maps).',
     'Localização: o tempo todo ✓': 'Ubicación: todo el tiempo ✓',
@@ -801,6 +809,10 @@ const Map<String, Map<String, String>> kTr = {
     'Última jornada: {0} {1}, {2} às {3}  •  condução {4}  •  {5}': 'Última jornada: {0} {1}, de {2} a {3}  •  conducción {4}  •  {5}',
   },
   'fr': {
+    'Testar o aviso por cima dos apps': "Tester l'alerte par-dessus les applis",
+    'Falta a permissão "Sobrepor a outros apps". Ligue-a na janela que vai abrir.': "Il manque l'autorisation « Superposition sur d'autres applis ». Activez-la dans la fenêtre qui va s'ouvrir.",
+    'O aviso não abriu': "L'alerte ne s'est pas ouverte",
+    'Aviso de teste por 8 s.': 'Alerte de test pendant 8 s.',
     'Amplitude restante': 'Amplitude restante',
     'E em Localização escolha "Permitir o tempo todo", para o GPS não parar com o TacoGuard atrás de outro app (ex.: Google Maps).': "Et dans Localisation choisissez « Toujours autoriser », pour que le GPS ne s'arrête pas avec TacoGuard derrière une autre appli (ex. : Google Maps).",
     'Localização: o tempo todo ✓': 'Localisation : toujours ✓',

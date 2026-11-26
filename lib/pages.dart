@@ -7,6 +7,7 @@ import 'package:android_intent_plus/android_intent.dart';
 import 'package:android_intent_plus/flag.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_overlay_window/flutter_overlay_window.dart';
 import 'package:open_filex/open_filex.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:share_plus/share_plus.dart';
@@ -1126,6 +1127,30 @@ class _SettingsPageState extends State<SettingsPage> {
     }
   }
 
+  Future<void> _testOverlay() async {
+    if (!await StopPopup.hasPermission()) {
+      if (mounted) {
+        _snack(context, tr('Falta a permissão "Sobrepor a outros apps". Ligue-a na janela que vai abrir.'));
+      }
+      try {
+        await FlutterOverlayWindow.requestPermission();
+      } catch (_) {}
+      return;
+    }
+    final w = MediaQuery.sizeOf(context).width;
+    await SpeedPopup.show(
+        limit: _t.speedLimit, since: DateTime.now(), screenWidthDp: w);
+    if (!mounted) return;
+    if (!SpeedPopup.shown) {
+      _snack(context, '${tr('O aviso não abriu')}: ${SpeedPopup.lastError ?? '?'}');
+      return;
+    }
+    SpeedPopup.speed(_t.speedLimit + 3.0, 60);
+    _snack(context, tr('Aviso de teste por 8 s.'));
+    await Future.delayed(const Duration(seconds: 8));
+    await SpeedPopup.close();
+  }
+
   Widget _title(String t) => Padding(
         padding: const EdgeInsets.only(left: 4, top: 18, bottom: 8),
         child: Text(t,
@@ -1303,6 +1328,15 @@ class _SettingsPageState extends State<SettingsPage> {
                   onPressed: () => _t.beep(),
                   icon: const Icon(Icons.volume_up_rounded),
                   label: Text(tr('Testar o bip')),
+                ),
+              ),
+              // 1.14.23: testa o aviso de velocidade por cima dos apps.
+              Align(
+                alignment: Alignment.centerRight,
+                child: TextButton.icon(
+                  onPressed: _testOverlay,
+                  icon: const Icon(Icons.picture_in_picture_alt_rounded),
+                  label: Text(tr('Testar o aviso por cima dos apps')),
                 ),
               ),
             ],

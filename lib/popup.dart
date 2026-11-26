@@ -195,6 +195,9 @@ class SpeedPopup {
   static bool shown = false;
   static int _gen = 0;
 
+  /// 1.14.23: porque o último aviso não apareceu (para o teste em Ajustes).
+  static String? lastError;
+
   static Future<void> show({
     required int limit,
     required DateTime since,
@@ -203,9 +206,18 @@ class SpeedPopup {
     try {
       // 1.14.19: o aviso pode ter-se fechado sozinho.
       if (shown && !await FlutterOverlayWindow.isActive()) shown = false;
-      if (shown || StopPopup.shown) return;
+      if (StopPopup.shown && !await FlutterOverlayWindow.isActive()) {
+        StopPopup.shown = false; // ficou marcado sem estar no ecrã
+      }
+      if (shown || StopPopup.shown) {
+        lastError = 'já há um aviso aberto';
+        return;
+      }
       final g = ++_gen;
-      if (!await StopPopup.hasPermission()) return;
+      if (!await StopPopup.hasPermission()) {
+        lastError = 'sem permissão';
+        return;
+      }
       final p = await SharedPreferences.getInstance();
       await p.setString('popup_mode', 'speed');
       await p.setInt('popup_nonce', DateTime.now().millisecondsSinceEpoch);
@@ -227,10 +239,14 @@ class SpeedPopup {
       // 1.14.19: mandaram fechar enquanto abria: fecha já.
       if (g != _gen) {
         await FlutterOverlayWindow.closeOverlay();
+        lastError = 'fechado enquanto abria';
         return;
       }
       shown = true;
-    } catch (_) {}
+      lastError = null;
+    } catch (e) {
+      lastError = '$e';
+    }
   }
 
   /// Velocidade atual para o cartão (a cada leitura do GPS).
