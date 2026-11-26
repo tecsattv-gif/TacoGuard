@@ -1146,7 +1146,7 @@ class _SettingsPageState extends State<SettingsPage> {
       return;
     }
     SpeedPopup.speed(_t.speedLimit + 3.0, 60);
-    _snack(context, tr('Aviso de teste por 8 s.'));
+    _snack(context, tr('Aviso de teste por alguns segundos.'));
     await Future.delayed(const Duration(seconds: 8));
     await SpeedPopup.close();
   }
