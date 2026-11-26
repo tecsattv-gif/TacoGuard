@@ -223,6 +223,9 @@ class SpeedPopup {
       await p.setInt('popup_nonce', DateTime.now().millisecondsSinceEpoch);
       await p.setInt('speed_limit', limit);
       await p.setInt('speed_since', since.millisecondsSinceEpoch);
+      await p.remove('speed_kmh');
+      await p.remove('speed_left');
+      await p.remove('speed_left_at');
       final dpr = WidgetsBinding
           .instance.platformDispatcher.views.first.devicePixelRatio;
       await FlutterOverlayWindow.showOverlay(
@@ -257,6 +260,18 @@ class SpeedPopup {
     try {
       FlutterOverlayWindow.shareData(
           jsonEncode({'kmh': kmh.round(), 'left': left ?? 0}));
+    } catch (_) {}
+    // 1.14.24: também pelas preferências (a mensagem direta não chega à
+    // janela reaproveitada; o aviso ficava com "--" e "!").
+    _savePrefs(kmh, left);
+  }
+
+  static Future<void> _savePrefs(double kmh, int? left) async {
+    try {
+      final p = await SharedPreferences.getInstance();
+      await p.setInt('speed_kmh', kmh.round());
+      await p.setInt('speed_left', left ?? 0);
+      await p.setInt('speed_left_at', DateTime.now().millisecondsSinceEpoch);
     } catch (_) {}
   }
 
@@ -354,7 +369,8 @@ class _SpeedPopupWindowState extends State<SpeedPopupWindow>
       // 1.14.21: sem fecho automático aqui (a janela do aviso é
       // reaproveitada e, na 2.ª vez, fechava-se logo ao abrir). Quem
       // fecha é o app.
-      if (mounted) setState(() {});
+      // 1.14.24: relê tudo das preferências (janela reaproveitada).
+      _load();
     });
     try {
       _sub = FlutterOverlayWindow.overlayListener.listen((e) {
@@ -380,10 +396,24 @@ class _SpeedPopupWindowState extends State<SpeedPopupWindow>
       final p = await SharedPreferences.getInstance();
       await p.reload();
       final s = p.getInt('speed_since');
+      final k = p.getInt('speed_kmh');
+      final l = p.getInt('speed_left');
+      final la = p.getInt('speed_left_at');
       if (mounted) {
         setState(() {
           _limit = p.getInt('speed_limit') ?? 90;
           _since = s == null ? null : DateTime.fromMillisecondsSinceEpoch(s);
+          if (k != null) _kmh = k;
+          if (l != null && la != null) {
+            final at = DateTime.fromMillisecondsSinceEpoch(la);
+            if (at.isAfter(_leftAt) || _left == null) {
+              _left = l;
+              _leftAt = at;
+            }
+          } else if (k == null) {
+            _kmh = null; // aviso novo: ainda sem leitura
+            _left = null;
+          }
         });
       }
     } catch (_) {}
