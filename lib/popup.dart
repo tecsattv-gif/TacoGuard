@@ -255,7 +255,7 @@ class SpeedPopup {
   /// Velocidade atual para o cartão (a cada leitura do GPS).
   /// 1.9.4: manda também os segundos que faltam (a contagem não dependia
   /// mais só das preferências, que o pop-up às vezes não lia: ficava em 60).
-  static void speed(double kmh, int? left) {
+  static void speed(double kmh, int? left, {DateTime? since}) {
     if (!shown) return;
     try {
       FlutterOverlayWindow.shareData(
@@ -263,12 +263,17 @@ class SpeedPopup {
     } catch (_) {}
     // 1.14.24: também pelas preferências (a mensagem direta não chega à
     // janela reaproveitada; o aviso ficava com "--" e "!").
-    _savePrefs(kmh, left);
+    _savePrefs(kmh, left, since);
   }
 
-  static Future<void> _savePrefs(double kmh, int? left) async {
+  static Future<void> _savePrefs(double kmh, int? left, DateTime? since) async {
     try {
       final p = await SharedPreferences.getInstance();
+      // 1.14.25: a hora do início do excesso vai sempre junto (a contagem
+      // do aviso caía no "!" com uma hora antiga).
+      if (since != null) {
+        await p.setInt('speed_since', since.millisecondsSinceEpoch);
+      }
       await p.setInt('speed_kmh', kmh.round());
       await p.setInt('speed_left', left ?? 0);
       await p.setInt('speed_left_at', DateTime.now().millisecondsSinceEpoch);
@@ -431,11 +436,13 @@ class _SpeedPopupWindowState extends State<SpeedPopupWindow>
   Widget build(BuildContext context) {
     // Contagem: o valor que o app manda (a cada leitura do GPS), descontando
     // o tempo desde a última mensagem; sem mensagem ainda, pela hora salva.
-    final secs = _left != null
-        ? _left! - DateTime.now().difference(_leftAt).inSeconds
-        : _since == null
-            ? 60
-            : 60 - DateTime.now().difference(_since!).inSeconds;
+    // 1.14.25: primeiro pela hora do início do excesso (a mesma conta do
+    // app); só sem ela usa os segundos mandados.
+    final secs = _since != null
+        ? 60 - DateTime.now().difference(_since!).inSeconds
+        : _left != null
+            ? _left! - DateTime.now().difference(_leftAt).inSeconds
+            : 60;
     final left = secs < 0 ? 0 : secs;
     final text = left > 0
         ? tr('Acima de {0} km/h. Reduza em {1} s, senão vira infração.',

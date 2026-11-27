@@ -69,6 +69,7 @@ Segredos do repositório (Settings > Secrets and variables > Actions):
 
 ## Versões
 
+- **1.14.25**: Contagem dos segundos no aviso por cima dos apps: calculada pela hora do início do excesso, enviada a cada segundo (antes caía no "!" logo ao abrir).
 - **1.14.24**: Aviso por cima dos apps mostra a velocidade e a contagem dos segundos (antes ficava "--" e "!"): os valores passam também pelas preferências, relidas a cada meio segundo.
 - **1.14.23**: Aviso de velocidade por cima dos apps não aparecia: se o pop-up da parada tinha ficado "marcado como aberto" sem estar no ecrã, o de velocidade nunca abria — agora isso é verificado. Novo botão em Ajustes → Velocidade **"Testar o aviso por cima dos apps"** (mostra-o alguns segundos ou diz porque não abriu, e pede a permissão se faltar).
 - **1.14.22**: Cartão Tacógrafo: "Até ao descanso diário" passa a chamar-se **"Amplitude restante"** (o tempo que falta até ter de começar o descanso diário, F99C), para ser mais claro.

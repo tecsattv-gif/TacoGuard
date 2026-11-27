@@ -1073,7 +1073,8 @@ class Tracker extends ChangeNotifier {
     // notícias a cada volta do relógio (senão, sem leituras novas do GPS,
     // fechava-se sozinho a meio da contagem).
     if (_overSince != null) {
-      SpeedPopup.speed(_tachoKmh ?? speedKmh, overSecondsLeft);
+      SpeedPopup.speed(_tachoKmh ?? speedKmh, overSecondsLeft,
+          since: _overEvent == null ? _overSince : null);
     }
     // 1.14.6: sem GPS, o aviso de velocidade usa a do tacógrafo.
     if (gpsStale) {
@@ -1208,7 +1209,8 @@ class Tracker extends ChangeNotifier {
       if (speedBeep) beep();
     }
     if (kmh > _overMax) _overMax = kmh;
-    SpeedPopup.speed(kmh, overSecondsLeft);
+    SpeedPopup.speed(kmh, overSecondsLeft,
+        since: _overEvent == null ? _overSince : null);
     // 1.8.1: depois de 40 s acima, bip seguido (a cada 1 s) até voltar
     // ao limite escolhido. Entre o 1º bip e os 40 s, só o cartão pisca.
     if (now.difference(_overSince!).inSeconds >= 40 &&
