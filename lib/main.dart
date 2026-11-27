@@ -666,12 +666,14 @@ class _TodayPageState extends State<TodayPage> {
   /// discordar do tacógrafo em mais de 15 km/h (ex.: 0 a andar a 91, logo a
   /// seguir a o GPS voltar), vale a do tacógrafo.
   String _shownSpeed() {
-    // 1.14.27: com o tacógrafo ligado, mostra sempre a velocidade dele
-    // (a mesma do painel e a que conta para a infração).
+    // 1.14.28: volta ao GPS (atualiza a cada segundo); o tacógrafo só chega
+    // a cada ~4 s e a velocidade ficava atrasada. Tacógrafo só sem GPS ou
+    // se o GPS estiver muito diferente.
     final tk = TachoLink.I.speedKmh;
-    if (tk != null) return '${tk.round()}';
-    if (_t.gpsStale) return '--';
-    return '${_t.speedKmh.round()}';
+    if (_t.gpsStale) return tk != null ? '${tk.round()}' : '--';
+    final g = _t.speedKmh;
+    if (tk != null && (g - tk).abs() > 15) return '${tk.round()}';
+    return '${g.round()}';
   }
 
   /// 1.14.9: o que o GPS está a mandar (para saber porque não há sinal).
@@ -991,9 +993,6 @@ class _TodayPageState extends State<TodayPage> {
                     fontWeight: FontWeight.w800,
                     fontFeatures: [FontFeature.tabularFigures()])),
             Row(mainAxisSize: MainAxisSize.min, children: [
-              if (TachoLink.I.speedKmh != null)
-                Icon(Icons.bluetooth_rounded, size: 12, color: TG.ok)
-              else
               Icon(
                   _t.gpsOn && _t.gpsError == null
                       ? (_t.gpsStale
