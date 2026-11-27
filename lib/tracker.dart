@@ -233,7 +233,8 @@ class Tracker extends ChangeNotifier {
     if (c0m != null) _mergeSame(c0m);
     // 1.14.19: sem GPS, o aviso de velocidade segue cada leitura do
     // tacógrafo (não só de 5 em 5 s).
-    if (gpsStale && _tachoKmh != null) _speedCheck(DateTime.now());
+    // 1.14.26: com o tacógrafo ligado, o aviso usa sempre a velocidade dele.
+    if (_tachoKmh != null) _speedCheck(DateTime.now());
     try {
       final now = DateTime.now();
       final act = _tachoAct(st);
@@ -1077,10 +1078,11 @@ class Tracker extends ChangeNotifier {
           since: _overEvent == null ? _overSince : null);
     }
     // 1.14.6: sem GPS, o aviso de velocidade usa a do tacógrafo.
-    if (gpsStale) {
-      if (_tachoKmh != null) {
-        _speedCheck(now);
-      } else if (_overSince != null) {
+    if (_tachoKmh != null) {
+      // 1.14.26: o tacógrafo manda, com ou sem GPS.
+      _speedCheck(now);
+    } else if (gpsStale) {
+      if (_overSince != null) {
         _endOver(lastFix ?? now);
       }
     }
@@ -1170,7 +1172,10 @@ class Tracker extends ChangeNotifier {
 
   void _speedCheck(DateTime now) {
     final c = current;
-    final tk = gpsStale ? _tachoKmh : null;
+    // 1.14.26: a velocidade do tacógrafo (a que conta para a infração) tem
+    // prioridade sobre a do GPS, que às vezes vinha mais baixa e o aviso
+    // não disparava a 94 km/h.
+    final tk = _tachoKmh;
     final on = speedAlert &&
         c != null &&
         !carMode &&
