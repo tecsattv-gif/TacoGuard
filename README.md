@@ -69,6 +69,7 @@ Segredos do repositório (Settings > Secrets and variables > Actions):
 
 ## Versões
 
+- **1.14.29**: Aviso de excesso: dispara só acima do seletor (com 91, a partir de 92 km/h); usa a maior velocidade entre GPS e tacógrafo (leituras do tacógrafo só valem até 6 s); só termina depois de 3 s seguidos abaixo, para não ligar/desligar e recomeçar a contagem a 90-92 km/h.
 - **1.14.28**: A velocidade no topo da tela Hoje volta a ser a do GPS (atualiza a cada segundo); a do tacógrafo chega só a cada ~4 s e ficava atrasada. O tacógrafo continua a ser usado sem GPS e no aviso de excesso.
 - **1.14.27**: Com o tacógrafo ligado, a velocidade no topo da tela Hoje é sempre a do tacógrafo (ícone Bluetooth ao lado), igual ao painel do camião. Sem tacógrafo, continua a do GPS.
 - **1.14.26**: Com o tacógrafo ligado, o aviso de excesso de velocidade usa sempre a velocidade do tacógrafo (a que conta para a infração), mesmo com GPS. Antes, com GPS, a 94 km/h no tacógrafo o aviso podia não disparar.

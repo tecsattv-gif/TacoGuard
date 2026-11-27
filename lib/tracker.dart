@@ -52,6 +52,7 @@ class Tracker extends ChangeNotifier {
   double speedKmh = 0;
   final _gps = GpsFilter(); // 1.9.8: filtro do SpeedGuard
   double _rawKmh = 0; // 1.9.1: última leitura, sem a mediana (sem atraso)
+  DateTime? _belowSince; // 1.14.29: abaixo do limite desde
   DateTime? _overCand; // 1.9.5: 1ª leitura acima do limite, à espera da 2ª
   double? lat, lon;
   DateTime? lastFix;
@@ -1169,13 +1170,20 @@ class Tracker extends ChangeNotifier {
 
   /// 1.14.6: velocidade do tacógrafo (só com ele ao vivo).
   double? get _tachoKmh => tachoLive ? TachoLink.I.speedKmh : null;
+  double? get _tachoKmhRecent {
+    final v = _tachoKmh;
+    final t = TachoLink.I.didTime[0xF902];
+    if (v == null || t == null) return null;
+    return DateTime.now().difference(t).inSeconds <= 6 ? v : null;
+  }
 
   void _speedCheck(DateTime now) {
     final c = current;
     // 1.14.26: a velocidade do tacógrafo (a que conta para a infração) tem
     // prioridade sobre a do GPS, que às vezes vinha mais baixa e o aviso
     // não disparava a 94 km/h.
-    final tk = _tachoKmh;
+    // 1.14.29: só leituras do tacógrafo com até 6 s (antes valiam 30 s).
+    final tk = _tachoKmhRecent;
     final on = speedAlert &&
         c != null &&
         !carMode &&
@@ -1185,13 +1193,26 @@ class Tracker extends ChangeNotifier {
     // 1 a 2 s) e começa JÁ ao chegar ao limite do seletor (menos a margem
     // escolhida, porque o tacógrafo mede pela roda e costuma marcar um pouco
     // mais que o GPS).
-    final kmh = tk ?? (_rawKmh > speedKmh ? _rawKmh : speedKmh);
+    // 1.14.29: a maior entre o GPS e o tacógrafo (o tacógrafo só chega a
+    // cada ~4 s; o GPS a cada segundo).
+    final g = gpsStale ? null : (_rawKmh > speedKmh ? _rawKmh : speedKmh);
+    final kmh = g == null ? (tk ?? 0) : (tk != null && tk > g ? tk : g);
     final trigger = speedLimit - speedMargin;
-    if (!on || kmh < trigger) {
+    // 1.14.29: dispara só ACIMA do seletor (91 → a partir de 92).
+    if (!on || kmh.round() <= trigger) {
       _overCand = null;
-      if (_overSince != null) _endOver(now);
+      if (_overSince != null) {
+        // 1.14.29: só termina depois de 3 s seguidos abaixo (a 90-92 o
+        // aviso ligava e desligava e a contagem recomeçava).
+        _belowSince ??= now;
+        if (!on || now.difference(_belowSince!).inSeconds >= 3) {
+          _belowSince = null;
+          _endOver(now);
+        }
+      }
       return;
     }
+    _belowSince = null;
     // 1.9.5: confirma com 2 leituras seguidas acima do limite (1 a 2 s).
     // Uma leitura sozinha pode ser erro do GPS (na serra disparava a 60
     // km/h). A contagem começa na hora da 1ª leitura, sem perder tempo.
